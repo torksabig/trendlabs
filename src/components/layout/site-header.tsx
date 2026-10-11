@@ -17,7 +17,7 @@ export function SiteHeader() {
             TrendLab
           </span>
           <span className="hidden text-xs uppercase tracking-[0.22em] text-slateui sm:inline">
-            Paper research
+            Arena · paper research
           </span>
         </Link>
         <nav className="flex flex-wrap items-center gap-1 text-sm">
