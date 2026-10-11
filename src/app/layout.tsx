@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={`${display.variable} ${sans.variable} ${mono.variable} font-sans antialiased`}>
         <div className="relative z-10 min-h-screen">
           <SiteHeader />

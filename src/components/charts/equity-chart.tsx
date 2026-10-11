@@ -8,7 +8,7 @@ import {
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 
-const COLORS = ["#0f766e", "#1d4e89", "#b45309", "#365314"];
+const COLORS = ["#3ecf8e", "#94a3b8", "#e11d48", "#cbd5e1"];
 
 type Props = {
   curves: Record<string, Array<{ ts: string; equity: number }>>;
@@ -25,11 +25,11 @@ export function EquityChart({ curves, labels, height = 300 }: Props) {
       height,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#2a3a34",
+        textColor: "#94a3b8",
       },
       grid: {
-        vertLines: { color: "rgba(15, 40, 32, 0.06)" },
-        horzLines: { color: "rgba(15, 40, 32, 0.06)" },
+        vertLines: { color: "rgba(148, 163, 184, 0.08)" },
+        horzLines: { color: "rgba(148, 163, 184, 0.08)" },
       },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false },

@@ -13,14 +13,27 @@ export default {
         foreground: "var(--foreground)",
         paper: "var(--paper)",
         ink: "var(--ink)",
-        teal: {
-          DEFAULT: "#0f766e",
-          700: "#0f766e",
-          800: "#115e59",
+        charcoal: {
+          DEFAULT: "var(--charcoal)",
+          2: "var(--charcoal-2)",
+          3: "var(--charcoal-3)",
         },
-        amber: {
-          DEFAULT: "#b45309",
-          700: "#b45309",
+        slateui: {
+          DEFAULT: "var(--slate)",
+          dim: "var(--slate-dim)",
+        },
+        mint: {
+          DEFAULT: "var(--mint)",
+          dim: "var(--mint-dim)",
+        },
+        crimson: {
+          DEFAULT: "var(--crimson)",
+          dim: "var(--crimson-dim)",
+        },
+        teal: {
+          DEFAULT: "var(--mint)",
+          700: "var(--mint)",
+          800: "var(--mint)",
         },
       },
       fontFamily: {

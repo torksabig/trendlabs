@@ -17,3 +17,9 @@ export function formatPct(value: number) {
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}%`;
 }
+
+export function pctTone(value: number) {
+  if (value > 0) return "text-mint";
+  if (value < 0) return "text-crimson";
+  return "text-slateui";
+}

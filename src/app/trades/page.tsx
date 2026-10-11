@@ -6,20 +6,20 @@ export const dynamic = "force-dynamic";
 export default async function TradesPage() {
   const snapshot = await loadSnapshot();
   if (!snapshot) {
-    return <p className="panel p-6">No trades yet. Run `npm run seed`.</p>;
+    return <p className="panel p-6 text-slateui">No trades yet. Run `npm run seed`.</p>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-4xl">Trade history</h1>
-        <p className="mt-2 text-ink/65">
+        <h1 className="font-display text-4xl text-ink">Trade history</h1>
+        <p className="mt-2 text-slateui">
           Every simulated fill includes fees, slippage, stop level, and the strategy reason.
         </p>
       </div>
       <div className="panel overflow-x-auto p-5">
         <table className="w-full min-w-[900px] text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-ink/45">
+          <thead className="text-xs uppercase tracking-wide text-slateui-dim">
             <tr>
               <th className="pb-2">Time</th>
               <th className="pb-2">Agent</th>
@@ -34,20 +34,29 @@ export default async function TradesPage() {
           </thead>
           <tbody>
             {snapshot.trades.map((trade) => (
-              <tr key={`${trade.id}-${trade.ts}-${trade.agent_id}-${trade.side}`} className="border-t border-ink/8 align-top">
-                <td className="py-2 font-mono text-xs">
+              <tr
+                key={`${trade.id}-${trade.ts}-${trade.agent_id}-${trade.side}`}
+                className="border-t border-white/10 align-top text-ink"
+              >
+                <td className="py-2 font-mono text-xs text-slateui">
                   {new Date(trade.ts).toLocaleString()}
                 </td>
-                <td className="py-2">{trade.agent_id}</td>
-                <td className="py-2 font-mono">{trade.side}</td>
+                <td className="py-2 text-slateui">{trade.agent_id}</td>
+                <td
+                  className={`py-2 font-mono ${
+                    trade.side === "BUY" ? "text-mint" : "text-crimson"
+                  }`}
+                >
+                  {trade.side}
+                </td>
                 <td className="py-2">{trade.symbol}</td>
                 <td className="py-2 font-mono">{trade.qty.toFixed(4)}</td>
                 <td className="py-2 font-mono">{formatMoney(trade.price)}</td>
-                <td className="py-2 font-mono">{formatMoney(trade.fee)}</td>
-                <td className="py-2 font-mono">
+                <td className="py-2 font-mono text-slateui">{formatMoney(trade.fee)}</td>
+                <td className="py-2 font-mono text-slateui">
                   {trade.stop_loss == null ? "—" : formatMoney(trade.stop_loss)}
                 </td>
-                <td className="py-2 text-ink/65">{trade.reason}</td>
+                <td className="py-2 text-slateui">{trade.reason}</td>
               </tr>
             ))}
           </tbody>

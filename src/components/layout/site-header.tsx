@@ -10,13 +10,13 @@ const links = [
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-ink/10 bg-paper/80 backdrop-blur">
+    <header className="border-b border-white/10 bg-black/70 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
         <Link href="/" className="group flex items-baseline gap-3">
           <span className="font-display text-3xl tracking-tight text-ink sm:text-4xl">
             TrendLab
           </span>
-          <span className="hidden text-xs uppercase tracking-[0.22em] text-ink/45 sm:inline">
+          <span className="hidden text-xs uppercase tracking-[0.22em] text-slateui sm:inline">
             Paper research
           </span>
         </Link>
@@ -25,7 +25,7 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-ink/70 transition hover:bg-ink/5 hover:text-ink"
+              className="rounded-md px-3 py-2 text-slateui transition hover:bg-charcoal-2 hover:text-ink"
             >
               {link.label}
             </Link>

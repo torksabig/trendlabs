@@ -26,22 +26,26 @@ export function CandleChart({ candles, height = 360 }: Props) {
       height,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#2a3a34",
+        textColor: "#94a3b8",
       },
       grid: {
-        vertLines: { color: "rgba(15, 40, 32, 0.06)" },
-        horzLines: { color: "rgba(15, 40, 32, 0.06)" },
+        vertLines: { color: "rgba(148, 163, 184, 0.08)" },
+        horzLines: { color: "rgba(148, 163, 184, 0.08)" },
       },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false },
+      crosshair: {
+        vertLine: { color: "rgba(148, 163, 184, 0.35)" },
+        horzLine: { color: "rgba(148, 163, 184, 0.35)" },
+      },
     });
 
     const series: ISeriesApi<"Candlestick"> = chart.addSeries(CandlestickSeries, {
-      upColor: "#0f766e",
-      downColor: "#b45309",
+      upColor: "#3ecf8e",
+      downColor: "#e11d48",
       borderVisible: false,
-      wickUpColor: "#0f766e",
-      wickDownColor: "#b45309",
+      wickUpColor: "#3ecf8e",
+      wickDownColor: "#e11d48",
     });
 
     series.setData(
