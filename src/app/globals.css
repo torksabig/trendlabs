@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f3efe4;
+  --paper-2: #ebe4d4;
+  --ink: #12221c;
+  --teal: #0f766e;
+  --amber: #b45309;
+  --line: rgba(18, 34, 28, 0.12);
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+body {
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 34%),
+    radial-gradient(circle at 85% 10%, rgba(180, 83, 9, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7f3ea 0%, var(--paper) 45%, #ebe6d8 100%);
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(18, 34, 28, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 34, 28, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 85%);
+  z-index: 0;
+}
+
+.panel {
+  border-radius: 1rem;
+  border: 1px solid rgba(18, 34, 28, 0.1);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 1px 0 rgba(18, 34, 28, 0.04);
+}
+
+.metric {
+  border-radius: 1rem;
+  border: 1px solid rgba(18, 34, 28, 0.1);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 1px 0 rgba(18, 34, 28, 0.04);
+  padding: 1rem;
+}
+
+.fade-up {
+  animation: fade-up 0.55s ease both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
