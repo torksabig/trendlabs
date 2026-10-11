@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T22:46:58.520298+00:00",
+  "generated_at": "2026-10-11T23:10:18.122642+00:00",
   "timeframe": "1h",
   "data_source": "yfinance",
   "last_collection": "2026-10-11T22:45:24.289724+00:00",
@@ -21597,11 +21597,83 @@
           "volume_vs_sma": 1.4845710928330254
         }
       }
-    ]
+    ],
+    "ai_reports": [
+      {
+        "id": 1,
+        "symbol": "AAPL",
+        "timeframe": "1h",
+        "model": "rule_based_fallback",
+        "source": "fallback",
+        "created_at": "2026-10-11T23:10:17.549923+00:00",
+        "report": {
+          "symbol": "AAPL",
+          "timeframe": "1h",
+          "regime": "bullish",
+          "summary": "AAPL on 1h is classified bullish with close 336.63. EMA20/50/200 = 336.2774503313731, 335.49614978443856, 330.55198408082043; ADX 23.787102819000317, RSI 52.197338134557114. Historical bullish matches: 8 (hit rate 38%, avg 10-bar forward -0.06%). Current paper-trading leader: Agent D \u2014 Supertrend. This fallback report was generated without an LLM because Ollama was unavailable.",
+          "key_risks": [
+            "Indicator readings can flip quickly around session opens and news.",
+            "Historical hit rates are descriptive, not predictive guarantees.",
+            "Paper fills ignore borrow, shorting, and some liquidity constraints."
+          ],
+          "historical_context": "Among 8 similar completed setups, 3 had positive 10-bar forward returns (hit rate 38%).",
+          "agent_notes": [
+            {
+              "agent_id": "supertrend",
+              "observation": "Equity marked at 9759.39 with 3 open positions.",
+              "suggested_focus": "Keep risk budget and stop discipline unchanged; test only one parameter tweak at a time."
+            },
+            {
+              "agent_id": "breakout",
+              "observation": "Equity marked at 9669.75 with 1 open positions.",
+              "suggested_focus": "Keep risk budget and stop discipline unchanged; test only one parameter tweak at a time."
+            },
+            {
+              "agent_id": "momentum",
+              "observation": "Equity marked at 9616.92 with 1 open positions.",
+              "suggested_focus": "Keep risk budget and stop discipline unchanged; test only one parameter tweak at a time."
+            },
+            {
+              "agent_id": "ema_trend",
+              "observation": "Equity marked at 9563.61 with 3 open positions.",
+              "suggested_focus": "Keep risk budget and stop discipline unchanged; test only one parameter tweak at a time."
+            }
+          ],
+          "proposals": [
+            {
+              "title": "ADX confirmation gate",
+              "hypothesis": "Requiring ADX >= 25 before EMA/momentum entries may cut sideways whipsaws.",
+              "test_plan": "Replay the current 1h history with an ADX>=25 filter and compare drawdown vs baseline.",
+              "risk_notes": "May miss early trend acceleration; measure opportunity cost separately."
+            },
+            {
+              "title": "Volatility-scaled stops",
+              "hypothesis": "ATR-based stops (2.0x vs 1.5x) can improve survival in choppy regimes.",
+              "test_plan": "Grid-search ATR multipliers on out-of-sample final 30% of bars.",
+              "risk_notes": "Wider stops increase per-trade loss size; keep 1% equity risk fixed."
+            }
+          ],
+          "confidence": 0.45,
+          "disclaimers": [
+            "Research only \u2014 no trade execution authority.",
+            "All statistics originated from TrendLab Python calculations."
+          ],
+          "executes_trades": false
+        }
+      }
+    ],
+    "research_agent": {
+      "id": "qwen_research",
+      "name": "Shared Research Agent (Qwen3 14B)",
+      "role": "Interprets verified Python analytics; never executes trades",
+      "last_research": "2026-10-11T23:10:17.549923+00:00",
+      "model": "rule_based_fallback"
+    }
   },
   "status": {
     "budget": "$0/month target",
-    "deployment": "Vercel Hobby + GitHub Actions + Supabase Free",
-    "real_money_trading": false
+    "deployment": "Vercel Hobby + GitHub Actions + Supabase Free + local Ollama",
+    "real_money_trading": false,
+    "llm_executes_trades": false
   }
 }

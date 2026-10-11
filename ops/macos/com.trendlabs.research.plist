@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  macOS launchd job: run the shared Qwen research agent every 4 hours.
+  Adjust WorkingDirectory / ProgramArguments paths to your TrendLab checkout.
+  Load with:
+    launchctl load ~/Library/LaunchAgents/com.trendlabs.research.plist
+-->
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.trendlabs.research</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/SHARED/TrendLab/workers</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/SHARED/TrendLab/.venv/bin/python</string>
+      <string>-m</string>
+      <string>trendlabs.research</string>
+      <string>--symbol</string>
+      <string>AAPL</string>
+      <string>--timeframe</string>
+      <string>1h</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>14400</integer>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/tmp/trendlabs-research.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/trendlabs-research.err</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>OLLAMA_HOST</key>
+      <string>http://127.0.0.1:11434</string>
+      <key>OLLAMA_MODEL</key>
+      <string>qwen3:14b-q4_K_M</string>
+    </dict>
+  </dict>
+</plist>

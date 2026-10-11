@@ -115,10 +115,30 @@ def build_snapshot(store: Store, timeframe: str = "1h") -> dict[str, Any]:
     leaderboard.sort(key=lambda x: x["equity"], reverse=True)
 
     trend_events = store.get_trend_events(200)
+    ai_reports = store.get_agent_reports(10)
     research = {
         "bullish": summarize_similar(trend_events, "bullish"),
         "bearish": summarize_similar(trend_events, "bearish"),
         "recent_events": trend_events[:40],
+        "ai_reports": [
+            {
+                "id": r["id"],
+                "symbol": r["symbol"],
+                "timeframe": r["timeframe"],
+                "model": r["model"],
+                "source": r["source"],
+                "created_at": r["created_at"],
+                "report": r["report"],
+            }
+            for r in ai_reports
+        ],
+        "research_agent": {
+            "id": "qwen_research",
+            "name": "Shared Research Agent (Qwen3 14B)",
+            "role": "Interprets verified Python analytics; never executes trades",
+            "last_research": store.get_meta("last_research"),
+            "model": store.get_meta("research_model"),
+        },
     }
 
     equity_by_agent: dict[str, list] = {}
@@ -156,8 +176,9 @@ def build_snapshot(store: Store, timeframe: str = "1h") -> dict[str, Any]:
             "research": research,
             "status": {
                 "budget": "$0/month target",
-                "deployment": "Vercel Hobby + GitHub Actions + Supabase Free",
+                "deployment": "Vercel Hobby + GitHub Actions + Supabase Free + local Ollama",
                 "real_money_trading": False,
+                "llm_executes_trades": False,
             },
         }
     )

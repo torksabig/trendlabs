@@ -172,19 +172,21 @@ export default async function HomePage() {
           </ul>
         </div>
         <div className="panel p-5">
-          <h3 className="font-display text-xl text-ink">Historical research</h3>
+          <h3 className="font-display text-xl text-ink">AI research desk</h3>
           <p className="mt-3 text-sm text-slateui">
-            Bullish matches: <span className="text-mint">{snapshot.research.bullish.matches}</span>
-            {snapshot.research.bullish.hit_rate != null &&
-              ` · hit rate ${(snapshot.research.bullish.hit_rate * 100).toFixed(0)}%`}
+            Shared Qwen agent reports:{" "}
+            <span className="text-mint">{snapshot.research.ai_reports?.length ?? 0}</span>
+            {snapshot.research.research_agent?.model && (
+              <> · {snapshot.research.research_agent.model}</>
+            )}
           </p>
           <p className="mt-2 text-sm text-slateui">
-            Bearish matches: <span className="text-crimson">{snapshot.research.bearish.matches}</span>
-            {snapshot.research.bearish.hit_rate != null &&
-              ` · hit rate ${(snapshot.research.bearish.hit_rate * 100).toFixed(0)}%`}
+            Bullish matches: <span className="text-mint">{snapshot.research.bullish.matches}</span>
+            {" · "}
+            Bearish: <span className="text-crimson">{snapshot.research.bearish.matches}</span>
           </p>
           <Link href="/research" className="mt-4 inline-block text-sm text-mint hover:underline">
-            Explore patterns
+            Open research desk
           </Link>
         </div>
         <div className="panel p-5">

@@ -83,10 +83,48 @@ export type Snapshot = {
     bullish: { matches: number; hit_rate: number | null; avg_forward_10: number | null };
     bearish: { matches: number; hit_rate: number | null; avg_forward_10: number | null };
     recent_events: Array<Record<string, unknown>>;
+    ai_reports?: AiResearchReport[];
+    research_agent?: {
+      id: string;
+      name: string;
+      role: string;
+      last_research: string | null;
+      model: string | null;
+    };
   };
   status: {
     budget: string;
     deployment: string;
     real_money_trading: boolean;
+    llm_executes_trades?: boolean;
+  };
+};
+
+export type AiResearchReport = {
+  id: number;
+  symbol: string;
+  timeframe: string;
+  model: string;
+  source: string;
+  created_at: string;
+  report: {
+    regime: string;
+    summary: string;
+    key_risks: string[];
+    historical_context: string;
+    agent_notes: Array<{
+      agent_id: string;
+      observation: string;
+      suggested_focus: string;
+    }>;
+    proposals: Array<{
+      title: string;
+      hypothesis: string;
+      test_plan: string;
+      risk_notes: string;
+    }>;
+    confidence: number;
+    disclaimers: string[];
+    executes_trades: boolean;
   };
 };

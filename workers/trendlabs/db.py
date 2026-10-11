@@ -116,6 +116,16 @@ class Store:
                     key TEXT PRIMARY KEY,
                     value TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS agent_reports (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    model TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    report_json TEXT NOT NULL,
+                    snapshot_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 """
             )
 
@@ -288,5 +298,54 @@ class Store:
         for r in rows:
             item = dict(r)
             item["features"] = json.loads(item.pop("features_json"))
+            out.append(item)
+        return out
+
+    def insert_agent_report(self, payload: dict[str, Any]) -> int:
+        with self.connect() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO agent_reports (
+                    symbol, timeframe, model, source, report_json, snapshot_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    payload["symbol"],
+                    payload["timeframe"],
+                    payload["model"],
+                    payload.get("source", "unknown"),
+                    json.dumps(payload["report"]),
+                    json.dumps(payload.get("snapshot", {})),
+                    payload.get("created_at", utc_now()),
+                ),
+            )
+            return int(cur.lastrowid)
+
+    def get_agent_reports(self, limit: int = 20, symbol: str | None = None) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            if symbol:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM agent_reports
+                    WHERE symbol = ?
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    """,
+                    (symbol.upper(), limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM agent_reports
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    """,
+                    (limit,),
+                ).fetchall()
+        out = []
+        for r in rows:
+            item = dict(r)
+            item["report"] = json.loads(item.pop("report_json"))
+            item["snapshot"] = json.loads(item.pop("snapshot_json"))
             out.append(item)
         return out

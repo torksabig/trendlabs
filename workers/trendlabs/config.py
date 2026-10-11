@@ -27,6 +27,12 @@ SLIPPAGE_BPS = float(os.getenv("SLIPPAGE_BPS", "5"))
 DEFAULT_TIMEFRAME = os.getenv("DEFAULT_TIMEFRAME", "1h")
 LOOKBACK_BARS = int(os.getenv("LOOKBACK_BARS", "400"))
 
+# Local research LLM (Mac + Ollama). Never used for trade execution.
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:14b-q4_K_M")
+SUPABASE_URL = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY", os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""))
+
 INSTRUMENTS = [
     {"symbol": "AAPL", "name": "Apple Inc.", "sector": "Technology"},
     {"symbol": "MSFT", "name": "Microsoft Corp.", "sector": "Technology"},
