@@ -151,10 +151,6 @@ export function ArenaDashboard({ snapshot }: Props) {
       <div className="space-y-6">
         <header>
           <h1 className="font-display text-4xl text-ink sm:text-5xl">TrendLab Arena</h1>
-          <p className="mt-2 max-w-3xl text-slateui">
-            Four deterministic trend agents paper-trade the same market data. No live orders.
-            Optional AI research runs on demand and never executes trades.
-          </p>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
