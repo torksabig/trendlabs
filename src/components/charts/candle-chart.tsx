@@ -6,6 +6,7 @@ import {
   createChart,
   type IChartApi,
   type ISeriesApi,
+  type UTCTimestamp,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 
@@ -48,16 +49,21 @@ export function CandleChart({ candles, height = 360 }: Props) {
       wickDownColor: "#e11d48",
     });
 
-    series.setData(
-      candles.map((c) => ({
-        time: c.time as unknown as string,
+    const data = candles
+      .filter((c) => Number.isFinite(c.time) && Number.isFinite(c.close))
+      .map((c) => ({
+        time: c.time as UTCTimestamp,
         open: c.open,
         high: c.high,
         low: c.low,
         close: c.close,
-      })),
-    );
-    chart.timeScale().fitContent();
+      }))
+      .sort((a, b) => Number(a.time) - Number(b.time));
+
+    if (data.length > 0) {
+      series.setData(data);
+      chart.timeScale().fitContent();
+    }
 
     const observer = new ResizeObserver(() => {
       if (!containerRef.current) return;

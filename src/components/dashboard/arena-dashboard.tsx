@@ -4,12 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { CandleChart } from "@/components/charts/candle-chart";
+import { LivePriceChart } from "@/components/charts/live-price-chart";
 import { EquityChart } from "@/components/charts/equity-chart";
+import { INSTRUMENTS, TIMEFRAMES } from "@/lib/instruments";
 import type { Snapshot } from "@/lib/types";
 import { formatMoney, formatPct, pctTone } from "@/lib/utils";
-
-const INTERVALS = ["15m", "1h", "4h", "1d"];
 
 type Props = {
   snapshot: Snapshot;
@@ -43,12 +42,9 @@ const STORAGE_KEY = "trendlabs.llm.provider";
 
 export function ArenaDashboard({ snapshot }: Props) {
   const router = useRouter();
-  const [symbol, setSymbol] = useState(
-    snapshot.markets.find((m) => m.symbol === "AAPL")?.symbol ??
-      snapshot.markets[0]?.symbol ??
-      "AAPL",
-  );
+  const [symbol, setSymbol] = useState("AAPL");
   const [interval, setInterval] = useState(snapshot.timeframe || "1h");
+  const [chartRefresh, setChartRefresh] = useState(0);
   const [provider, setProvider] = useState("auto");
   const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -185,7 +181,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           onChange={(e) => setSymbol(e.target.value)}
           className="mt-1 w-full rounded-md border border-white/10 bg-charcoal px-3 py-2 text-sm text-ink outline-none focus:border-mint"
         >
-          {snapshot.markets.map((m) => (
+          {INSTRUMENTS.map((m) => (
             <option key={m.symbol} value={m.symbol}>
               {m.symbol}
             </option>
@@ -198,7 +194,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           onChange={(e) => setInterval(e.target.value)}
           className="mt-1 w-full rounded-md border border-white/10 bg-charcoal px-3 py-2 text-sm text-ink outline-none focus:border-mint"
         >
-          {INTERVALS.map((tf) => (
+          {TIMEFRAMES.map((tf) => (
             <option key={tf} value={tf}>
               {tf}
             </option>
@@ -246,10 +242,21 @@ export function ArenaDashboard({ snapshot }: Props) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => runJob("collect")}
+            onClick={() => {
+              setChartRefresh((n) => n + 1);
+              void runJob("collect");
+            }}
             className="w-full rounded-md border border-white/15 bg-charcoal-2 px-3 py-2 text-sm text-ink hover:border-white/25 disabled:opacity-50"
           >
             Fetch latest candles
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setChartRefresh((n) => n + 1)}
+            className="w-full rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-sm text-mint hover:bg-mint/15 disabled:opacity-50"
+          >
+            Refresh chart · {symbol} {interval}
           </button>
           <button
             type="button"
@@ -409,34 +416,20 @@ export function ArenaDashboard({ snapshot }: Props) {
           </div>
         </section>
 
-        {market && (
-          <section className="panel p-5">
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl text-ink">Price · {market.symbol}</h2>
-                <p className="text-sm text-slateui">
-                  {market.name} ·{" "}
-                  <span
-                    className={
-                      market.trend_label === "bullish"
-                        ? "text-mint"
-                        : market.trend_label === "bearish"
-                          ? "text-crimson"
-                          : "text-slateui"
-                    }
-                  >
-                    {market.trend_label}
-                  </span>{" "}
-                  · {formatMoney(market.last_close)} · source {market.source}
-                </p>
-              </div>
-              <Link href={`/markets?symbol=${market.symbol}`} className="text-sm text-mint hover:underline">
-                Market analysis
-              </Link>
-            </div>
-            <CandleChart candles={market.candles} height={300} />
-          </section>
-        )}
+        <section className="panel p-5">
+          <div className="mb-2 flex justify-end">
+            <Link href={`/markets?symbol=${symbol}`} className="text-sm text-mint hover:underline">
+              Market analysis
+            </Link>
+          </div>
+          <LivePriceChart
+            symbol={symbol}
+            timeframe={interval}
+            fallback={market && market.symbol === symbol ? market : null}
+            height={300}
+            refreshToken={chartRefresh}
+          />
+        </section>
 
         <section className="panel overflow-x-auto p-5">
           <h2 className="font-display text-2xl text-ink">Recent fills</h2>
