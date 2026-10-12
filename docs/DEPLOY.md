@@ -7,8 +7,8 @@ One-time setup to run the dashboard on Vercel and workers on GitHub Actions.
 | Resource | URL |
 | --- | --- |
 | GitHub repo | https://github.com/torksabig/trendlabs |
-| Temporary Vercel preview | https://temporary-instant-boron-2zl7waq.vercel.app (claim within ~60 minutes — see below) |
-| Claim deployment | https://vercel.com/claim-deployment?code=8ab2712f-6aab-4dce-b55d-d5acb64a8fce |
+| Temporary Vercel preview | https://temporary-brisk-bassoon-or1i9hz.vercel.app (claim within ~60 minutes — see below) |
+| Claim deployment | https://vercel.com/claim-deployment?code=a2709737-8720-4e54-b6e7-4158713ccd32 |
 
 After you claim the deployment and connect the GitHub repo, Vercel will assign a stable production URL (typically `https://<project>.vercel.app`).
 
@@ -23,7 +23,7 @@ After you claim the deployment and connect the GitHub repo, Vercel will assign a
 
 ## 2. Vercel (dashboard)
 
-1. Open the [claim URL](https://vercel.com/claim-deployment?code=8ab2712f-6aab-4dce-b55d-d5acb64a8fce) and sign in, or import https://github.com/torksabig/trendlabs in the Vercel dashboard.
+1. Open the [claim URL](https://vercel.com/claim-deployment?code=a2709737-8720-4e54-b6e7-4158713ccd32) and sign in, or import https://github.com/torksabig/trendlabs in the Vercel dashboard.
 2. Set **Environment variables** (Project → Settings → Environment Variables), **Production** (and Preview if you use Arena there):
 
 | Variable | Value | Required for Arena buttons |
