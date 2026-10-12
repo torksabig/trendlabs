@@ -14,7 +14,7 @@ After you claim the deployment and connect the GitHub repo, Vercel will assign a
 
 ## 1. GitHub (code + Actions)
 
-- [x] Full application source is in `torksabig/trendlabs` on branch `main`.
+- [x] Application source is in `torksabig/trendlabs` on branch `main` (large/binary files: run `GITHUB_TOKEN=… python3 scripts/push_to_github.py package-lock.json public/data/snapshot.json data/snapshots/latest.json src/app/favicon.ico` if anything is missing).
 - [ ] Add **Repository secrets** (Settings → Secrets and variables → Actions) for optional data/LLM:
   - `ALPACA_API_KEY`, `ALPACA_API_SECRET` (optional; Yahoo fallback works without them)
   - `GOOGLE_AI_API_KEY` / `GEMINI_API_KEY`, `GROQ_API_KEY`, etc. (optional; research can use `fallback`)
