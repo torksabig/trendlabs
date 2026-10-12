@@ -27,9 +27,51 @@ SLIPPAGE_BPS = float(os.getenv("SLIPPAGE_BPS", "5"))
 DEFAULT_TIMEFRAME = os.getenv("DEFAULT_TIMEFRAME", "1h")
 LOOKBACK_BARS = int(os.getenv("LOOKBACK_BARS", "400"))
 
-# Local research LLM (Mac + Ollama). Never used for trade execution.
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:14b-q4_K_M")
+def _env(name: str, default: str = "") -> str:
+    """Read env var; treat missing/blank as default (Actions empty secrets → blank)."""
+    value = os.getenv(name)
+    if value is None or not str(value).strip():
+        return default
+    return str(value).strip()
+
+
+# Research LLM providers (never used for trade execution).
+# TRENDLAB_LLM_PROVIDER: auto | google | groq | openrouter | cloudflare | cerebras | mistral | ollama | fallback
+TRENDLAB_LLM_PROVIDER = _env("TRENDLAB_LLM_PROVIDER", "auto").lower() or "auto"
+
+# Local Ollama (Mac)
+OLLAMA_HOST = _env("OLLAMA_HOST", "http://127.0.0.1:11434")
+OLLAMA_MODEL = _env("OLLAMA_MODEL", "qwen3:14b-q4_K_M")
+
+# Google AI Studio (Gemini) — free tier
+GOOGLE_AI_API_KEY = _env("GOOGLE_AI_API_KEY") or _env("GEMINI_API_KEY")
+GOOGLE_AI_MODEL = _env("GOOGLE_AI_MODEL", "gemini-2.0-flash")
+
+# Groq — free tier, fast inference
+GROQ_API_KEY = _env("GROQ_API_KEY")
+GROQ_BASE_URL = _env("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+GROQ_MODEL = _env("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+# OpenRouter — free model variants (:free / openrouter/free)
+OPENROUTER_API_KEY = _env("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = _env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = _env("OPENROUTER_MODEL", "openrouter/free")
+
+# Cloudflare Workers AI — free daily neuron allocation
+CLOUDFLARE_ACCOUNT_ID = _env("CLOUDFLARE_ACCOUNT_ID")
+CLOUDFLARE_API_TOKEN = _env("CLOUDFLARE_API_TOKEN")
+CLOUDFLARE_AI_MODEL = _env("CLOUDFLARE_AI_MODEL", "@cf/meta/llama-3.1-8b-instruct")
+
+# Cerebras — free / experimentation tier
+CEREBRAS_API_KEY = _env("CEREBRAS_API_KEY")
+CEREBRAS_BASE_URL = _env("CEREBRAS_BASE_URL", "https://api.cerebras.ai/v1")
+CEREBRAS_MODEL = _env("CEREBRAS_MODEL", "llama3.1-8b")
+
+# Mistral — experimentation tier
+MISTRAL_API_KEY = _env("MISTRAL_API_KEY")
+MISTRAL_BASE_URL = _env("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
+MISTRAL_MODEL = _env("MISTRAL_MODEL", "mistral-small-latest")
+
 SUPABASE_URL = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
 SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY", os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""))
 

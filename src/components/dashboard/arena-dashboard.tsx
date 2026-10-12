@@ -25,6 +25,22 @@ type JobResponse = {
   run_url?: string;
 };
 
+type LlmProviderRow = {
+  id: string;
+  label: string;
+  configured: boolean;
+  default_model: string;
+};
+
+type LlmStatus = {
+  ok?: boolean;
+  default_provider?: string;
+  any_cloud_configured?: boolean;
+  providers?: LlmProviderRow[];
+};
+
+const STORAGE_KEY = "trendlabs.llm.provider";
+
 export function ArenaDashboard({ snapshot }: Props) {
   const router = useRouter();
   const [symbol, setSymbol] = useState(
@@ -33,6 +49,8 @@ export function ArenaDashboard({ snapshot }: Props) {
       "AAPL",
   );
   const [interval, setInterval] = useState(snapshot.timeframe || "1h");
+  const [provider, setProvider] = useState("auto");
+  const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [runUrl, setRunUrl] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -48,6 +66,29 @@ export function ArenaDashboard({ snapshot }: Props) {
     [snapshot.leaderboard],
   );
   const latestReport = snapshot.research.ai_reports?.[0];
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadLlm() {
+      try {
+        const res = await fetch("/api/llm", { cache: "no-store" });
+        const data = (await res.json()) as LlmStatus;
+        if (cancelled || !data.ok) return;
+        setLlmStatus(data);
+        const saved =
+          typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+        const preferred = saved || data.default_provider || "auto";
+        const known = data.providers?.some((p) => p.id === preferred);
+        setProvider(known ? preferred : "auto");
+      } catch {
+        // selector still works with static auto/fallback options
+      }
+    }
+    void loadLlm();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!polling) return;
@@ -97,7 +138,12 @@ export function ArenaDashboard({ snapshot }: Props) {
       const res = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job, symbol, timeframe: interval }),
+        body: JSON.stringify({
+          job,
+          symbol,
+          timeframe: interval,
+          provider: job === "research" || job === "seed" ? provider : undefined,
+        }),
       });
       const data = (await res.json()) as JobResponse;
       if (!res.ok || !data.ok) {
@@ -114,7 +160,11 @@ export function ArenaDashboard({ snapshot }: Props) {
         setPolling(true);
         return;
       }
-      setMessage(`${job} finished`);
+      setMessage(
+        job === "research" || job === "seed"
+          ? `${job} finished (${provider})`
+          : `${job} finished`,
+      );
       router.refresh();
     } catch (err) {
       setMessage(String(err));
@@ -154,6 +204,35 @@ export function ArenaDashboard({ snapshot }: Props) {
             </option>
           ))}
         </select>
+
+        <label className="mt-4 block text-xs text-slateui">Research LLM</label>
+        <select
+          value={provider}
+          onChange={(e) => {
+            const next = e.target.value;
+            setProvider(next);
+            try {
+              window.localStorage.setItem(STORAGE_KEY, next);
+            } catch {
+              // ignore quota / private mode
+            }
+          }}
+          className="mt-1 w-full rounded-md border border-white/10 bg-charcoal px-3 py-2 text-sm text-ink outline-none focus:border-mint"
+        >
+          {(llmStatus?.providers ?? DEFAULT_PROVIDERS).map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+              {p.id !== "auto" && p.id !== "fallback"
+                ? p.configured
+                  ? " · ready"
+                  : " · needs key"
+                : ""}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-[11px] leading-snug text-slateui-dim">
+          Used for research / seed. Keys on Vercel or Actions secrets; never shown here.
+        </p>
 
         <div className="mt-5 space-y-2">
           <button
@@ -217,9 +296,8 @@ export function ArenaDashboard({ snapshot }: Props) {
           </p>
           <p className="mt-2 text-sm text-slateui">
             Optional LLM research →{" "}
-            {snapshot.research.research_agent?.model?.includes("qwen")
-              ? "local Ollama / Qwen"
-              : "rule-based fallback (no key)"}
+            <span className="text-mint">{providerLabel(provider, llmStatus)}</span>
+            {llmStatus?.any_cloud_configured ? " (cloud key present)" : " (free-tier / fallback)"}
           </p>
         </div>
       </aside>
@@ -408,4 +486,21 @@ function shortName(name: string) {
     .replace(/^Agent [A-D] — /, "")
     .replace(/^Agent [A-D] - /, "")
     .trim();
+}
+
+const DEFAULT_PROVIDERS: LlmProviderRow[] = [
+  { id: "auto", label: "Auto (free cloud → Ollama → fallback)", configured: true, default_model: "" },
+  { id: "google", label: "Google AI Studio (Gemini)", configured: false, default_model: "gemini-2.0-flash" },
+  { id: "groq", label: "Groq", configured: false, default_model: "llama-3.3-70b-versatile" },
+  { id: "openrouter", label: "OpenRouter", configured: false, default_model: "openrouter/free" },
+  { id: "cloudflare", label: "Cloudflare Workers AI", configured: false, default_model: "@cf/meta/llama-3.1-8b-instruct" },
+  { id: "cerebras", label: "Cerebras", configured: false, default_model: "llama3.1-8b" },
+  { id: "mistral", label: "Mistral", configured: false, default_model: "mistral-small-latest" },
+  { id: "ollama", label: "Ollama (local)", configured: false, default_model: "qwen3:14b-q4_K_M" },
+  { id: "fallback", label: "Rule-based fallback", configured: true, default_model: "rule_based_fallback" },
+];
+
+function providerLabel(id: string, status: LlmStatus | null): string {
+  const row = status?.providers?.find((p) => p.id === id) ?? DEFAULT_PROVIDERS.find((p) => p.id === id);
+  return row?.label ?? id;
 }

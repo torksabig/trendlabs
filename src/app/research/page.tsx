@@ -18,9 +18,9 @@ export default async function ResearchPage() {
       <div>
         <h1 className="font-display text-4xl text-ink">Historical research</h1>
         <p className="mt-2 max-w-2xl text-slateui">
-          Python owns indicators and historical matches. A shared local research agent (Qwen3 14B via
-          Ollama on your Mac) interprets those facts and proposes experiments — it never executes
-          trades.
+          Python owns indicators and historical matches. A shared research agent (switchable free-tier
+          cloud LLMs, local Ollama, or rule-based fallback) interprets those facts and proposes
+          experiments — it never executes trades.
         </p>
       </div>
 
@@ -52,12 +52,17 @@ export default async function ResearchPage() {
 
         {aiReports.length === 0 ? (
           <pre className="mt-5 overflow-x-auto rounded-xl bg-charcoal px-4 py-3 font-mono text-sm text-mint">
-            {`# On your Mac with Ollama + qwen3:14b-q4_K_M
-ollama pull qwen3:14b-q4_K_M
-npm run research -- --symbol AAPL --timeframe 1h
+            {`# Pick a provider from the Arena sidebar, or CLI:
+npm run research -- --symbol AAPL --timeframe 1h --provider google
+npm run research -- --symbol AAPL --provider groq
+npm run research -- --symbol AAPL --provider openrouter
 
-# Cloud/CI without Ollama
-npm run research -- --symbol AAPL --no-ollama`}
+# Local Mac Ollama
+ollama pull qwen3:14b-q4_K_M
+npm run research -- --symbol AAPL --provider ollama
+
+# No keys → deterministic fallback
+npm run research -- --symbol AAPL --provider fallback`}
           </pre>
         ) : (
           <div className="mt-5 space-y-4">

@@ -8,6 +8,17 @@ export const maxDuration = 60;
 
 const ALLOWED = new Set(["seed", "simulate", "research", "collect"]);
 const WORKFLOW_FILE = "trendlabs.yml";
+const LLM_PROVIDERS = new Set([
+  "auto",
+  "google",
+  "groq",
+  "openrouter",
+  "cloudflare",
+  "cerebras",
+  "mistral",
+  "ollama",
+  "fallback",
+]);
 
 function pythonBin(): string {
   // Keep this env-driven so the bundler does not try to resolve .venv symlinks.
@@ -57,10 +68,28 @@ function runWorker(moduleName: string, args: string[]): Promise<{ code: number; 
   });
 }
 
+function normalizeProvider(raw: string | undefined): string {
+  const value = (raw || "auto").trim().toLowerCase();
+  return LLM_PROVIDERS.has(value) ? value : "auto";
+}
+
+function appendLlmArgs(args: string[], provider: string, model?: string): string[] {
+  const next = [...args];
+  if (provider && provider !== "auto") {
+    next.push("--provider", provider);
+  }
+  if (model) {
+    next.push("--model", model);
+  }
+  return next;
+}
+
 async function dispatchGitHubActions(opts: {
   job: string;
   symbol: string;
   timeframe: string;
+  provider: string;
+  model?: string;
 }): Promise<{ ok: boolean; run_url?: string; error?: string; status?: number }> {
   const token = githubToken();
   const repo = githubRepository();
@@ -85,6 +114,16 @@ async function dispatchGitHubActions(opts: {
   const ref = process.env.GITHUB_REF || process.env.VERCEL_GIT_COMMIT_REF || "main";
   const url = `https://api.github.com/repos/${owner}/${name}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
 
+  const inputs: Record<string, string> = {
+    job: opts.job,
+    symbol: opts.symbol,
+    timeframe: opts.timeframe,
+    provider: opts.provider,
+  };
+  if (opts.model) {
+    inputs.model = opts.model;
+  }
+
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -96,11 +135,7 @@ async function dispatchGitHubActions(opts: {
     },
     body: JSON.stringify({
       ref,
-      inputs: {
-        job: opts.job,
-        symbol: opts.symbol,
-        timeframe: opts.timeframe,
-      },
+      inputs,
     }),
   });
 
@@ -127,11 +162,21 @@ async function dispatchGitHubActions(opts: {
   };
 }
 
-function workerArgs(job: string, symbol: string, timeframe: string): { moduleName: string; args: string[] } {
+function workerArgs(
+  job: string,
+  symbol: string,
+  timeframe: string,
+  provider: string,
+  model?: string,
+): { moduleName: string; args: string[] } {
   if (job === "seed") {
     return {
       moduleName: "trendlabs.seed",
-      args: ["--timeframe", timeframe, "--research-symbol", symbol, "--no-ollama"],
+      args: appendLlmArgs(
+        ["--timeframe", timeframe, "--research-symbol", symbol, "--no-ollama"],
+        provider,
+        model,
+      ),
     };
   }
   if (job === "collect") {
@@ -143,7 +188,11 @@ function workerArgs(job: string, symbol: string, timeframe: string): { moduleNam
   if (job === "research") {
     return {
       moduleName: "trendlabs.research",
-      args: ["--symbol", symbol, "--timeframe", timeframe, "--no-ollama"],
+      args: appendLlmArgs(
+        ["--symbol", symbol, "--timeframe", timeframe, "--no-ollama"],
+        provider,
+        model,
+      ),
     };
   }
   return {
@@ -164,6 +213,8 @@ export async function POST(request: NextRequest) {
     job?: string;
     symbol?: string;
     timeframe?: string;
+    provider?: string;
+    model?: string;
   };
   const job = body.job || "simulate";
   if (!ALLOWED.has(job)) {
@@ -172,9 +223,17 @@ export async function POST(request: NextRequest) {
 
   const symbol = (body.symbol || "AAPL").toUpperCase();
   const timeframe = body.timeframe || "1h";
+  const provider = normalizeProvider(body.provider);
+  const model = (body.model || "").trim() || undefined;
 
   if (shouldUseGitHubActions()) {
-    const dispatched = await dispatchGitHubActions({ job, symbol, timeframe });
+    const dispatched = await dispatchGitHubActions({
+      job,
+      symbol,
+      timeframe,
+      provider,
+      model,
+    });
     if (!dispatched.ok) {
       return NextResponse.json(
         {
@@ -183,6 +242,8 @@ export async function POST(request: NextRequest) {
           job,
           symbol,
           timeframe,
+          provider,
+          model: model || null,
           error: dispatched.error,
         },
         { status: dispatched.status || 502 },
@@ -194,13 +255,15 @@ export async function POST(request: NextRequest) {
       job,
       symbol,
       timeframe,
+      provider,
+      model: model || null,
       run_url: dispatched.run_url,
       message:
         "Job queued on GitHub Actions. The dashboard refreshes after the workflow commits an updated snapshot and Vercel redeploys.",
     });
   }
 
-  const { moduleName, args } = workerArgs(job, symbol, timeframe);
+  const { moduleName, args } = workerArgs(job, symbol, timeframe, provider, model);
   const result = await runWorker(moduleName, args);
   return NextResponse.json({
     ok: result.code === 0,
@@ -208,6 +271,8 @@ export async function POST(request: NextRequest) {
     job,
     symbol,
     timeframe,
+    provider,
+    model: model || null,
     code: result.code,
     output: result.output.slice(-4000),
   });

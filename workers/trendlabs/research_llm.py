@@ -1,4 +1,4 @@
-"""Shared research agent: local Qwen3 via Ollama (Mac) with deterministic fallback.
+"""Shared research agent: multi-provider LLM with deterministic fallback.
 
 This agent never executes trades. It only interprets verified Python analytics.
 """
@@ -10,9 +10,15 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
-from trendlabs.config import AGENTS, OLLAMA_HOST, OLLAMA_MODEL
+from trendlabs.config import AGENTS
 from trendlabs.db import Store
 from trendlabs.indicators import enrich
+from trendlabs.llm_providers import (
+    LLMError,
+    LLMProvider,
+    get_registry,
+    resolve_provider,
+)
 from trendlabs.schemas import MarketResearchSnapshot, ResearchReport
 from trendlabs.trends import summarize_similar
 
@@ -124,48 +130,26 @@ def _num(value: Any) -> float | None:
         return None
 
 
-def ollama_available(host: str = OLLAMA_HOST, model: str = OLLAMA_MODEL) -> bool:
-    try:
-        import urllib.request
+def ollama_available() -> bool:
+    """Backward-compatible helper used by older call sites."""
+    from trendlabs.llm_providers import OllamaProvider
 
-        with urllib.request.urlopen(f"{host.rstrip('/')}/api/tags", timeout=2) as resp:
-            payload = json.loads(resp.read().decode())
-        names = [m.get("name", "") for m in payload.get("models", [])]
-        return any(model in name or name.startswith(model.split(":")[0]) for name in names) or bool(
-            names
-        )
-    except Exception:
-        return False
+    return OllamaProvider().is_available()
 
 
-def generate_with_ollama(
+def generate_with_provider(
     snapshot: MarketResearchSnapshot,
-    model: str = OLLAMA_MODEL,
-    host: str = OLLAMA_HOST,
+    provider: LLMProvider,
+    model: str | None = None,
 ) -> ResearchReport:
-    from ollama import Client
-
     schema = ResearchReport.model_json_schema()
-    client = Client(host=host)
-    response = client.chat(
-        model=model,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": (
-                    "Produce a structured research report for this verified market snapshot. "
-                    "JSON schema:\n"
-                    f"{json.dumps(schema)}\n\n"
-                    f"Snapshot:\n{snapshot.model_dump_json(indent=2)}"
-                ),
-            },
-        ],
-        format="json",
-        options={"temperature": 0},
+    user = (
+        "Produce a structured research report for this verified market snapshot. "
+        "JSON schema:\n"
+        f"{json.dumps(schema)}\n\n"
+        f"Snapshot:\n{snapshot.model_dump_json(indent=2)}"
     )
-    content = response.message.content
-    data = json.loads(content)
+    data = provider.chat_json(SYSTEM_PROMPT, user, model=model)
     data["symbol"] = snapshot.symbol
     data["timeframe"] = snapshot.timeframe
     data["executes_trades"] = False
@@ -173,8 +157,22 @@ def generate_with_ollama(
     return _reconcile_with_facts(report, snapshot)
 
 
-def generate_fallback_report(snapshot: MarketResearchSnapshot) -> ResearchReport:
-    """Deterministic research report when Ollama/Qwen is unavailable."""
+def generate_with_ollama(
+    snapshot: MarketResearchSnapshot,
+    model: str | None = None,
+    host: str | None = None,  # noqa: ARG001 — kept for API compatibility
+) -> ResearchReport:
+    from trendlabs.llm_providers import OllamaProvider
+
+    provider = OllamaProvider()
+    return generate_with_provider(snapshot, provider, model=model)
+
+
+def generate_fallback_report(
+    snapshot: MarketResearchSnapshot,
+    reason: str = "No LLM provider configured or available",
+) -> ResearchReport:
+    """Deterministic research report when cloud/Ollama LLMs are unavailable."""
     hit = snapshot.historical_hit_rate
     hit_txt = f"{hit * 100:.0f}%" if hit is not None else "n/a"
     avg = snapshot.avg_forward_return_10
@@ -194,7 +192,7 @@ def generate_fallback_report(snapshot: MarketResearchSnapshot) -> ResearchReport
             f"Historical {snapshot.trend_label} matches: {snapshot.historical_matches} "
             f"(hit rate {hit_txt}, avg 10-bar forward {avg_txt}). "
             f"Current paper-trading leader: {leader}. "
-            "This fallback report was generated without an LLM because Ollama was unavailable."
+            f"This fallback report was generated without an LLM ({reason})."
         ),
         key_risks=[
             "Indicator readings can flip quickly around session opens and news.",
@@ -254,27 +252,80 @@ def run_research(
     symbol: str = "AAPL",
     timeframe: str = "1h",
     prefer_ollama: bool = True,
+    provider: str | None = None,
+    model: str | None = None,
+    registry: dict[str, LLMProvider] | None = None,
 ) -> dict[str, Any]:
+    """Generate a research report via the selected (or auto) LLM provider.
+
+    prefer_ollama=False is treated as forcing fallback when no explicit cloud
+    provider is requested (legacy --no-ollama / CI path).
+    """
     snapshot = build_market_snapshot(store, symbol=symbol, timeframe=timeframe)
-    source = "fallback"
-    model = "rule_based_fallback"
+    reg = registry or get_registry()
 
-    if prefer_ollama and ollama_available():
-        try:
-            report = generate_with_ollama(snapshot)
-            source = "ollama"
-            model = OLLAMA_MODEL
-        except Exception as exc:  # noqa: BLE001
-            report = generate_fallback_report(snapshot)
-            source = "fallback_after_ollama_error"
-            model = f"rule_based_fallback:{exc.__class__.__name__}"
-    else:
-        report = generate_fallback_report(snapshot)
+    # --no-ollama (prefer_ollama=False) only disables the local daemon in the
+    # auto chain; free-tier cloud providers still run when keys are present.
+    allow_ollama = prefer_ollama
+    try:
+        selected, reason = resolve_provider(
+            provider, registry=reg, allow_ollama=allow_ollama
+        )
+    except LLMError as exc:
+        report = generate_fallback_report(snapshot, reason=str(exc))
+        return _persist(
+            store,
+            snapshot,
+            report,
+            source="fallback_unknown_provider",
+            model_name=f"rule_based_fallback:{exc.__class__.__name__}",
+        )
 
+    if selected.id == "fallback":
+        report = generate_fallback_report(snapshot, reason=reason)
+        return _persist(
+            store,
+            snapshot,
+            report,
+            source="fallback",
+            model_name="rule_based_fallback",
+        )
+
+    try:
+        report = generate_with_provider(snapshot, selected, model=model)
+        used_model = model or selected.default_model()
+        return _persist(
+            store,
+            snapshot,
+            report,
+            source=selected.id,
+            model_name=used_model,
+        )
+    except Exception as exc:  # noqa: BLE001
+        report = generate_fallback_report(
+            snapshot, reason=f"{selected.id} error: {exc}"
+        )
+        return _persist(
+            store,
+            snapshot,
+            report,
+            source=f"fallback_after_{selected.id}_error",
+            model_name=f"rule_based_fallback:{exc.__class__.__name__}",
+        )
+
+
+def _persist(
+    store: Store,
+    snapshot: MarketResearchSnapshot,
+    report: ResearchReport,
+    *,
+    source: str,
+    model_name: str,
+) -> dict[str, Any]:
     payload = {
         "symbol": snapshot.symbol,
         "timeframe": snapshot.timeframe,
-        "model": model,
+        "model": model_name,
         "source": source,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "snapshot": snapshot.model_dump(),
@@ -293,5 +344,6 @@ def run_research(
             payload["supabase"] = f"error:{exc}"
 
     store.set_meta("last_research", payload["created_at"])
-    store.set_meta("research_model", model)
+    store.set_meta("research_model", model_name)
+    store.set_meta("research_provider", source)
     return payload

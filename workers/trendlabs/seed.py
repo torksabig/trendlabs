@@ -17,6 +17,8 @@ def main() -> int:
     parser.add_argument("--symbols", nargs="*")
     parser.add_argument("--research-symbol", default="AAPL")
     parser.add_argument("--no-ollama", action="store_true")
+    parser.add_argument("--provider", default=None)
+    parser.add_argument("--model", default=None)
     args = parser.parse_args()
 
     collect_args = ["--timeframe", args.timeframe]
@@ -46,6 +48,10 @@ def main() -> int:
         ]
         if args.no_ollama:
             research_args.append("--no-ollama")
+        if args.provider:
+            research_args += ["--provider", args.provider]
+        if args.model:
+            research_args += ["--model", args.model]
         sys.argv = ["trendlabs.research", *research_args]
         return research_main()
     finally:
