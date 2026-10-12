@@ -1,0 +1,12 @@
+{
+  "package-lock.json": ["lock_chunk_aa", "lock_chunk_ab", "lock_chunk_ac", "lock_chunk_ad"],
+  "public/data/snapshot.json": [
+    "snap_chunk_aa",
+    "snap_chunk_ab",
+    "snap_chunk_ac",
+    "snap_chunk_ad",
+    "snap_chunk_ae",
+    "snap_chunk_af",
+    "snap_chunk_ag"
+  ]
+}
