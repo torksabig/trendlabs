@@ -100,7 +100,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         if (cancelled) return;
         if (data.ok && data.generated_at && data.generated_at !== baselineGeneratedAt.current) {
           setPolling(false);
-          setMessage("Snapshot updated \u2014 refreshing dashboard\u2026");
+          setMessage("Snapshot updated — refreshing dashboard…");
           router.refresh();
           return;
         }
@@ -111,7 +111,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         if (!cancelled) {
           setPolling(false);
           setMessage(
-            "Job was queued. Snapshot has not changed yet \u2014 check Actions or refresh in a few minutes.",
+            "Job was queued. Snapshot has not changed yet — check Actions or refresh in a few minutes.",
           );
         }
       }
@@ -151,7 +151,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         setRunUrl(data.run_url || null);
         setMessage(
           data.message ||
-            "Job queued on GitHub Actions \u2014 dashboard will refresh after the snapshot updates / redeploy.",
+            "Job queued on GitHub Actions — dashboard will refresh after the snapshot updates / redeploy.",
         );
         setPolling(true);
         return;
@@ -171,7 +171,7 @@ export function ArenaDashboard({ snapshot }: Props) {
 
   return (
     <div className="fade-up grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      {/* Sidebar \u2014 Trend Arena control rail */}
+      {/* Sidebar — Trend Arena control rail */}
       <aside className="panel h-fit p-4 lg:sticky lg:top-4">
         <h2 className="text-xs uppercase tracking-[0.22em] text-slateui-dim">Controls</h2>
 
@@ -220,8 +220,8 @@ export function ArenaDashboard({ snapshot }: Props) {
               {p.label}
               {p.id !== "auto" && p.id !== "fallback"
                 ? p.configured
-                  ? " \u00b7 ready"
-                  : " \u00b7 needs key"
+                  ? " · ready"
+                  : " · needs key"
                 : ""}
             </option>
           ))}
@@ -237,7 +237,7 @@ export function ArenaDashboard({ snapshot }: Props) {
             onClick={() => runJob("seed")}
             className="w-full rounded-md bg-crimson px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-crimson-dim disabled:opacity-50"
           >
-            {pending ? "Queuing\u2026" : "Run full backtest"}
+            {pending ? "Queuing…" : "Run full backtest"}
           </button>
           <button
             type="button"
@@ -256,7 +256,7 @@ export function ArenaDashboard({ snapshot }: Props) {
             onClick={() => setChartRefresh((n) => n + 1)}
             className="w-full rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-sm text-mint hover:bg-mint/15 disabled:opacity-50"
           >
-            Refresh chart \u00b7 {symbol} {interval}
+            Refresh chart · {symbol} {interval}
           </button>
           <button
             type="button"
@@ -280,7 +280,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           <div className="mt-3 space-y-2 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-xs text-slateui">
             {message && <p>{message}</p>}
             {polling && (
-              <p className="text-mint">Waiting for snapshot update\u2026</p>
+              <p className="text-mint">Waiting for snapshot update…</p>
             )}
             {runUrl && (
               <a
@@ -298,11 +298,11 @@ export function ArenaDashboard({ snapshot }: Props) {
         <div className="mt-6 border-t border-white/10 pt-4">
           <h3 className="text-xs uppercase tracking-[0.22em] text-slateui-dim">Cost posture</h3>
           <p className="mt-2 text-sm text-slateui">
-            Market data \u00b7 agents \u00b7 SQLite \u00b7 dashboard \u2192{" "}
+            Market data · agents · SQLite · dashboard →{" "}
             <span className="text-mint">$0</span>
           </p>
           <p className="mt-2 text-sm text-slateui">
-            Optional LLM research \u2192{" "}
+            Optional LLM research →{" "}
             <span className="text-mint">{providerLabel(provider, llmStatus)}</span>
             {llmStatus?.any_cloud_configured ? " (cloud key present)" : " (free-tier / fallback)"}
           </p>
@@ -400,10 +400,10 @@ export function ArenaDashboard({ snapshot }: Props) {
               {latestReport ? (
                 <details open className="mt-3 rounded-lg border border-white/10 bg-charcoal p-3">
                   <summary className="cursor-pointer font-mono text-xs text-slateui">
-                    {latestReport.created_at.slice(0, 19)} \u00b7 {latestReport.source}
+                    {latestReport.created_at.slice(0, 19)} · {latestReport.source}
                   </summary>
                   <p className="mt-2 text-sm text-ink">
-                    {latestReport.symbol} \u00b7 {latestReport.report.regime}
+                    {latestReport.symbol} · {latestReport.report.regime}
                   </p>
                   <p className="mt-2 text-sm text-slateui">{latestReport.report.summary}</p>
                 </details>
@@ -476,13 +476,13 @@ export function ArenaDashboard({ snapshot }: Props) {
 
 function shortName(name: string) {
   return name
-    .replace(/^Agent [A-D] \u2014 /, "")
+    .replace(/^Agent [A-D] — /, "")
     .replace(/^Agent [A-D] - /, "")
     .trim();
 }
 
 const DEFAULT_PROVIDERS: LlmProviderRow[] = [
-  { id: "auto", label: "Auto (free cloud \u2192 Ollama \u2192 fallback)", configured: true, default_model: "" },
+  { id: "auto", label: "Auto (free cloud → Ollama → fallback)", configured: true, default_model: "" },
   { id: "google", label: "Google AI Studio (Gemini)", configured: false, default_model: "gemini-2.0-flash" },
   { id: "groq", label: "Groq", configured: false, default_model: "llama-3.3-70b-versatile" },
   { id: "openrouter", label: "OpenRouter", configured: false, default_model: "openrouter/free" },
