@@ -17,7 +17,6 @@ export async function GET() {
   );
   const cerebras = Boolean(process.env.CEREBRAS_API_KEY);
   const mistral = Boolean(process.env.MISTRAL_API_KEY);
-  // Ollama is local-only; treat as unavailable on Vercel unless explicitly marked.
   const ollama = process.env.VERCEL
     ? false
     : process.env.OLLAMA_AVAILABLE === "1" || Boolean(process.env.OLLAMA_HOST);
@@ -86,8 +85,6 @@ export async function GET() {
     ok: true,
     default_provider: process.env.TRENDLAB_LLM_PROVIDER || "auto",
     any_cloud_configured: anyCloud,
-    // When jobs run via GitHub Actions, keys live in Actions secrets — UI still
-    // lists providers as selectable; configured flags reflect Vercel env only.
     job_mode_hint: process.env.TRENDLAB_JOB_MODE || (process.env.VERCEL ? "github_actions" : "local"),
     providers,
   });
