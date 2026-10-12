@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { CandleChart } from "@/components/charts/candle-chart";
@@ -15,6 +15,16 @@ type Props = {
   snapshot: Snapshot;
 };
 
+type JobResponse = {
+  ok?: boolean;
+  mode?: "github_actions" | "local";
+  job?: string;
+  error?: string;
+  output?: string;
+  message?: string;
+  run_url?: string;
+};
+
 export function ArenaDashboard({ snapshot }: Props) {
   const router = useRouter();
   const [symbol, setSymbol] = useState(
@@ -24,7 +34,10 @@ export function ArenaDashboard({ snapshot }: Props) {
   );
   const [interval, setInterval] = useState(snapshot.timeframe || "1h");
   const [message, setMessage] = useState<string | null>(null);
+  const [runUrl, setRunUrl] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [polling, setPolling] = useState(false);
+  const baselineGeneratedAt = useRef(snapshot.generated_at);
 
   const market = useMemo(
     () => snapshot.markets.find((m) => m.symbol === symbol) ?? snapshot.markets[0],
@@ -36,8 +49,49 @@ export function ArenaDashboard({ snapshot }: Props) {
   );
   const latestReport = snapshot.research.ai_reports?.[0];
 
+  useEffect(() => {
+    if (!polling) return;
+
+    let cancelled = false;
+    const started = Date.now();
+    const maxMs = 12 * 60 * 1000;
+
+    async function tick() {
+      try {
+        const res = await fetch("/api/status", { cache: "no-store" });
+        const data = (await res.json()) as { ok?: boolean; generated_at?: string };
+        if (cancelled) return;
+        if (data.ok && data.generated_at && data.generated_at !== baselineGeneratedAt.current) {
+          setPolling(false);
+          setMessage("Snapshot updated — refreshing dashboard…");
+          router.refresh();
+          return;
+        }
+      } catch {
+        // keep polling; network blips are expected during redeploy
+      }
+      if (Date.now() - started > maxMs) {
+        if (!cancelled) {
+          setPolling(false);
+          setMessage(
+            "Job was queued. Snapshot has not changed yet — check Actions or refresh in a few minutes.",
+          );
+        }
+      }
+    }
+
+    void tick();
+    const id = window.setInterval(() => void tick(), 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [polling, router]);
+
   async function runJob(job: string) {
     setMessage(null);
+    setRunUrl(null);
+    setPolling(false);
     setPending(true);
     try {
       const res = await fetch("/api/jobs", {
@@ -45,9 +99,19 @@ export function ArenaDashboard({ snapshot }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job, symbol, timeframe: interval }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as JobResponse;
       if (!res.ok || !data.ok) {
         setMessage(data.error || data.output || "Job failed");
+        return;
+      }
+      if (data.mode === "github_actions") {
+        baselineGeneratedAt.current = snapshot.generated_at;
+        setRunUrl(data.run_url || null);
+        setMessage(
+          data.message ||
+            "Job queued on GitHub Actions — dashboard will refresh after the snapshot updates / redeploy.",
+        );
+        setPolling(true);
         return;
       }
       setMessage(`${job} finished`);
@@ -98,7 +162,7 @@ export function ArenaDashboard({ snapshot }: Props) {
             onClick={() => runJob("seed")}
             className="w-full rounded-md bg-crimson px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-crimson-dim disabled:opacity-50"
           >
-            {pending ? "Running…" : "Run full backtest"}
+            {pending ? "Queuing…" : "Run full backtest"}
           </button>
           <button
             type="button"
@@ -126,10 +190,23 @@ export function ArenaDashboard({ snapshot }: Props) {
           </button>
         </div>
 
-        {message && (
-          <p className="mt-3 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-xs text-slateui">
-            {message}
-          </p>
+        {(message || runUrl || polling) && (
+          <div className="mt-3 space-y-2 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-xs text-slateui">
+            {message && <p>{message}</p>}
+            {polling && (
+              <p className="text-mint">Waiting for snapshot update…</p>
+            )}
+            {runUrl && (
+              <a
+                href={runUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block text-mint hover:underline"
+              >
+                View GitHub Actions runs
+              </a>
+            )}
+          </div>
         )}
 
         <div className="mt-6 border-t border-white/10 pt-4">

@@ -95,6 +95,18 @@ Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload r
 3. Dashboard reads `public/data/snapshot.json` (Actions or local research refresh it).  
 4. Do **not** add live brokerage trading credentials.
 
+### Arena job buttons on Vercel
+
+Vercel cannot run the Python workers, so `/api/jobs` dispatches GitHub Actions instead. Set these **server-only** env vars in the Vercel project:
+
+| Variable | Example | Notes |
+| --- | --- | --- |
+| `GITHUB_TOKEN` or `GH_JOB_TOKEN` | `ghp_…` / fine-grained PAT | Needs `actions:write` (and `contents:write` on the token used by Actions to push snapshots). Never use `NEXT_PUBLIC_`. |
+| `GITHUB_REPOSITORY` | `torksabig/trendlabs` | `owner/repo` that hosts `.github/workflows/trendlabs.yml` |
+| `GITHUB_REF` | `main` | Optional; defaults to the Vercel git branch or `main` |
+
+Flow: Arena button → `POST /api/jobs` → `workflow_dispatch` → Python worker on Actions → commit `public/data/snapshot.json` → Vercel redeploy. Locally, jobs still spawn Python when Actions credentials are absent (or `TRENDLAB_JOB_MODE=local`).
+
 ## Safety
 
 - Paper trading only.  
