@@ -47,3 +47,4 @@ Do **not** prefix these with `NEXT_PUBLIC_`.
 - Paper trading only; no live brokerage keys on Vercel.
 - Python workers run on GitHub Actions, not on Vercel Hobby.
 - Snapshot updates commit `public/data/snapshot.json`; Vercel redeploys on push when Git is connected.
+- GitHub `main` may ship a minimal snapshot and no lockfile for Vercel bootstrap; after `GITHUB_TOKEN` is set, sync the full `package-lock.json` and snapshots with `python3 scripts/push_to_github.py package-lock.json public/data/snapshot.json data/snapshots/latest.json`.
