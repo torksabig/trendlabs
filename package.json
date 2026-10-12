@@ -6,7 +6,7 @@
     "dev": "next dev --port 3456",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "collect": "cd workers && ../.venv/bin/python -m trendlabs.collect",
     "simulate": "cd workers && ../.venv/bin/python -m trendlabs.simulate",
     "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
