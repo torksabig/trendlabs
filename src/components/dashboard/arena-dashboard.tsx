@@ -4,12 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { CandleChart } from "@/components/charts/candle-chart";
+import { LivePriceChart } from "@/components/charts/live-price-chart";
 import { EquityChart } from "@/components/charts/equity-chart";
+import { INSTRUMENTS, TIMEFRAMES } from "@/lib/instruments";
 import type { Snapshot } from "@/lib/types";
 import { formatMoney, formatPct, pctTone } from "@/lib/utils";
-
-const INTERVALS = ["15m", "1h", "4h", "1d"];
 
 type Props = {
   snapshot: Snapshot;
@@ -43,12 +42,9 @@ const STORAGE_KEY = "trendlabs.llm.provider";
 
 export function ArenaDashboard({ snapshot }: Props) {
   const router = useRouter();
-  const [symbol, setSymbol] = useState(
-    snapshot.markets.find((m) => m.symbol === "AAPL")?.symbol ??
-      snapshot.markets[0]?.symbol ??
-      "AAPL",
-  );
+  const [symbol, setSymbol] = useState("AAPL");
   const [interval, setInterval] = useState(snapshot.timeframe || "1h");
+  const [chartRefresh, setChartRefresh] = useState(0);
   const [provider, setProvider] = useState("auto");
   const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -104,7 +100,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         if (cancelled) return;
         if (data.ok && data.generated_at && data.generated_at !== baselineGeneratedAt.current) {
           setPolling(false);
-          setMessage("Snapshot updated — refreshing dashboard…");
+          setMessage("Snapshot updated \u2014 refreshing dashboard\u2026");
           router.refresh();
           return;
         }
@@ -115,7 +111,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         if (!cancelled) {
           setPolling(false);
           setMessage(
-            "Job was queued. Snapshot has not changed yet — check Actions or refresh in a few minutes.",
+            "Job was queued. Snapshot has not changed yet \u2014 check Actions or refresh in a few minutes.",
           );
         }
       }
@@ -155,7 +151,7 @@ export function ArenaDashboard({ snapshot }: Props) {
         setRunUrl(data.run_url || null);
         setMessage(
           data.message ||
-            "Job queued on GitHub Actions — dashboard will refresh after the snapshot updates / redeploy.",
+            "Job queued on GitHub Actions \u2014 dashboard will refresh after the snapshot updates / redeploy.",
         );
         setPolling(true);
         return;
@@ -175,7 +171,7 @@ export function ArenaDashboard({ snapshot }: Props) {
 
   return (
     <div className="fade-up grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      {/* Sidebar — Trend Arena control rail */}
+      {/* Sidebar \u2014 Trend Arena control rail */}
       <aside className="panel h-fit p-4 lg:sticky lg:top-4">
         <h2 className="text-xs uppercase tracking-[0.22em] text-slateui-dim">Controls</h2>
 
@@ -185,7 +181,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           onChange={(e) => setSymbol(e.target.value)}
           className="mt-1 w-full rounded-md border border-white/10 bg-charcoal px-3 py-2 text-sm text-ink outline-none focus:border-mint"
         >
-          {snapshot.markets.map((m) => (
+          {INSTRUMENTS.map((m) => (
             <option key={m.symbol} value={m.symbol}>
               {m.symbol}
             </option>
@@ -198,7 +194,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           onChange={(e) => setInterval(e.target.value)}
           className="mt-1 w-full rounded-md border border-white/10 bg-charcoal px-3 py-2 text-sm text-ink outline-none focus:border-mint"
         >
-          {INTERVALS.map((tf) => (
+          {TIMEFRAMES.map((tf) => (
             <option key={tf} value={tf}>
               {tf}
             </option>
@@ -224,8 +220,8 @@ export function ArenaDashboard({ snapshot }: Props) {
               {p.label}
               {p.id !== "auto" && p.id !== "fallback"
                 ? p.configured
-                  ? " · ready"
-                  : " · needs key"
+                  ? " \u00b7 ready"
+                  : " \u00b7 needs key"
                 : ""}
             </option>
           ))}
@@ -241,15 +237,26 @@ export function ArenaDashboard({ snapshot }: Props) {
             onClick={() => runJob("seed")}
             className="w-full rounded-md bg-crimson px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-crimson-dim disabled:opacity-50"
           >
-            {pending ? "Queuing…" : "Run full backtest"}
+            {pending ? "Queuing\u2026" : "Run full backtest"}
           </button>
           <button
             type="button"
             disabled={pending}
-            onClick={() => runJob("collect")}
+            onClick={() => {
+              setChartRefresh((n) => n + 1);
+              void runJob("collect");
+            }}
             className="w-full rounded-md border border-white/15 bg-charcoal-2 px-3 py-2 text-sm text-ink hover:border-white/25 disabled:opacity-50"
           >
             Fetch latest candles
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setChartRefresh((n) => n + 1)}
+            className="w-full rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-sm text-mint hover:bg-mint/15 disabled:opacity-50"
+          >
+            Refresh chart \u00b7 {symbol} {interval}
           </button>
           <button
             type="button"
@@ -273,7 +280,7 @@ export function ArenaDashboard({ snapshot }: Props) {
           <div className="mt-3 space-y-2 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-xs text-slateui">
             {message && <p>{message}</p>}
             {polling && (
-              <p className="text-mint">Waiting for snapshot update…</p>
+              <p className="text-mint">Waiting for snapshot update\u2026</p>
             )}
             {runUrl && (
               <a
@@ -291,11 +298,11 @@ export function ArenaDashboard({ snapshot }: Props) {
         <div className="mt-6 border-t border-white/10 pt-4">
           <h3 className="text-xs uppercase tracking-[0.22em] text-slateui-dim">Cost posture</h3>
           <p className="mt-2 text-sm text-slateui">
-            Market data · agents · SQLite · dashboard →{" "}
+            Market data \u00b7 agents \u00b7 SQLite \u00b7 dashboard \u2192{" "}
             <span className="text-mint">$0</span>
           </p>
           <p className="mt-2 text-sm text-slateui">
-            Optional LLM research →{" "}
+            Optional LLM research \u2192{" "}
             <span className="text-mint">{providerLabel(provider, llmStatus)}</span>
             {llmStatus?.any_cloud_configured ? " (cloud key present)" : " (free-tier / fallback)"}
           </p>
@@ -393,10 +400,10 @@ export function ArenaDashboard({ snapshot }: Props) {
               {latestReport ? (
                 <details open className="mt-3 rounded-lg border border-white/10 bg-charcoal p-3">
                   <summary className="cursor-pointer font-mono text-xs text-slateui">
-                    {latestReport.created_at.slice(0, 19)} · {latestReport.source}
+                    {latestReport.created_at.slice(0, 19)} \u00b7 {latestReport.source}
                   </summary>
                   <p className="mt-2 text-sm text-ink">
-                    {latestReport.symbol} · {latestReport.report.regime}
+                    {latestReport.symbol} \u00b7 {latestReport.report.regime}
                   </p>
                   <p className="mt-2 text-sm text-slateui">{latestReport.report.summary}</p>
                 </details>
@@ -409,34 +416,20 @@ export function ArenaDashboard({ snapshot }: Props) {
           </div>
         </section>
 
-        {market && (
-          <section className="panel p-5">
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl text-ink">Price · {market.symbol}</h2>
-                <p className="text-sm text-slateui">
-                  {market.name} ·{" "}
-                  <span
-                    className={
-                      market.trend_label === "bullish"
-                        ? "text-mint"
-                        : market.trend_label === "bearish"
-                          ? "text-crimson"
-                          : "text-slateui"
-                    }
-                  >
-                    {market.trend_label}
-                  </span>{" "}
-                  · {formatMoney(market.last_close)} · source {market.source}
-                </p>
-              </div>
-              <Link href={`/markets?symbol=${market.symbol}`} className="text-sm text-mint hover:underline">
-                Market analysis
-              </Link>
-            </div>
-            <CandleChart candles={market.candles} height={300} />
-          </section>
-        )}
+        <section className="panel p-5">
+          <div className="mb-2 flex justify-end">
+            <Link href={`/markets?symbol=${symbol}`} className="text-sm text-mint hover:underline">
+              Market analysis
+            </Link>
+          </div>
+          <LivePriceChart
+            symbol={symbol}
+            timeframe={interval}
+            fallback={market && market.symbol === symbol ? market : null}
+            height={300}
+            refreshToken={chartRefresh}
+          />
+        </section>
 
         <section className="panel overflow-x-auto p-5">
           <h2 className="font-display text-2xl text-ink">Recent fills</h2>
@@ -483,13 +476,13 @@ export function ArenaDashboard({ snapshot }: Props) {
 
 function shortName(name: string) {
   return name
-    .replace(/^Agent [A-D] — /, "")
+    .replace(/^Agent [A-D] \u2014 /, "")
     .replace(/^Agent [A-D] - /, "")
     .trim();
 }
 
 const DEFAULT_PROVIDERS: LlmProviderRow[] = [
-  { id: "auto", label: "Auto (free cloud → Ollama → fallback)", configured: true, default_model: "" },
+  { id: "auto", label: "Auto (free cloud \u2192 Ollama \u2192 fallback)", configured: true, default_model: "" },
   { id: "google", label: "Google AI Studio (Gemini)", configured: false, default_model: "gemini-2.0-flash" },
   { id: "groq", label: "Groq", configured: false, default_model: "llama-3.3-70b-versatile" },
   { id: "openrouter", label: "OpenRouter", configured: false, default_model: "openrouter/free" },
