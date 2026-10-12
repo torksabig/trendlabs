@@ -1,0 +1,26 @@
+{
+  "package-lock.json": [
+    "lock_part_00",
+    "lock_part_01",
+    "lock_part_02",
+    "lock_part_03",
+    "lock_part_04",
+    "lock_part_05",
+    "lock_part_06"
+  ],
+  "public/data/snapshot.json": [
+    "snap_part_00",
+    "snap_part_01",
+    "snap_part_02",
+    "snap_part_03",
+    "snap_part_04",
+    "snap_part_05",
+    "snap_part_06",
+    "snap_part_07",
+    "snap_part_08",
+    "snap_part_09",
+    "snap_part_10",
+    "snap_part_11",
+    "snap_part_12"
+  ]
+}

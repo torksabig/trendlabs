@@ -1,0 +1,44 @@
+name: Assemble synced large assets
+
+on:
+  push:
+    paths:
+      - ".github/sync-chunks/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reassemble chunked files
+        run: |
+          set -euo pipefail
+          cd .github/sync-chunks
+          python3 << 'PY'
+          import json, pathlib
+          manifest = json.loads(pathlib.Path("manifest.json").read_text())
+          for target, parts in manifest.items():
+              out = pathlib.Path("..", "..", target)
+              out.parent.mkdir(parents=True, exist_ok=True)
+              with out.open("wb") as fh:
+                  for part in parts:
+                      fh.write(pathlib.Path(part).read_bytes())
+              print(f"Assembled {target} ({out.stat().st_size} bytes)")
+          PY
+
+      - name: Commit assembled assets
+        run: |
+          git config user.name "trendlabs-bot"
+          git config user.email "trendlabs-bot@users.noreply.github.com"
+          git add package-lock.json public/data/snapshot.json
+          if git diff --staged --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: assemble package-lock.json and snapshot from sync chunks"
+          git push
