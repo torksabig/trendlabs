@@ -2,7 +2,7 @@
 
 Multi-agent stock market research and **paper-trading** platform targeting **$0/month** infrastructure.
 
-Four independent trend-following agents each manage a simulated $10,000 book across 12 stocks and ETFs. A fifth **shared research agent** (local Qwen3 14B via Ollama on your Mac) interprets verified Python analytics and proposes experiments — it never executes trades.
+Four independent trend-following agents each manage a simulated $10,000 book across 12 stocks and ETFs. A fifth **shared research agent** (switchable free-tier cloud LLMs, local Ollama, or rule-based fallback) interprets verified Python analytics and proposes experiments — it never executes trades.
 
 ## Architecture
 
@@ -12,20 +12,21 @@ Four independent trend-following agents each manage a simulated $10,000 book acr
 | Charts | TradingView Lightweight Charts | Free |
 | Market data | Alpaca Basic (optional) or Yahoo Finance fallback | Free tier / public |
 | Trading agents | Deterministic Python strategies | Free |
-| Research agent | Qwen3 14B via Ollama on Mac | $0 API fees |
-| Automation | GitHub Actions (data + paper trades) | Free within limits |
-| Local AI schedule | macOS `launchd` every ~4 hours | Free |
+| Research agent | Free-tier cloud LLMs / Ollama / fallback | $0-friendly |
+| Automation | GitHub Actions (data + paper trades + research) | Free within limits |
+| Local AI schedule | macOS `launchd` every ~4 hours (optional) | Free |
 | Database | SQLite workers + Supabase schema | Free tier |
 
 ```
 Alpaca / Yahoo → Python indicators & agents → snapshot JSON
                       ↓
-              Local Qwen3 (Mac, Ollama)
+     Gemini / Groq / OpenRouter / Workers AI / Cerebras / Mistral
+              or Ollama (Mac) or rule-based fallback
                       ↓
          agent_reports → Supabase / snapshot → Vercel dashboard
 ```
 
-The LLM stays on your Mac. Vercel only reads published reports. Cloud paper trading continues if the Mac sleeps.
+Pick a provider in the Arena sidebar (or `TRENDLAB_LLM_PROVIDER`). On Vercel, research jobs dispatch GitHub Actions with that provider input and use repo secrets for API keys.
 
 ## Universe
 
@@ -39,8 +40,8 @@ AAPL, MSFT, NVDA, AMD, JPM, GS, XOM, CVX, JNJ, UNH, SPY, QQQ
 3. Momentum — ROC + ADX + volume filter  
 4. Supertrend — volatility-adjusted trend follower  
 
-**Research (local LLM)**  
-5. Shared Qwen3 research agent — explains regimes, risks, agent performance, and strategy experiments for Python to backtest
+**Research (switchable LLM)**  
+5. Shared research agent — explains regimes, risks, agent performance, and strategy experiments for Python to backtest (`executes_trades: false`)
 
 Shared trading rules: long-only, max 3 positions, 1% equity risk budget, fees + slippage, idempotent fills.
 
@@ -55,20 +56,33 @@ npm run seed          # collect + simulate + research fallback report
 npm run dev           # http://localhost:3456
 ```
 
-### Local Qwen3 14B on Mac (recommended)
+### Research LLM providers ($0-friendly)
+
+Set `TRENDLAB_LLM_PROVIDER=auto` (default) to try free-cloud keys in order, then Ollama, then rule-based fallback. Or pick one explicitly: `google`, `groq`, `openrouter`, `cloudflare`, `cerebras`, `mistral`, `ollama`, `fallback`.
+
+| Provider | Env / Actions secret | Default model |
+| --- | --- | --- |
+| Google AI Studio | `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` | `gemini-2.0-flash` |
+| Groq | `GROQ_API_KEY` | `llama-3.3-70b-versatile` |
+| OpenRouter | `OPENROUTER_API_KEY` | `openrouter/free` |
+| Cloudflare Workers AI | `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` | `@cf/meta/llama-3.1-8b-instruct` |
+| Cerebras | `CEREBRAS_API_KEY` | `llama3.1-8b` |
+| Mistral | `MISTRAL_API_KEY` | `mistral-small-latest` |
+| Ollama (local) | `OLLAMA_HOST` / `OLLAMA_MODEL` | `qwen3:14b-q4_K_M` |
+| Fallback | (none) | deterministic report |
 
 ```bash
-# Install Ollama for macOS, then:
+# Cloud free-tier example
+export GROQ_API_KEY=...
+npm run research -- --symbol AAPL --provider groq
+
+# Local Mac Ollama
 ollama pull qwen3:14b-q4_K_M
-ollama run qwen3:14b-q4_K_M
+npm run research -- --symbol AAPL --provider ollama
 
-# From the TrendLab repo
-source .venv/bin/activate
-pip install -r workers/requirements.txt
-npm run research -- --symbol AAPL --timeframe 1h
+# No keys → validated rule-based report (CI-safe)
+npm run research -- --symbol AAPL --provider fallback
 ```
-
-Without Ollama, `npm run research -- --no-ollama` (or `npm run seed`) writes a validated deterministic report so the dashboard pipeline still works in CI/cloud.
 
 Optional every-4-hours Mac schedule: copy `ops/macos/com.trendlabs.research.plist`, edit paths, then `launchctl load ~/Library/LaunchAgents/com.trendlabs.research.plist`.
 
@@ -86,9 +100,12 @@ Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload r
 | Schedule | Where | Job |
 | --- | --- | --- |
 | Every 15–60m (market hours) | GitHub Actions | Collect candles + run paper agents |
-| Every ~4 hours | Mac `launchd` + Ollama | Shared Qwen research report |
+| On demand (Arena / workflow_dispatch) | GitHub Actions | Research with selected LLM provider |
+| Every ~4 hours (optional) | Mac `launchd` + Ollama | Local research report |
 
 ## Deploy (Vercel Hobby)
+
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub Actions, env vars).
 
 1. Push this repo to GitHub.  
 2. Import in Vercel (personal / non-commercial Hobby).  
@@ -105,7 +122,9 @@ Vercel cannot run the Python workers, so `/api/jobs` dispatches GitHub Actions i
 | `GITHUB_REPOSITORY` | `torksabig/trendlabs` | `owner/repo` that hosts `.github/workflows/trendlabs.yml` |
 | `GITHUB_REF` | `main` | Optional; defaults to the Vercel git branch or `main` |
 
-Flow: Arena button → `POST /api/jobs` → `workflow_dispatch` → Python worker on Actions → commit `public/data/snapshot.json` → Vercel redeploy. Locally, jobs still spawn Python when Actions credentials are absent (or `TRENDLAB_JOB_MODE=local`).
+Add the LLM API keys above as **GitHub Actions repository secrets** (used when Arena triggers research). Optionally mirror the same keys (or `TRENDLAB_LLM_PROVIDER`) in Vercel so `/api/llm` can show which providers are configured — secrets are never returned to the browser, only booleans.
+
+Flow: Arena **Research LLM** selector → `POST /api/jobs` with `provider` → `workflow_dispatch` inputs → Python worker on Actions → commit `public/data/snapshot.json` → Vercel redeploy. Locally, jobs still spawn Python when Actions credentials are absent (or `TRENDLAB_JOB_MODE=local`).
 
 ## Safety
 
