@@ -1,9 +1,7 @@
 name: Assemble synced large assets
 
+# Manual only — incomplete sync-chunks must not auto-overwrite package-lock / snapshot.
 on:
-  push:
-    paths:
-      - ".github/sync-chunks/**"
   workflow_dispatch:
 
 permissions:
@@ -15,15 +13,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reassemble chunked files
+      - name: Validate and reassemble chunked files
         run: |
           set -euo pipefail
           cd .github/sync-chunks
           python3 << 'PY'
-          import json, pathlib
-          manifest = json.loads(pathlib.Path("manifest.json").read_text())
+          import json
+          import pathlib
+          import sys
+
+          manifest_path = pathlib.Path("manifest.json")
+          if not manifest_path.exists():
+              print("No manifest.json — nothing to assemble")
+              sys.exit(0)
+
+          manifest = json.loads(manifest_path.read_text())
+          if not manifest:
+              print("Empty manifest — nothing to assemble")
+              sys.exit(0)
+
           for target, parts in manifest.items():
-              out = pathlib.Path("..", "..", target)
+              for part in parts:
+                  path = pathlib.Path(part)
+                  if not path.exists():
+                      raise SystemExit(f"Missing chunk {part} for {target}")
+                  data = path.read_bytes()
+                  if data.strip() in (b"PLACEHOLDER", b"LOAD_FROM_WORKSPACE") or data.startswith(
+                      b"LOAD_FROM_WORKSPACE"
+                  ):
+                      raise SystemExit(f"Corrupt placeholder chunk {part} — aborting")
+
+          for target, parts in manifest.items():
+              out = pathlib.Path("../..", target)
               out.parent.mkdir(parents=True, exist_ok=True)
               with out.open("wb") as fh:
                   for part in parts:
@@ -35,7 +56,7 @@ jobs:
         run: |
           git config user.name "trendlabs-bot"
           git config user.email "trendlabs-bot@users.noreply.github.com"
-          git add package-lock.json public/data/snapshot.json
+          git add package-lock.json public/data/snapshot.json || true
           if git diff --staged --quiet; then
             echo "Nothing to commit"
             exit 0
