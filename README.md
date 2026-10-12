@@ -105,6 +105,8 @@ Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload r
 
 ## Deploy (Vercel Hobby)
 
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub Actions, env vars).
+
 1. Push this repo to GitHub.  
 2. Import in Vercel (personal / non-commercial Hobby).  
 3. Dashboard reads `public/data/snapshot.json` (Actions or local research refresh it).  
