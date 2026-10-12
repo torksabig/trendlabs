@@ -6,7 +6,14 @@
     "lock_part_03",
     "lock_part_04",
     "lock_part_05",
-    "lock_part_06"
+    "lock_part_06",
+    "lock_part_07",
+    "lock_part_08",
+    "lock_part_09",
+    "lock_part_10",
+    "lock_part_11",
+    "lock_part_12",
+    "lock_part_13"
   ],
   "public/data/snapshot.json": [
     "snap_part_00",
@@ -21,6 +28,18 @@
     "snap_part_09",
     "snap_part_10",
     "snap_part_11",
-    "snap_part_12"
+    "snap_part_12",
+    "snap_part_13",
+    "snap_part_14",
+    "snap_part_15",
+    "snap_part_16",
+    "snap_part_17",
+    "snap_part_18",
+    "snap_part_19",
+    "snap_part_20",
+    "snap_part_21",
+    "snap_part_22",
+    "snap_part_23",
+    "snap_part_24"
   ]
 }
