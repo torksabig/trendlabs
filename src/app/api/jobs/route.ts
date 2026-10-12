@@ -3,7 +3,8 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+// Hobby / anonymous deploy plans cap serverless maxDuration at 60s.
+export const maxDuration = 60;
 
 const ALLOWED = new Set(["seed", "simulate", "research", "collect"]);
 
