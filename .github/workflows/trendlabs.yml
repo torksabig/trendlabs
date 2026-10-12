@@ -5,6 +5,31 @@ on:
     # Every weekday hour during US market session (approx). Free-tier Actions limits apply.
     - cron: "20 14-21 * * 1-5"
   workflow_dispatch:
+    inputs:
+      job:
+        description: "Worker job to run"
+        required: true
+        default: "simulate"
+        type: choice
+        options:
+          - seed
+          - collect
+          - simulate
+          - research
+          - scheduled
+      symbol:
+        description: "Symbol for collect / research / seed"
+        required: false
+        default: "AAPL"
+        type: string
+      timeframe:
+        description: "Candle timeframe"
+        required: false
+        default: "1h"
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
   collect-and-simulate:
@@ -22,19 +47,77 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r workers/requirements.txt
 
-      - name: Collect market data
+      - name: Resolve job inputs
+        id: job
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "name=scheduled" >> "$GITHUB_OUTPUT"
+            echo "symbol=AAPL" >> "$GITHUB_OUTPUT"
+            echo "timeframe=1h" >> "$GITHUB_OUTPUT"
+          else
+            JOB="${{ inputs.job }}"
+            SYMBOL="${{ inputs.symbol }}"
+            TF="${{ inputs.timeframe }}"
+            echo "name=${JOB:-scheduled}" >> "$GITHUB_OUTPUT"
+            echo "symbol=${SYMBOL:-AAPL}" >> "$GITHUB_OUTPUT"
+            echo "timeframe=${TF:-1h}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Collect market data (scheduled)
+        if: steps.job.outputs.name == 'scheduled'
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
           ALPACA_FEED: iex
         run: |
           cd workers
-          python -m trendlabs.collect --timeframe 1h
+          python -m trendlabs.collect --timeframe "${{ steps.job.outputs.timeframe }}"
 
-      - name: Run paper simulation
+      - name: Run paper simulation (scheduled)
+        if: steps.job.outputs.name == 'scheduled'
         run: |
           cd workers
-          python -m trendlabs.simulate --timeframe 1h
+          python -m trendlabs.simulate --timeframe "${{ steps.job.outputs.timeframe }}"
+
+      - name: Seed (collect + simulate + research)
+        if: steps.job.outputs.name == 'seed'
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
+          ALPACA_FEED: iex
+        run: |
+          cd workers
+          python -m trendlabs.seed \
+            --timeframe "${{ steps.job.outputs.timeframe }}" \
+            --research-symbol "${{ steps.job.outputs.symbol }}" \
+            --no-ollama
+
+      - name: Collect market data
+        if: steps.job.outputs.name == 'collect'
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
+          ALPACA_FEED: iex
+        run: |
+          cd workers
+          python -m trendlabs.collect \
+            --timeframe "${{ steps.job.outputs.timeframe }}" \
+            --symbols "${{ steps.job.outputs.symbol }}"
+
+      - name: Run paper simulation
+        if: steps.job.outputs.name == 'simulate'
+        run: |
+          cd workers
+          python -m trendlabs.simulate --timeframe "${{ steps.job.outputs.timeframe }}"
+
+      - name: Daily research report
+        if: steps.job.outputs.name == 'research'
+        run: |
+          cd workers
+          python -m trendlabs.research \
+            --symbol "${{ steps.job.outputs.symbol }}" \
+            --timeframe "${{ steps.job.outputs.timeframe }}" \
+            --no-ollama
 
       - name: Commit snapshot for dashboard
         run: |
@@ -44,6 +127,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No snapshot changes"
           else
-            git commit -m "chore: refresh TrendLab market snapshot"
+            git commit -m "chore: refresh TrendLab market snapshot (${{ steps.job.outputs.name }})"
             git push
           fi
