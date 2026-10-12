@@ -98,7 +98,7 @@ async function dispatchGitHubActions(opts: {
       ok: false,
       status: 503,
       error:
-        "GitHub Actions job mode needs GITHUB_TOKEN (or GH_JOB_TOKEN) and GITHUB_REPOSITORY set on the server.",
+        "GitHub Actions job mode needs GITHUB_TOKEN (or GH_JOB_TOKEN) and GITHUB_REPOSITORY set on the server. Add them under Vercel → Settings → Environment Variables (Production), then redeploy. Copy-paste steps: docs/DEPLOY.md §2.",
     };
   }
 

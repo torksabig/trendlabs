@@ -23,18 +23,27 @@ After you claim the deployment and connect the GitHub repo, Vercel will assign a
 
 ## 2. Vercel (dashboard)
 
+**Temporary/claim deploys cannot hold secrets.** Claim (or import) the project first, then set env vars on the owned project.
+
 1. Open the [claim URL](https://vercel.com/claim-deployment?code=a2709737-8720-4e54-b6e7-4158713ccd32) and sign in, or import https://github.com/torksabig/trendlabs in the Vercel dashboard.
-2. Set **Environment variables** (Project → Settings → Environment Variables), **Production** (and Preview if you use Arena there):
+2. Project → **Settings** → **Environment Variables** → scope **Production** (add Preview too if you use Arena there).
+3. Copy-paste these three (create a fine-grained or classic PAT with `actions:write` + `contents:write` on `torksabig/trendlabs`):
+
+```text
+GITHUB_REPOSITORY=torksabig/trendlabs
+GITHUB_TOKEN=ghp_your_pat_here
+GITHUB_REF=main
+```
 
 | Variable | Value | Required for Arena buttons |
 | --- | --- | --- |
 | `GITHUB_REPOSITORY` | `torksabig/trendlabs` | Yes |
 | `GITHUB_TOKEN` or `GH_JOB_TOKEN` | PAT with `actions:write` + `contents:write` | Yes |
-| `GITHUB_REF` | `main` | Optional |
+| `GITHUB_REF` | `main` | Optional (defaults to git branch / `main`) |
 
-Do **not** prefix these with `NEXT_PUBLIC_`.
+Do **not** prefix these with `NEXT_PUBLIC_`. Prefer `GH_JOB_TOKEN` if you already use `GITHUB_TOKEN` for something else on the same project.
 
-3. Redeploy after env vars are saved.
+4. **Redeploy** after saving (Deployments → … → Redeploy), then retry Arena job buttons.
 
 ## 3. Verify
 
