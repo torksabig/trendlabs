@@ -1,0 +1,40 @@
+{
+  "name": "trendlabs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3456",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "collect": "cd workers && ../.venv/bin/python -m trendlabs.collect",
+    "simulate": "cd workers && ../.venv/bin/python -m trendlabs.simulate",
+    "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
+    "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.4.0",
+    "@radix-ui/react-tabs": "^1.1.22",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "lightweight-charts": "^5.2.1",
+    "lucide-react": "^1.55.0",
+    "next": "^16.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
