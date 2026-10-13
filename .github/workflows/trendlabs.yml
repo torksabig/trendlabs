@@ -142,10 +142,12 @@ jobs:
           ALPACA_API_SECRET: ${{ secrets.ALPACA_API_SECRET }}
           ALPACA_FEED: iex
         run: |
+          # Always refresh the full 12-symbol universe. A single-symbol collect on a
+          # clean runner DB would otherwise overwrite public/data/snapshot.json with
+          # one market and break the dashboard for every other ticker.
           cd workers
-          python -m trendlabs.collect \
-            --timeframe "${{ steps.job.outputs.timeframe }}" \
-            --symbols "${{ steps.job.outputs.symbol }}"
+          echo "Focus symbol (UI): ${{ steps.job.outputs.symbol }}"
+          python -m trendlabs.collect --timeframe "${{ steps.job.outputs.timeframe }}"
 
       - name: Run paper simulation
         if: steps.job.outputs.name == 'simulate'
@@ -167,6 +169,8 @@ jobs:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
         run: |
           cd workers
+          # Ensure candles exist for research symbol + keep full snapshot universe.
+          python -m trendlabs.collect --timeframe "${{ steps.job.outputs.timeframe }}"
           ARGS=(
             --symbol "${{ steps.job.outputs.symbol }}"
             --timeframe "${{ steps.job.outputs.timeframe }}"
@@ -187,7 +191,17 @@ jobs:
           git add data/snapshots/latest.json public/data/snapshot.json || true
           if git diff --staged --quiet; then
             echo "No snapshot changes"
-          else
-            git commit -m "chore: refresh TrendLab market snapshot (${{ steps.job.outputs.name }})"
-            git push
+            exit 0
           fi
+          git commit -m "chore: refresh TrendLab market snapshot (${{ steps.job.outputs.name }})"
+          # Concurrent Arena dispatches can race; rebase and retry push.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Pushed snapshot on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); rebasing onto origin/main…"
+            git pull --rebase origin main
+          done
+          echo "Failed to push snapshot after retries" >&2
+          exit 1
