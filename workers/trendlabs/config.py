@@ -92,12 +92,49 @@ INSTRUMENTS = [
 
 SYMBOLS = [i["symbol"] for i in INSTRUMENTS]
 
+# Yahoo period limits (free): 15m≈60d, 60m≈730d, 1d≈max/10y.
+# Alpaca Basic uses history_start when full_history extract is requested.
 TIMEFRAMES = {
-    "15m": {"yf": "15m", "alpaca": "15Min", "period": "60d"},
-    "1h": {"yf": "60m", "alpaca": "1Hour", "period": "730d"},
-    "4h": {"yf": "60m", "alpaca": "1Hour", "period": "730d"},  # resampled from 1h
-    "1d": {"yf": "1d", "alpaca": "1Day", "period": "5y"},
+    "15m": {
+        "yf": "15m",
+        "alpaca": "15Min",
+        "period": "60d",
+        "max_period": "60d",
+        "history_start": "2024-01-01T00:00:00Z",
+        "seconds": 15 * 60,
+        "ml_priority": 2,
+    },
+    "1h": {
+        "yf": "60m",
+        "alpaca": "1Hour",
+        "period": "730d",
+        "max_period": "730d",
+        "history_start": "2022-01-01T00:00:00Z",
+        "seconds": 60 * 60,
+        "ml_priority": 3,
+    },
+    "4h": {
+        "yf": "60m",
+        "alpaca": "1Hour",
+        "period": "730d",
+        "max_period": "730d",
+        "history_start": "2022-01-01T00:00:00Z",
+        "seconds": 4 * 60 * 60,
+        "ml_priority": 4,
+    },  # resampled from 1h
+    "1d": {
+        "yf": "1d",
+        "alpaca": "1Day",
+        "period": "10y",
+        "max_period": "max",
+        "history_start": "2015-01-01T00:00:00Z",
+        "seconds": 24 * 60 * 60,
+        "ml_priority": 1,
+    },
 }
+
+# Default extract order: daily first (deepest history), then intraday.
+EXTRACT_TIMEFRAMES = ["1d", "1h", "15m", "4h"]
 
 AGENTS = [
     {
