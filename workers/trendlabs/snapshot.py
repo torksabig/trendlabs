@@ -116,6 +116,8 @@ def build_snapshot(store: Store, timeframe: str = "1h") -> dict[str, Any]:
 
     trend_events = store.get_trend_events(200)
     ai_reports = store.get_agent_reports(10)
+    latest_predictions = store.get_latest_predictions(timeframe)
+    prediction_history = store.get_predictions(36)
     research = {
         "bullish": summarize_similar(trend_events, "bullish"),
         "bearish": summarize_similar(trend_events, "bearish"),
@@ -159,6 +161,25 @@ def build_snapshot(store: Store, timeframe: str = "1h") -> dict[str, Any]:
             "data_source": store.get_meta("data_source", "unknown"),
             "last_collection": store.get_meta("last_collection"),
             "last_simulation": store.get_meta("last_simulation"),
+            "last_research": store.get_meta("last_research"),
+            "last_prediction": store.get_meta("last_prediction"),
+            "next_prediction_at": store.get_meta("next_prediction_at"),
+            "updates": {
+                "snapshot": datetime.now(timezone.utc).isoformat(),
+                "collection": store.get_meta("last_collection"),
+                "simulation": store.get_meta("last_simulation"),
+                "research": store.get_meta("last_research"),
+                "prediction": store.get_meta("last_prediction"),
+                "next_prediction": store.get_meta("next_prediction_at"),
+                "schedule": "Hourly GitHub Actions at :15 UTC — collect → simulate → predict",
+            },
+            "predictions": {
+                "latest": latest_predictions,
+                "history": prediction_history,
+                "model": "indicator_score_v1",
+                "horizon": "1h",
+                "executes_trades": False,
+            },
             "starting_cash": STARTING_CASH,
             "totals": {
                 "agents": len(leaderboard),
