@@ -10,6 +10,7 @@
     "collect": "cd workers && ../.venv/bin/python -m trendlabs.collect",
     "simulate": "cd workers && ../.venv/bin/python -m trendlabs.simulate",
     "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
+    "predict": "cd workers && ../.venv/bin/python -m trendlabs.predict",
     "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
   },
   "dependencies": {
