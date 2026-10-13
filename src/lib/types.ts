@@ -61,12 +61,47 @@ export type Trade = {
   ts: string;
 };
 
+export type Prediction = {
+  id?: number;
+  symbol: string;
+  timeframe: string;
+  horizon: string;
+  direction: "up" | "down" | "sideways" | string;
+  confidence: number;
+  last_close: number;
+  drivers: Record<string, unknown>;
+  summary: string;
+  model: string;
+  source: string;
+  created_at: string;
+  next_update_at: string;
+};
+
 export type Snapshot = {
   generated_at: string;
   timeframe: string;
   data_source: string;
   last_collection: string | null;
   last_simulation: string | null;
+  last_research?: string | null;
+  last_prediction?: string | null;
+  next_prediction_at?: string | null;
+  updates?: {
+    snapshot?: string | null;
+    collection?: string | null;
+    simulation?: string | null;
+    research?: string | null;
+    prediction?: string | null;
+    next_prediction?: string | null;
+    schedule?: string | null;
+  };
+  predictions?: {
+    latest: Prediction[];
+    history: Prediction[];
+    model: string;
+    horizon: string;
+    executes_trades: boolean;
+  };
   starting_cash: number;
   totals: {
     agents: number;

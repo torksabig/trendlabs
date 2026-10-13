@@ -7,6 +7,7 @@ import sys
 
 from trendlabs.collect import main as collect_main
 from trendlabs.config import DEFAULT_TIMEFRAME
+from trendlabs.predict import main as predict_main
 from trendlabs.research import main as research_main
 from trendlabs.simulate import main as simulate_main
 
@@ -53,7 +54,12 @@ def main() -> int:
         if args.model:
             research_args += ["--model", args.model]
         sys.argv = ["trendlabs.research", *research_args]
-        return research_main()
+        code = research_main()
+        if code != 0:
+            return code
+
+        sys.argv = ["trendlabs.predict", "--timeframe", args.timeframe]
+        return predict_main()
     finally:
         sys.argv = old
 

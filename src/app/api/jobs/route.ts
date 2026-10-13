@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 // Hobby / anonymous deploy plans cap serverless maxDuration at 60s.
 export const maxDuration = 60;
 
-const ALLOWED = new Set(["seed", "simulate", "research", "collect"]);
+const ALLOWED = new Set(["seed", "simulate", "research", "collect", "predict"]);
 const WORKFLOW_FILE = "trendlabs.yml";
 const LLM_PROVIDERS = new Set([
   "auto",
@@ -193,6 +193,12 @@ function workerArgs(
         provider,
         model,
       ),
+    };
+  }
+  if (job === "predict") {
+    return {
+      moduleName: "trendlabs.predict",
+      args: ["--timeframe", timeframe],
     };
   }
   return {

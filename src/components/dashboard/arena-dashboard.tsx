@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { LivePriceChart } from "@/components/charts/live-price-chart";
 import { EquityChart } from "@/components/charts/equity-chart";
+import { HourlyPredictions } from "@/components/dashboard/hourly-predictions";
+import { UpdateTimeline } from "@/components/dashboard/update-timeline";
 import { INSTRUMENTS, TIMEFRAMES } from "@/lib/instruments";
 import type { Snapshot } from "@/lib/types";
 import { formatMoney, formatPct, pctTone } from "@/lib/utils";
@@ -261,6 +263,14 @@ export function ArenaDashboard({ snapshot }: Props) {
           <button
             type="button"
             disabled={pending}
+            onClick={() => runJob("predict")}
+            className="w-full rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-sm text-mint hover:bg-mint/15 disabled:opacity-50"
+          >
+            Run hourly predictions
+          </button>
+          <button
+            type="button"
+            disabled={pending}
             onClick={() => runJob("research")}
             className="w-full rounded-md border border-white/15 bg-charcoal-2 px-3 py-2 text-sm text-ink hover:border-white/25 disabled:opacity-50"
           >
@@ -314,6 +324,10 @@ export function ArenaDashboard({ snapshot }: Props) {
         <header>
           <h1 className="font-display text-4xl text-ink sm:text-5xl">TrendLab Arena</h1>
         </header>
+
+        <UpdateTimeline snapshot={snapshot} />
+
+        <HourlyPredictions snapshot={snapshot} focusSymbol={symbol} />
 
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {snapshot.leaderboard.map((agent) => (
