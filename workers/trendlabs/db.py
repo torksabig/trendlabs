@@ -126,6 +126,21 @@ class Store:
                     snapshot_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS predictions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    horizon TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    last_close REAL NOT NULL,
+                    drivers_json TEXT NOT NULL,
+                    summary TEXT NOT NULL,
+                    model TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    next_update_at TEXT NOT NULL
+                );
                 """
             )
 
@@ -347,5 +362,84 @@ class Store:
             item = dict(r)
             item["report"] = json.loads(item.pop("report_json"))
             item["snapshot"] = json.loads(item.pop("snapshot_json"))
+            out.append(item)
+        return out
+
+    def insert_prediction(self, payload: dict[str, Any]) -> int:
+        with self.connect() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO predictions (
+                    symbol, timeframe, horizon, direction, confidence, last_close,
+                    drivers_json, summary, model, source, created_at, next_update_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    payload["symbol"],
+                    payload["timeframe"],
+                    payload["horizon"],
+                    payload["direction"],
+                    float(payload["confidence"]),
+                    float(payload["last_close"]),
+                    json.dumps(payload.get("drivers", {})),
+                    payload["summary"],
+                    payload.get("model", "rule_based"),
+                    payload.get("source", "indicators"),
+                    payload.get("created_at", utc_now()),
+                    payload["next_update_at"],
+                ),
+            )
+            return int(cur.lastrowid)
+
+    def get_latest_predictions(self, timeframe: str | None = None) -> list[dict[str, Any]]:
+        """Latest prediction per symbol (optionally filtered by timeframe)."""
+        with self.connect() as conn:
+            if timeframe:
+                rows = conn.execute(
+                    """
+                    SELECT p.* FROM predictions p
+                    INNER JOIN (
+                        SELECT symbol, MAX(id) AS max_id
+                        FROM predictions
+                        WHERE timeframe = ?
+                        GROUP BY symbol
+                    ) latest ON p.id = latest.max_id
+                    ORDER BY p.symbol ASC
+                    """,
+                    (timeframe,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT p.* FROM predictions p
+                    INNER JOIN (
+                        SELECT symbol, MAX(id) AS max_id
+                        FROM predictions
+                        GROUP BY symbol
+                    ) latest ON p.id = latest.max_id
+                    ORDER BY p.symbol ASC
+                    """
+                ).fetchall()
+        out = []
+        for r in rows:
+            item = dict(r)
+            item["drivers"] = json.loads(item.pop("drivers_json"))
+            out.append(item)
+        return out
+
+    def get_predictions(self, limit: int = 48) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM predictions
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        out = []
+        for r in rows:
+            item = dict(r)
+            item["drivers"] = json.loads(item.pop("drivers_json"))
             out.append(item)
         return out
