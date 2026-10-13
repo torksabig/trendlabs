@@ -52,9 +52,37 @@ npm install
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r workers/requirements.txt
 
+npm run extract       # deep historical OHLCV for all configured symbols
 npm run seed          # collect + simulate + research fallback report
 npm run dev           # http://localhost:3456
 ```
+
+## Market data extraction
+
+Historical OHLCV for the **configured universe only** (see `workers/trendlabs/config.py` / `src/lib/instruments.ts`).
+
+```bash
+# Full practical history: daily (up to max/~10y), then 1h / 15m / 4h within free-provider limits
+npm run extract
+
+# One symbol, daily only (recommended first ML path)
+npm run extract -- --symbols AAPL --timeframes 1d
+
+# Refresh without rewriting snapshot JSON
+npm run extract -- --no-snapshot
+
+# Unit tests (upserts, duplicates, quality filters, extract orchestration)
+npm run test:extract
+```
+
+Details: [docs/DATA_EXTRACTION.md](docs/DATA_EXTRACTION.md) · Architecture audit: [docs/ARCHITECTURE_AUDIT.md](docs/ARCHITECTURE_AUDIT.md)
+
+Provider notes:
+
+- Prefer existing Alpaca Basic keys when present; otherwise Yahoo Finance (no key).
+- Missing / invalid bars are **dropped**, never invented.
+- Incomplete in-progress candles are dropped by default.
+- Upserts are idempotent on `(symbol, timeframe, ts)`.
 
 ### Research LLM providers ($0-friendly)
 
@@ -124,7 +152,7 @@ Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload r
 
 ## Deploy (Vercel Hobby)
 
-See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub Actions, env vars).
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub env vars).
 
 1. Push this repo to GitHub.  
 2. Import in Vercel (personal / non-commercial Hobby).  
