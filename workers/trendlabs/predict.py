@@ -33,12 +33,31 @@ def next_hourly_slot(now: datetime | None = None) -> datetime:
     return slot
 
 
-def predict_symbol(store: Store, symbol: str, timeframe: str) -> dict[str, Any] | None:
-    candles = store.load_candles(symbol, timeframe)
-    if candles.empty or len(candles) < 30:
+def predict_symbol(
+    store: Store,
+    symbol: str,
+    timeframe: str,
+    *,
+    as_of_ts: str | None = None,
+    candles: pd.DataFrame | None = None,
+) -> dict[str, Any] | None:
+    """Build a paper forecast. Optional as_of_ts enables historical backfill (no trades)."""
+    frame = candles if candles is not None else store.load_candles(symbol, timeframe)
+    if frame is None or frame.empty or len(frame) < 30:
         return None
 
-    enriched = enrich(candles)
+    if as_of_ts is not None:
+        ts = pd.to_datetime(frame["ts"], utc=True)
+        origin = pd.Timestamp(as_of_ts)
+        if origin.tzinfo is None:
+            origin = origin.tz_localize("UTC")
+        else:
+            origin = origin.tz_convert("UTC")
+        frame = frame.loc[ts <= origin].copy()
+        if len(frame) < 30:
+            return None
+
+    enriched = enrich(frame)
     last = enriched.iloc[-1]
     prev = enriched.iloc[-2]
     close = float(last["close"])
@@ -81,9 +100,10 @@ def predict_symbol(store: Store, symbol: str, timeframe: str) -> dict[str, Any] 
             score -= 0.25  # overbought fade
         if rsi14 <= 30:
             score += 0.25  # oversold bounce
-    if trend == "bullish":
+    trend_l = trend.lower()
+    if "bull" in trend_l:
         score += 0.75
-    elif trend == "bearish":
+    elif "bear" in trend_l or trend_l == "risk_off":
         score -= 0.75
 
     if score >= 1.25:
@@ -93,16 +113,36 @@ def predict_symbol(store: Store, symbol: str, timeframe: str) -> dict[str, Any] 
     else:
         direction = "sideways"
 
-    # Confidence scales with |score| and ADX trend strength
+    # Confidence scales with |score| and ADX trend strength (heuristic, not calibrated).
     adx_boost = min(max((adx14 or 15) / 50.0, 0.0), 0.35)
     confidence = min(0.92, 0.35 + min(abs(score) / 4.0, 0.45) + adx_boost)
 
-    created = datetime.now(timezone.utc)
+    if as_of_ts is not None:
+        created = pd.Timestamp(as_of_ts).to_pydatetime()
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        else:
+            created = created.astimezone(timezone.utc)
+    else:
+        created = datetime.now(timezone.utc)
     next_update = next_hourly_slot(created)
     atr_pct = (atr14 / close * 100) if atr14 and close else None
+    # Expected move: half-ATR in the predicted direction (0 for sideways).
+    if atr_pct is None:
+        expected_move_pct = 0.0
+    elif direction == "up":
+        expected_move_pct = round(0.5 * atr_pct, 4)
+    elif direction == "down":
+        expected_move_pct = round(-0.5 * atr_pct, 4)
+    else:
+        expected_move_pct = 0.0
+
+    drivers["expected_move_pct"] = expected_move_pct
+    drivers["score"] = score
+
     summary = (
         f"{symbol} {timeframe}: rule-based outlook is {direction} over the next ~1h "
-        f"(confidence {confidence:.0%}). Trend={trend}"
+        f"(confidence {confidence:.0%}, expected move {expected_move_pct:+.2f}%). Trend={trend}"
         + (f", RSI={rsi14:.1f}" if rsi14 is not None else "")
         + (f", ADX={adx14:.1f}" if adx14 is not None else "")
         + (f", ATR≈{atr_pct:.2f}%" if atr_pct is not None else "")
@@ -115,6 +155,7 @@ def predict_symbol(store: Store, symbol: str, timeframe: str) -> dict[str, Any] 
         "horizon": "1h",
         "direction": direction,
         "confidence": round(confidence, 3),
+        "expected_move_pct": expected_move_pct,
         "last_close": close,
         "drivers": drivers,
         "summary": summary,

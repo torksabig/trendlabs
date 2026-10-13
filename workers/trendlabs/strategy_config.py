@@ -96,3 +96,40 @@ def config_for(strategy_id: str) -> StrategyConfig:
         if cfg.strategy_id == strategy_id:
             return cfg
     raise KeyError(f"Unknown strategy_id: {strategy_id}")
+
+
+def risk_from_dict(data: dict[str, Any] | None) -> RiskConfig:
+    base = asdict(RiskConfig())
+    if data:
+        base.update({k: data[k] for k in base if k in data})
+    return RiskConfig(**base)
+
+
+def config_from_dict(data: dict[str, Any]) -> StrategyConfig:
+    return StrategyConfig(
+        strategy_id=str(data["strategy_id"]),
+        name=str(data.get("name") or data["strategy_id"]),
+        params=dict(data.get("params") or {}),
+        risk=risk_from_dict(data.get("risk")),
+    )
+
+
+def override_config(
+    base: StrategyConfig,
+    *,
+    params: dict[str, Any] | None = None,
+    risk: dict[str, Any] | None = None,
+    name: str | None = None,
+) -> StrategyConfig:
+    merged_params = dict(base.params)
+    if params:
+        merged_params.update(params)
+    risk_dict = asdict(base.risk)
+    if risk:
+        risk_dict.update(risk)
+    return StrategyConfig(
+        strategy_id=base.strategy_id,
+        name=name or base.name,
+        params=merged_params,
+        risk=RiskConfig(**risk_dict),
+    )

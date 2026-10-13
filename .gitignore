@@ -58,3 +58,9 @@ data/backtests/*
 data/walk_forward/*
 !data/walk_forward/.gitkeep
 !data/walk_forward/latest.json
+data/experiments/*
+!data/experiments/.gitkeep
+!data/experiments/latest.json
+data/prediction_eval/*
+!data/prediction_eval/.gitkeep
+!data/prediction_eval/latest.json

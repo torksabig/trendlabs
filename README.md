@@ -91,15 +91,17 @@ Optional every-4-hours Mac schedule: copy `ops/macos/com.trendlabs.research.plis
 Deterministic historical replay is separate from forward paper-trading state.
 
 ```bash
-npm run backtest        # full-period backtest → data/backtests/ + public/data/backtests/
+npm run backtest        # full-period backtest → data/backtests/
 npm run walk-forward    # rolling OOS folds (+ full backtest) → data/walk_forward/
+npm run experiment      # control vs variant OOS accept/reject → data/experiments/
+npm run predict-eval    # score forecasts + calibration table → data/prediction_eval/
 ```
 
 - Next-bar open fills, fees/slippage, Sharpe / Sortino / drawdown / α vs SPY  
-- Walk-forward combines **out-of-sample** folds only (calibration windows reserved for later experiments)  
-- Market regimes (`trending_bullish`, `trending_bearish`, `high_volatility`, `low_volatility`, `sideways`, `risk_off`) with per-agent attribution  
-- Strategy parameters live in `workers/trendlabs/strategy_config.py`  
-- Dashboard: `/backtests` + Arena risk-adjusted leaderboard (`/api/walk-forward`, `/api/backtests`)
+- Walk-forward combines **out-of-sample** folds only  
+- Experiment engine compares parameter variants on OOS folds (never mutates paper books)  
+- Prediction eval stores 1h/4h/24h realized moves and confidence calibration  
+- Market regimes + strategy configs in `workers/trendlabs/`
 
 ## Supabase
 

@@ -1,0 +1,35 @@
+{
+  "kind": "experiment_registry",
+  "updated_at": "2026-10-13T19:58:27.695605+00:00",
+  "experiments": [
+    {
+      "run_id": "de6bee5d3192",
+      "experiment_id": "ema_adx20",
+      "hypothesis": "Adding ADX>=20 to EMA Trend entries should reduce sideways whipsaws and improve out-of-sample Sharpe.",
+      "decision": "accept",
+      "reasons": [
+        "OOS Sharpe lift 2.373; trades=135; DD control=-12.04% variant=-10.16%"
+      ],
+      "comparison": {
+        "control": {
+          "total_return_pct": -11.227132742604995,
+          "sharpe": -5.869086870073905,
+          "mean_fold_sharpe": -6.707780137135513,
+          "max_drawdown_pct": -12.035011567741904,
+          "trade_count": 150,
+          "alpha_pct": -13.567305945048302
+        },
+        "variant": {
+          "total_return_pct": -9.309240984489753,
+          "sharpe": -4.6200936836611355,
+          "mean_fold_sharpe": -4.334536474642193,
+          "max_drawdown_pct": -10.161139526668128,
+          "trade_count": 135,
+          "alpha_pct": -11.649414186933061
+        }
+      },
+      "created_at": "2026-10-13T19:58:27.684797+00:00",
+      "code_sha": "fc46539929a4a937a4e1770d8a916a8483fdb10d"
+    }
+  ]
+}

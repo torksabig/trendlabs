@@ -141,6 +141,31 @@ class Store:
                     created_at TEXT NOT NULL,
                     next_update_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS prediction_outcomes (
+                    prediction_id INTEGER PRIMARY KEY,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    predicted_at TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    expected_move_pct REAL,
+                    last_close REAL NOT NULL,
+                    actual_1h_pct REAL,
+                    actual_4h_pct REAL,
+                    actual_24h_pct REAL,
+                    hit_1h INTEGER,
+                    hit_4h INTEGER,
+                    hit_24h INTEGER,
+                    scored_at TEXT NOT NULL,
+                    FOREIGN KEY (prediction_id) REFERENCES predictions(id)
+                );
+                CREATE TABLE IF NOT EXISTS experiment_results (
+                    run_id TEXT PRIMARY KEY,
+                    experiment_id TEXT NOT NULL,
+                    decision TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    payload_json TEXT NOT NULL
+                );
                 """
             )
 
@@ -443,3 +468,106 @@ class Store:
             item["drivers"] = json.loads(item.pop("drivers_json"))
             out.append(item)
         return out
+
+    def get_predictions_for_eval(self, limit: int = 500) -> list[dict[str, Any]]:
+        """Oldest-first batch for outcome scoring (skips already scored)."""
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT p.* FROM predictions p
+                LEFT JOIN prediction_outcomes o ON o.prediction_id = p.id
+                WHERE o.prediction_id IS NULL
+                ORDER BY p.created_at ASC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        out = []
+        for r in rows:
+            item = dict(r)
+            item["drivers"] = json.loads(item.pop("drivers_json"))
+            out.append(item)
+        return out
+
+    def upsert_prediction_outcome(self, payload: dict[str, Any]) -> None:
+        with self.connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO prediction_outcomes (
+                    prediction_id, symbol, timeframe, predicted_at, direction,
+                    confidence, expected_move_pct, last_close,
+                    actual_1h_pct, actual_4h_pct, actual_24h_pct,
+                    hit_1h, hit_4h, hit_24h, scored_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(prediction_id) DO UPDATE SET
+                    actual_1h_pct=excluded.actual_1h_pct,
+                    actual_4h_pct=excluded.actual_4h_pct,
+                    actual_24h_pct=excluded.actual_24h_pct,
+                    hit_1h=excluded.hit_1h,
+                    hit_4h=excluded.hit_4h,
+                    hit_24h=excluded.hit_24h,
+                    scored_at=excluded.scored_at,
+                    expected_move_pct=excluded.expected_move_pct
+                """,
+                (
+                    int(payload["prediction_id"]),
+                    payload["symbol"],
+                    payload["timeframe"],
+                    payload["predicted_at"],
+                    payload["direction"],
+                    float(payload["confidence"]),
+                    payload.get("expected_move_pct"),
+                    float(payload["last_close"]),
+                    payload.get("actual_1h_pct"),
+                    payload.get("actual_4h_pct"),
+                    payload.get("actual_24h_pct"),
+                    payload.get("hit_1h"),
+                    payload.get("hit_4h"),
+                    payload.get("hit_24h"),
+                    payload.get("scored_at", utc_now()),
+                ),
+            )
+
+    def get_prediction_outcomes(self, limit: int = 500) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM prediction_outcomes
+                ORDER BY predicted_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def upsert_experiment_result(self, payload: dict[str, Any]) -> None:
+        with self.connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO experiment_results (run_id, experiment_id, decision, created_at, payload_json)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(run_id) DO UPDATE SET
+                    decision=excluded.decision,
+                    created_at=excluded.created_at,
+                    payload_json=excluded.payload_json
+                """,
+                (
+                    payload["run_id"],
+                    payload["experiment"]["experiment_id"],
+                    payload["decision"],
+                    payload["created_at"],
+                    json.dumps(payload),
+                ),
+            )
+
+    def get_experiment_results(self, limit: int = 50) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT payload_json FROM experiment_results
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        return [json.loads(r["payload_json"]) for r in rows]

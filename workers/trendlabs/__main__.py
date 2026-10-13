@@ -10,6 +10,8 @@ Usage:
   python -m trendlabs.simulate [--timeframe 1h]
   python -m trendlabs.backtest [--timeframe 1h]
   python -m trendlabs.walk_forward [--timeframe 1h]
+  python -m trendlabs.experiments [--experiment-id ema_adx20]
+  python -m trendlabs.prediction_eval
   python -m trendlabs.seed [--timeframe 1h]
 """
 
