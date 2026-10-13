@@ -7,8 +7,8 @@ One-time setup to run the dashboard on Vercel and workers on GitHub Actions.
 | Resource | URL |
 | --- | --- |
 | GitHub repo | https://github.com/torksabig/trendlabs |
-| Temporary Vercel preview | https://temporary-brisk-bassoon-or1i9hz.vercel.app (claim within ~60 minutes — see below) |
-| Claim deployment | https://vercel.com/claim-deployment?code=a2709737-8720-4e54-b6e7-4158713ccd32 |
+| Temporary Vercel preview | https://temporary-snappy-quartz-wksx7au.vercel.app (job env already injected; claim within ~60 minutes) |
+| Claim deployment | https://vercel.com/claim-deployment?code=ea43f3c4-dd66-4049-a395-2f22cf30e58d |
 
 After you claim the deployment and connect the GitHub repo, Vercel will assign a stable production URL (typically `https://<project>.vercel.app`).
 
