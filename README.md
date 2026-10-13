@@ -139,6 +139,7 @@ Apply:
 2. `supabase/migrations/002_agent_reports.sql`  
 3. `supabase/migrations/003_backtests_experiments.sql`  
 4. `supabase/migrations/004_market_regimes_walk_forward.sql`  
+5. `supabase/migrations/005_ml_market_data.sql` (extraction metadata + ML tables)   
 
 Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload research reports. Never put the secret key in the Next.js client bundle.
 
@@ -152,7 +153,7 @@ Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload r
 
 ## Deploy (Vercel Hobby)
 
-See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub env vars).
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub Actions, env vars).
 
 1. Push this repo to GitHub.  
 2. Import in Vercel (personal / non-commercial Hobby).  
