@@ -6,7 +6,8 @@ import sys
 USAGE = """TrendLab workers
 
 Usage:
-  python -m trendlabs.collect [--symbols AAPL MSFT] [--timeframe 1h]
+  python -m trendlabs.extract [--symbols AAPL MSFT] [--timeframes 1d 1h]
+  python -m trendlabs.collect [--symbols AAPL MSFT] [--timeframe 1h] [--full-history]
   python -m trendlabs.simulate [--timeframe 1h]
   python -m trendlabs.backtest [--timeframe 1h]
   python -m trendlabs.walk_forward [--timeframe 1h]

@@ -14,7 +14,17 @@ def main() -> int:
     parser.add_argument("--symbols", nargs="*", default=SYMBOLS)
     parser.add_argument("--timeframe", default=DEFAULT_TIMEFRAME)
     parser.add_argument("--lookback", type=int, default=LOOKBACK_BARS)
+    parser.add_argument(
+        "--full-history",
+        action="store_true",
+        help="Fetch max practical history (prefer: python -m trendlabs.extract)",
+    )
     args = parser.parse_args()
+
+    unknown = sorted(set(s.upper() for s in args.symbols) - set(SYMBOLS))
+    if unknown:
+        print(f"ERROR unknown symbols (not in TrendLab universe): {', '.join(unknown)}")
+        return 1
 
     store = Store()
     client = MarketDataClient()
@@ -23,7 +33,12 @@ def main() -> int:
 
     for symbol in args.symbols:
         try:
-            df = client.fetch(symbol, args.timeframe, args.lookback)
+            df = client.fetch(
+                symbol,
+                args.timeframe,
+                args.lookback,
+                full_history=args.full_history,
+            )
             n = store.upsert_candles(df)
             total += n
             print(f"{symbol}: upserted {n} bars from {df.iloc[0]['source']}")
