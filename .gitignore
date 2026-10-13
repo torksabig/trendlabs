@@ -50,3 +50,8 @@ data/*.db
 data/*.db-journal
 !data/snapshots/
 !public/data/
+
+# Backtest run dumps (keep latest via force-add if needed)
+data/backtests/*
+!data/backtests/.gitkeep
+!data/backtests/latest.json

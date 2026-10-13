@@ -11,6 +11,7 @@
     "simulate": "cd workers && ../.venv/bin/python -m trendlabs.simulate",
     "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
     "predict": "cd workers && ../.venv/bin/python -m trendlabs.predict",
+    "backtest": "cd workers && ../.venv/bin/python -m trendlabs.backtest",
     "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
   },
   "dependencies": {

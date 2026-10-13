@@ -201,7 +201,7 @@ class PaperSimulator:
         trade_rows: list[tuple],
     ) -> None:
         longs = [s for s in signals if s.side == "long" and s.symbol not in book.positions]
-        longs.sort(key=lambda s: s.confidence, reverse=True)
+        longs.sort(key=lambda s: s.signal_strength, reverse=True)
         for signal in longs:
             if len(book.positions) >= MAX_POSITIONS:
                 break
