@@ -8,12 +8,14 @@ import { LivePriceChart } from "@/components/charts/live-price-chart";
 import { EquityChart } from "@/components/charts/equity-chart";
 import { HourlyPredictions } from "@/components/dashboard/hourly-predictions";
 import { UpdateTimeline } from "@/components/dashboard/update-timeline";
+import type { RiskBoardPayload, RiskRow } from "@/lib/evaluation";
 import { INSTRUMENTS, TIMEFRAMES } from "@/lib/instruments";
 import type { Snapshot } from "@/lib/types";
 import { formatMoney, formatPct, pctTone } from "@/lib/utils";
 
 type Props = {
   snapshot: Snapshot;
+  riskBoard?: RiskBoardPayload | null;
 };
 
 type JobResponse = {
@@ -40,19 +42,6 @@ type LlmStatus = {
   providers?: LlmProviderRow[];
 };
 
-type RiskRow = {
-  agent_id: string;
-  name: string;
-  metrics: {
-    total_return_pct?: number;
-    sharpe?: number | null;
-    mean_fold_sharpe?: number | null;
-    max_drawdown_pct?: number;
-    trade_count?: number;
-    alpha_pct?: number | null;
-  };
-};
-
 const STORAGE_KEY = "trendlabs.llm.provider";
 
 function regimeLabel(raw: string | undefined) {
@@ -60,15 +49,15 @@ function regimeLabel(raw: string | undefined) {
   return raw.replace(/_/g, " ");
 }
 
-export function ArenaDashboard({ snapshot }: Props) {
+export function ArenaDashboard({ snapshot, riskBoard: initialRisk }: Props) {
   const router = useRouter();
   const [symbol, setSymbol] = useState("AAPL");
   const [interval, setInterval] = useState(snapshot.timeframe || "1h");
   const [chartRefresh, setChartRefresh] = useState(0);
   const [provider, setProvider] = useState("auto");
   const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
-  const [riskBoard, setRiskBoard] = useState<RiskRow[] | null>(null);
-  const [riskSource, setRiskSource] = useState<string | null>(null);
+  const [riskBoard, setRiskBoard] = useState<RiskRow[] | null>(initialRisk?.rows ?? null);
+  const [riskSource, setRiskSource] = useState<string | null>(initialRisk?.source ?? null);
   const [message, setMessage] = useState<string | null>(null);
   const [runUrl, setRunUrl] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -84,6 +73,13 @@ export function ArenaDashboard({ snapshot }: Props) {
     [snapshot.leaderboard],
   );
   const latestReport = snapshot.research.ai_reports?.[0];
+
+  useEffect(() => {
+    if (initialRisk?.rows?.length) {
+      setRiskBoard(initialRisk.rows);
+      setRiskSource(initialRisk.source);
+    }
+  }, [initialRisk]);
 
   useEffect(() => {
     let cancelled = false;

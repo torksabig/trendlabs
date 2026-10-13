@@ -34,7 +34,7 @@ export function UpdateTimeline({ snapshot }: Props) {
             {updates.schedule ?? "Hourly collect → simulate → predict"}
           </p>
         </div>
-        <p className="font-mono text-xs text-slateui-dim">
+        <p className="font-mono text-xs text-slateui-dim" suppressHydrationWarning>
           Snapshot {formatAge(snapshot.generated_at)}
         </p>
       </div>
@@ -49,7 +49,7 @@ export function UpdateTimeline({ snapshot }: Props) {
             >
               <dt className="text-xs uppercase tracking-wide text-slateui-dim">{label}</dt>
               <dd className="mt-1 font-mono text-sm text-ink">{formatWhen(value)}</dd>
-              <dd className="mt-1 text-xs text-slateui">
+              <dd className="mt-1 text-xs text-slateui" suppressHydrationWarning>
                 {isFuture ? formatUntil(value) : formatAge(value)}
               </dd>
             </div>

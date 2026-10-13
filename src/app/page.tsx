@@ -1,10 +1,11 @@
 import { ArenaDashboard } from "@/components/dashboard/arena-dashboard";
+import { loadRiskBoard } from "@/lib/evaluation";
 import { loadSnapshot } from "@/lib/snapshot";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const snapshot = await loadSnapshot();
+  const [snapshot, riskBoard] = await Promise.all([loadSnapshot(), loadRiskBoard()]);
 
   if (!snapshot) {
     return (
@@ -20,5 +21,5 @@ export default async function HomePage() {
     );
   }
 
-  return <ArenaDashboard snapshot={snapshot} />;
+  return <ArenaDashboard snapshot={snapshot} riskBoard={riskBoard} />;
 }
