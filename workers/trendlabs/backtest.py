@@ -19,11 +19,16 @@ from typing import Any
 
 import pandas as pd
 
-from trendlabs.agents import BaseAgent, Signal, build_agents
+from trendlabs.agents import BaseAgent, Signal, build_agents_from_configs
 from trendlabs.config import DEFAULT_TIMEFRAME, ROOT, SYMBOLS
 from trendlabs.db import Store
 from trendlabs.indicators import enrich
 from trendlabs.metrics import compute_metrics
+from trendlabs.regimes import (
+    attribute_trades_by_regime,
+    regime_distribution,
+    score_regime_fit,
+)
 from trendlabs.strategy_config import RiskConfig, StrategyConfig, default_strategy_configs
 
 
@@ -80,8 +85,9 @@ class BacktestEngine:
     ) -> None:
         self.store = store
         self.risk = risk or RiskConfig()
-        self.agents = agents or build_agents()
-        self.configs = {c.strategy_id: c for c in (configs or default_strategy_configs())}
+        self.configs_list = configs or default_strategy_configs()
+        self.configs = {c.strategy_id: c for c in self.configs_list}
+        self.agents = agents or build_agents_from_configs(self.configs_list)
 
     def run(
         self,
@@ -89,6 +95,8 @@ class BacktestEngine:
         timeframe: str = "1h",
         warm_up: int = 220,
         benchmark_symbol: str = "SPY",
+        test_start_ts: str | None = None,
+        test_end_ts: str | None = None,
     ) -> dict[str, Any]:
         risk = self.risk
         series: dict[str, pd.DataFrame] = {}
@@ -104,6 +112,21 @@ class BacktestEngine:
         master = series[master_symbol]
         n = len(master)
         start = min(max(warm_up, 50), n - 2)
+        end = n - 1
+        if test_start_ts is not None:
+            ts_list = master["ts"].astype(str)
+            matches = [i for i, t in enumerate(ts_list) if t >= test_start_ts]
+            if matches:
+                start = max(start, matches[0])
+        if test_end_ts is not None:
+            ts_list = master["ts"].astype(str)
+            matches = [i for i, t in enumerate(ts_list) if t <= test_end_ts]
+            if matches:
+                end = min(end, matches[-1])
+        if end <= start + 1:
+            raise RuntimeError(
+                f"Test window too short after warm-up (start={start}, end={end}, n={n})"
+            )
 
         symbol_ts = {sym: df["ts"].astype(str).tolist() for sym, df in series.items()}
         symbol_index_at: dict[str, list[int | None]] = {sym: [None] * n for sym in series}
@@ -120,7 +143,7 @@ class BacktestEngine:
         equity: dict[str, list[dict[str, Any]]] = {a.id: [] for a in self.agents}
         pending: dict[str, list[Signal]] = {a.id: [] for a in self.agents}
 
-        for i in range(start, n - 1):
+        for i in range(start, end):
             # Fill pending signals from previous bar at this bar's open
             for agent in self.agents:
                 book = books[agent.id]
@@ -160,9 +183,25 @@ class BacktestEngine:
                     signals.append(agent.evaluate(sym, hist))
                 pending[agent.id] = signals
 
-        # Final mark
-        marks = self._marks(series, symbol_index_at, n - 1)
-        ts = str(master["ts"].iloc[n - 1])
+        # Fill signals generated on the last in-window decision bar
+        for agent in self.agents:
+            fills = pending[agent.id]
+            pending[agent.id] = []
+            if fills:
+                self._execute_pending(
+                    agent,
+                    books[agent.id],
+                    fills,
+                    series,
+                    symbol_index_at,
+                    end,
+                    timeframe,
+                    trades[agent.id],
+                )
+
+        # Final mark at window end
+        marks = self._marks(series, symbol_index_at, end)
+        ts = str(master["ts"].iloc[end])
         for agent in self.agents:
             book = books[agent.id]
             eq = book.cash + sum(
@@ -171,10 +210,37 @@ class BacktestEngine:
             )
             equity[agent.id].append({"ts": ts, "equity": eq, "cash": book.cash})
 
-        # Benchmark buy & hold on SPY (or first symbol)
+        # Benchmark buy & hold on SPY (or first symbol) over the same window
         bench_sym = benchmark_symbol if benchmark_symbol in series else master_symbol
-        bdf = series[bench_sym].iloc[start:]
+        bdf = series[bench_sym]
+        b_start = start
+        b_end = end
+        # Align benchmark to master timestamps when lengths differ
+        if len(bdf) != n:
+            b_ts = bdf["ts"].astype(str)
+            start_ts = str(master["ts"].iloc[start])
+            end_ts = str(master["ts"].iloc[end])
+            b_idx = [i for i, t in enumerate(b_ts) if start_ts <= t <= end_ts]
+            if b_idx:
+                bdf = bdf.iloc[b_idx[0] : b_idx[-1] + 1]
+            else:
+                bdf = bdf.iloc[0:0]
+        else:
+            bdf = bdf.iloc[b_start : b_end + 1]
         benchmark_curve = _buy_and_hold_curve(bdf["close"], bdf["ts"], risk.starting_cash)
+
+        # Regime map for trade attribution (entry timestamp → regime)
+        regime_by_symbol_ts: dict[str, dict[str, str]] = {}
+        regime_dist: dict[str, float] = {}
+        for sym, df in series.items():
+            if "market_regime" not in df.columns:
+                continue
+            regime_by_symbol_ts[sym] = {
+                str(row["ts"]): str(row["market_regime"]) for _, row in df.iterrows()
+            }
+        if master_symbol in series and "market_regime" in series[master_symbol].columns:
+            window_regimes = series[master_symbol].iloc[start : end + 1]["market_regime"]
+            regime_dist = regime_distribution(window_regimes)
 
         results = []
         for agent in self.agents:
@@ -186,12 +252,15 @@ class BacktestEngine:
                 timeframe=timeframe,
                 benchmark_curve=benchmark_curve,
             )
+            by_regime = attribute_trades_by_regime(trades[agent.id], regime_by_symbol_ts)
             results.append(
                 {
                     "agent_id": agent.id,
                     "name": agent.name,
                     "strategy_config": cfg.to_dict() if cfg else {"strategy_id": agent.id},
                     "metrics": metrics,
+                    "regime_performance": by_regime,
+                    "regime_fit": score_regime_fit(by_regime),
                     "trades": trades[agent.id],
                     "equity_curve": equity[agent.id],
                     "open_positions": {
@@ -216,16 +285,18 @@ class BacktestEngine:
         )
 
         payload = {
-            "run_id": self._run_id(symbols, timeframe, start, n),
+            "run_id": self._run_id(symbols, timeframe, start, end),
             "created_at": datetime.now(timezone.utc).isoformat(),
             "code_sha": _git_sha(),
             "timeframe": timeframe,
             "symbols": sorted(series.keys()),
             "benchmark_symbol": bench_sym,
             "warm_up": warm_up,
-            "bars_tested": (n - 1) - start,
+            "bars_tested": end - start,
             "start_ts": str(master["ts"].iloc[start]),
-            "end_ts": str(master["ts"].iloc[n - 1]),
+            "end_ts": str(master["ts"].iloc[end]),
+            "test_start_ts": test_start_ts,
+            "test_end_ts": test_end_ts,
             "execution_model": "signal_on_bar_close_fill_next_open",
             "risk": {
                 "starting_cash": risk.starting_cash,
@@ -235,6 +306,7 @@ class BacktestEngine:
                 "max_positions": risk.max_positions,
                 "atr_stop_mult": risk.atr_stop_mult,
             },
+            "market_regime_distribution": regime_dist,
             "benchmark_curve": benchmark_curve,
             "agents": results,
             "separates_paper_trading": True,
@@ -242,8 +314,10 @@ class BacktestEngine:
         }
         return payload
 
-    def _run_id(self, symbols: list[str], timeframe: str, start: int, n: int) -> str:
-        raw = f"{timeframe}|{','.join(sorted(symbols))}|{start}|{n}|{_git_sha() or 'nogit'}"
+    def _run_id(self, symbols: list[str], timeframe: str, start: int, end: int) -> str:
+        raw = (
+            f"{timeframe}|{','.join(sorted(symbols))}|{start}|{end}|{_git_sha() or 'nogit'}"
+        )
         return hashlib.sha1(raw.encode()).hexdigest()[:12]
 
     def _marks(

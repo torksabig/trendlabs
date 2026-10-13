@@ -8,6 +8,8 @@ USAGE = """TrendLab workers
 Usage:
   python -m trendlabs.collect [--symbols AAPL MSFT] [--timeframe 1h]
   python -m trendlabs.simulate [--timeframe 1h]
+  python -m trendlabs.backtest [--timeframe 1h]
+  python -m trendlabs.walk_forward [--timeframe 1h]
   python -m trendlabs.seed [--timeframe 1h]
 """
 

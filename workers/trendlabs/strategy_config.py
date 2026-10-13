@@ -22,6 +22,8 @@ class EmaTrendParams:
     fast_ema: int = 20
     medium_ema: int = 50
     slow_ema: int = 200
+    # Optional ADX gate for experiment variants (None = disabled).
+    adx_min: float | None = None
 
 
 @dataclass(frozen=True)

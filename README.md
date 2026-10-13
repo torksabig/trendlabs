@@ -86,12 +86,29 @@ npm run research -- --symbol AAPL --provider fallback
 
 Optional every-4-hours Mac schedule: copy `ops/macos/com.trendlabs.research.plist`, edit paths, then `launchctl load ~/Library/LaunchAgents/com.trendlabs.research.plist`.
 
+## Evaluation (V2)
+
+Deterministic historical replay is separate from forward paper-trading state.
+
+```bash
+npm run backtest        # full-period backtest → data/backtests/ + public/data/backtests/
+npm run walk-forward    # rolling OOS folds (+ full backtest) → data/walk_forward/
+```
+
+- Next-bar open fills, fees/slippage, Sharpe / Sortino / drawdown / α vs SPY  
+- Walk-forward combines **out-of-sample** folds only (calibration windows reserved for later experiments)  
+- Market regimes (`trending_bullish`, `trending_bearish`, `high_volatility`, `low_volatility`, `sideways`, `risk_off`) with per-agent attribution  
+- Strategy parameters live in `workers/trendlabs/strategy_config.py`  
+- Dashboard: `/backtests` + Arena risk-adjusted leaderboard (`/api/walk-forward`, `/api/backtests`)
+
 ## Supabase
 
 Apply:
 
 1. `supabase/migrations/001_trendlabs_schema.sql`  
 2. `supabase/migrations/002_agent_reports.sql`  
+3. `supabase/migrations/003_backtests_experiments.sql`  
+4. `supabase/migrations/004_market_regimes_walk_forward.sql`  
 
 Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload research reports. Never put the secret key in the Next.js client bundle.
 

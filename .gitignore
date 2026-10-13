@@ -51,7 +51,10 @@ data/*.db-journal
 !data/snapshots/
 !public/data/
 
-# Backtest run dumps (keep latest via force-add if needed)
+# Backtest / walk-forward run dumps (keep latest for dashboard)
 data/backtests/*
 !data/backtests/.gitkeep
 !data/backtests/latest.json
+data/walk_forward/*
+!data/walk_forward/.gitkeep
+!data/walk_forward/latest.json

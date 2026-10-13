@@ -51,6 +51,7 @@ def build_snapshot(store: Store, timeframe: str = "1h") -> dict[str, Any]:
                 "timeframe": timeframe,
                 "last_close": float(last["close"]),
                 "trend_label": last["trend_label"],
+                "market_regime": last.get("market_regime", last["trend_label"]),
                 "ema_20": _json_safe(last["ema_20"]),
                 "ema_50": _json_safe(last["ema_50"]),
                 "ema_200": _json_safe(last["ema_200"]),

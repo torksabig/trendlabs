@@ -12,6 +12,7 @@
     "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
     "predict": "cd workers && ../.venv/bin/python -m trendlabs.predict",
     "backtest": "cd workers && ../.venv/bin/python -m trendlabs.backtest",
+    "walk-forward": "cd workers && ../.venv/bin/python -m trendlabs.walk_forward --also-full-backtest",
     "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
   },
   "dependencies": {

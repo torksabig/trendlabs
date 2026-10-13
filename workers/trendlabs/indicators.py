@@ -84,14 +84,9 @@ def enrich(df: pd.DataFrame) -> pd.DataFrame:
     st = supertrend(out)
     out = out.join(st)
 
-    def classify(row: pd.Series) -> str:
-        if pd.isna(row["ema_20"]) or pd.isna(row["ema_50"]):
-            return "unknown"
-        if row["ema_20"] > row["ema_50"] and row["close"] > row["ema_50"] and (row.get("adx_14") or 0) >= 20:
-            return "bullish"
-        if row["ema_20"] < row["ema_50"] and row["close"] < row["ema_50"] and (row.get("adx_14") or 0) >= 20:
-            return "bearish"
-        return "sideways"
+    # Quantitative regime engine (TrendLab V2). trend_label kept as alias for UI/snapshot.
+    from trendlabs.regimes import classify_series
 
-    out["trend_label"] = out.apply(classify, axis=1)
+    out["market_regime"] = classify_series(out)
+    out["trend_label"] = out["market_regime"]
     return out

@@ -46,6 +46,9 @@ export async function GET() {
       agent_id: a.agent_id,
       name: a.name,
       metrics: a.metrics,
+      regime_performance: a.regime_performance,
+      regime_fit: a.regime_fit,
     })),
+    market_regime_distribution: payload.market_regime_distribution,
   });
 }

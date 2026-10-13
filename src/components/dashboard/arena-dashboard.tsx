@@ -40,7 +40,25 @@ type LlmStatus = {
   providers?: LlmProviderRow[];
 };
 
+type RiskRow = {
+  agent_id: string;
+  name: string;
+  metrics: {
+    total_return_pct?: number;
+    sharpe?: number | null;
+    mean_fold_sharpe?: number | null;
+    max_drawdown_pct?: number;
+    trade_count?: number;
+    alpha_pct?: number | null;
+  };
+};
+
 const STORAGE_KEY = "trendlabs.llm.provider";
+
+function regimeLabel(raw: string | undefined) {
+  if (!raw) return "Unknown";
+  return raw.replace(/_/g, " ");
+}
 
 export function ArenaDashboard({ snapshot }: Props) {
   const router = useRouter();
@@ -49,6 +67,8 @@ export function ArenaDashboard({ snapshot }: Props) {
   const [chartRefresh, setChartRefresh] = useState(0);
   const [provider, setProvider] = useState("auto");
   const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
+  const [riskBoard, setRiskBoard] = useState<RiskRow[] | null>(null);
+  const [riskSource, setRiskSource] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [runUrl, setRunUrl] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -82,7 +102,38 @@ export function ArenaDashboard({ snapshot }: Props) {
         // selector still works with static auto/fallback options
       }
     }
+    async function loadRisk() {
+      try {
+        const wfRes = await fetch("/api/walk-forward", { cache: "no-store" });
+        if (wfRes.ok) {
+          const data = (await wfRes.json()) as {
+            ok?: boolean;
+            fold_count?: number;
+            leaderboard?: RiskRow[];
+          };
+          if (!cancelled && data.ok && data.leaderboard?.length) {
+            setRiskBoard(data.leaderboard);
+            setRiskSource(`Walk-forward OOS · ${data.fold_count ?? "?"} folds`);
+            return;
+          }
+        }
+        const btRes = await fetch("/api/backtests", { cache: "no-store" });
+        if (btRes.ok) {
+          const data = (await btRes.json()) as {
+            ok?: boolean;
+            leaderboard?: RiskRow[];
+          };
+          if (!cancelled && data.ok && data.leaderboard?.length) {
+            setRiskBoard(data.leaderboard);
+            setRiskSource("Full-period backtest");
+          }
+        }
+      } catch {
+        // paper leaderboard still shown
+      }
+    }
     void loadLlm();
+    void loadRisk();
     return () => {
       cancelled = true;
     };
@@ -322,26 +373,105 @@ export function ArenaDashboard({ snapshot }: Props) {
       {/* Main arena */}
       <div className="space-y-6">
         <header>
+          <p className="text-xs uppercase tracking-[0.22em] text-slateui-dim">
+            Market experiment terminal
+          </p>
           <h1 className="font-display text-4xl text-ink sm:text-5xl">TrendLab Arena</h1>
+          <p className="mt-2 font-mono text-sm text-slateui">
+            {symbol} · {interval} · Market regime:{" "}
+            <span className="text-mint">
+              {regimeLabel(market?.market_regime || market?.trend_label)}
+            </span>
+            {market?.adx_14 != null ? (
+              <span className="text-slateui-dim"> · ADX {market.adx_14.toFixed(1)}</span>
+            ) : null}
+          </p>
         </header>
 
         <UpdateTimeline snapshot={snapshot} />
 
         <HourlyPredictions snapshot={snapshot} focusSymbol={symbol} />
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {snapshot.leaderboard.map((agent) => (
-            <div key={agent.id} className="metric">
-              <p className="text-xs uppercase tracking-wider text-slateui-dim">
-                {shortName(agent.name)}
-              </p>
-              <p className="mt-2 font-mono text-2xl text-ink">{formatMoney(agent.equity)}</p>
-              <p className={`mt-1 font-mono text-sm ${pctTone(agent.return_pct)}`}>
-                {formatPct(agent.return_pct)}
-              </p>
+        {riskBoard && riskBoard.length > 0 ? (
+          <section className="panel overflow-x-auto p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 className="font-display text-2xl text-ink">Agent arena · risk-adjusted</h2>
+              <Link href="/backtests" className="text-sm text-mint hover:underline">
+                {riskSource || "Evaluation lab"}
+              </Link>
             </div>
-          ))}
-        </section>
+            <table className="mt-4 w-full min-w-[640px] text-left text-sm">
+              <thead className="text-xs uppercase tracking-wide text-slateui-dim">
+                <tr>
+                  <th className="pb-2">Agent</th>
+                  <th className="pb-2">Return</th>
+                  <th className="pb-2">Sharpe</th>
+                  <th className="pb-2">Drawdown</th>
+                  <th className="pb-2">Trades</th>
+                  <th className="pb-2">Paper status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...riskBoard]
+                  .sort(
+                    (a, b) =>
+                      (b.metrics.mean_fold_sharpe ?? b.metrics.sharpe ?? -999) -
+                      (a.metrics.mean_fold_sharpe ?? a.metrics.sharpe ?? -999),
+                  )
+                  .map((row) => {
+                    const paper = snapshot.leaderboard.find((a) => a.id === row.agent_id);
+                    const sharpe = row.metrics.mean_fold_sharpe ?? row.metrics.sharpe;
+                    return (
+                      <tr key={row.agent_id} className="border-t border-white/10">
+                        <td className="py-2 text-ink">{shortName(row.name)}</td>
+                        <td
+                          className={`py-2 font-mono ${pctTone(row.metrics.total_return_pct ?? 0)}`}
+                        >
+                          {row.metrics.total_return_pct == null
+                            ? "—"
+                            : formatPct(row.metrics.total_return_pct)}
+                        </td>
+                        <td className="py-2 font-mono text-ink">
+                          {sharpe == null ? "—" : sharpe.toFixed(2)}
+                        </td>
+                        <td className="py-2 font-mono text-crimson">
+                          {row.metrics.max_drawdown_pct == null
+                            ? "—"
+                            : `${row.metrics.max_drawdown_pct.toFixed(1)}%`}
+                        </td>
+                        <td className="py-2 font-mono text-slateui">
+                          {row.metrics.trade_count ?? "—"}
+                        </td>
+                        <td className="py-2">
+                          <span
+                            className={
+                              (paper?.open_positions ?? 0) > 0 ? "text-mint" : "text-slateui"
+                            }
+                          >
+                            {(paper?.open_positions ?? 0) > 0 ? "LONG" : "FLAT"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </section>
+        ) : (
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {snapshot.leaderboard.map((agent) => (
+              <div key={agent.id} className="metric">
+                <p className="text-xs uppercase tracking-wider text-slateui-dim">
+                  {shortName(agent.name)}
+                </p>
+                <p className="mt-2 font-mono text-2xl text-ink">{formatMoney(agent.equity)}</p>
+                <p className={`mt-1 font-mono text-sm ${pctTone(agent.return_pct)}`}>
+                  {formatPct(agent.return_pct)}
+                </p>
+              </div>
+            ))}
+          </section>
+        )}
 
         <section className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
           <div className="panel p-5">
@@ -353,7 +483,7 @@ export function ArenaDashboard({ snapshot }: Props) {
 
           <div className="space-y-6">
             <div className="panel p-5">
-              <h2 className="font-display text-2xl text-ink">Leaderboard</h2>
+              <h2 className="font-display text-2xl text-ink">Paper books</h2>
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[420px] text-left text-sm">
                   <thead className="text-xs uppercase tracking-wide text-slateui-dim">

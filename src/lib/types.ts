@@ -14,6 +14,7 @@ export type Market = {
   timeframe: string;
   last_close: number;
   trend_label: string;
+  market_regime?: string;
   ema_20: number | null;
   ema_50: number | null;
   ema_200: number | null;
