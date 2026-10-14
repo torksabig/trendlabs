@@ -1,21 +1,31 @@
 # TrendLab
 
-Paper-trading research lab for trend-following equities strategies. Four deterministic agents each manage a simulated **$10,000** book across a fixed 12-symbol universe. A fifth **research LLM** (free-tier cloud, local Ollama, or rule-based fallback) interprets Python-verified analytics and proposes experiments — it **never** places orders.
+We're building a paper-trading sandbox to test whether simple trend-following rules hold up on a small equities universe. Four deterministic agents each manage a simulated **$10,000** book across a fixed 12-symbol set. A fifth **research LLM** (free-tier cloud, local Ollama, or a rule-based fallback) reads Python-verified analytics and proposes experiment ideas — it **never** places orders.
 
-Built for a **$0/month** posture: Vercel Hobby dashboard, GitHub Actions workers, optional free-tier market data and LLMs, SQLite locally, optional Supabase.
+The default stack aims for low or zero ongoing cost: Vercel Hobby for the dashboard, GitHub Actions for workers, optional free-tier market data and LLMs, SQLite locally, optional Supabase. That is a cost posture, not a performance claim.
+
+## Limits (read this first)
+
+This is exploratory research infrastructure, not a finished edge-finding system.
+
+- **Short history** on some symbols and timeframes — sample sizes can be thin.
+- **Survivorship bias** is not controlled; the universe is a fixed mega-cap / ETF list chosen for convenience.
+- **ML and information-coefficient results are early and weak** so far; treat them as scaffolding, not evidence.
+- Everything here is **paper only**. The LLM never trades. Accepted experiment variants are never auto-promoted into the paper agents.
+- Metrics are diagnostics under stated assumptions (fees, slippage heuristics, simple SPY excess return). They do not prove alpha.
 
 ## Architecture
 
-| Layer | Stack | Cost posture |
+| Layer | Stack | Notes |
 | --- | --- | --- |
-| Dashboard | Next.js + Tailwind on Vercel Hobby | Free |
-| Charts | TradingView Lightweight Charts | Free |
-| Market data | Alpaca Basic (optional) or Yahoo Finance | Free tier / public |
-| Trading agents | Deterministic Python strategies | Free |
-| Research agent | Free-tier cloud LLMs / Ollama / fallback | $0-friendly |
-| Automation | GitHub Actions (collect, simulate, research) | Free within limits |
-| Local AI (optional) | macOS `launchd` + Ollama | Free |
-| Persistence | SQLite workers + optional Supabase schema | Free tier |
+| Dashboard | Next.js + Tailwind on Vercel Hobby | UI only |
+| Charts | TradingView Lightweight Charts | |
+| Market data | Alpaca Basic (optional) or Yahoo Finance | Free tier / public; check feed quality |
+| Trading agents | Deterministic Python strategies | Paper fills only |
+| Research agent | Free-tier cloud LLMs / Ollama / fallback | Explains and proposes; does not trade |
+| Automation | GitHub Actions (collect, simulate, research) | Within Actions free limits |
+| Local AI (optional) | macOS `launchd` + Ollama | |
+| Persistence | SQLite workers + optional Supabase schema | |
 
 ```
 Alpaca / Yahoo → Python indicators & agents → snapshot JSON
@@ -34,7 +44,9 @@ See **[docs/DEPLOY.md](docs/DEPLOY.md)** for Vercel + Actions wiring (`GITHUB_TO
 
 AAPL, MSFT, NVDA, AMD, JPM, GS, XOM, CVX, JNJ, UNH, SPY, QQQ
 
-## Capabilities
+Fixed list for repeatable runs. Not a survivorship-adjusted universe.
+
+## What runs
 
 ### Trading agents (deterministic, paper only)
 
@@ -49,31 +61,33 @@ Shared risk defaults: **long-only**, **max 3 positions**, **1% equity** risk bud
 
 ### Research LLM
 
-Switch provider in the Arena sidebar or via `TRENDLAB_LLM_PROVIDER` (`auto` tries free-cloud keys → Ollama → fallback). Explains regimes, risks, and agent performance; proposes structured experiment variants for Python to evaluate. Schema forces `executes_trades: false`. Numerical claims are reconciled against Python snapshots.
+Switch provider in the Arena sidebar or via `TRENDLAB_LLM_PROVIDER` (`auto` tries free-cloud keys → Ollama → fallback). It summarizes regimes, risks, and agent stats, and can propose structured experiment variants for Python to evaluate. Schema forces `executes_trades: false`. Numerical claims are reconciled against Python snapshots when possible.
 
 ### Backtesting & walk-forward
 
-Historical replay is **separate** from forward paper books. Full-period backtests write `data/backtests/`; rolling OOS folds write `data/walk_forward/` (leaderboard stitches **test folds only**).
+Historical replay is **separate** from the forward paper books. Full-period backtests write `data/backtests/`; rolling OOS folds write `data/walk_forward/` (the leaderboard stitches **test folds only**). Useful for comparing rules under one protocol — not a guarantee that anything transfers live.
 
 ### Regimes
 
-Rule-based labels on each bar (`risk_off`, `high_volatility`, `trending_bullish` / `trending_bearish`, `low_volatility`, `sideways`, `unknown`) with trade attribution and fit scores for strategy evaluation.
+Rule-based labels on each bar (`risk_off`, `high_volatility`, `trending_bullish` / `trending_bearish`, `low_volatility`, `sideways`, `unknown`), plus trade attribution and heuristic fit scores. These are labels we compute for slicing results, not ground-truth market regimes.
 
 ### Experiment engine
 
-Control vs variant on walk-forward OOS folds → `accept` / `reject` / `insufficient`. Catalog experiments ship without an LLM; `npm run llm-experiment` asks the research LLM for 1–3 structured proposals, then Python evaluates them. **Accepted variants are never auto-promoted** into live paper agents.
+Control vs variant on walk-forward OOS folds → `accept` / `reject` / `insufficient`. Catalog experiments run without an LLM; `npm run llm-experiment` asks the research LLM for 1–3 structured proposals, then Python evaluates them. **Accepted variants are never auto-promoted** into live paper agents.
 
 ### Predictions & calibration
 
-Rule-based hourly outlooks (`indicator_score_v1`: up / down / sideways) from EMA/RSI/ADX/trend score. Confidence is a **heuristic** (score magnitude + ADX boost), not a probability from historical calibration. `predict-eval` scores 1h / 4h / 24h realized moves and builds a confidence-bucket calibration table.
+Rule-based hourly outlooks (`indicator_score_v1`: up / down / sideways) from EMA/RSI/ADX/trend score. Confidence is a **heuristic** (score magnitude + ADX boost), not a probability from historical calibration. `predict-eval` scores 1h / 4h / 24h realized moves and builds a confidence-bucket calibration table so we can see how wrong the heuristic is.
 
 ### XGBoost ML (research)
 
-Per-symbol classifiers on candle features, time-ordered holdout (no shuffle). Artifacts under `data/ml/`. Research only — `executes_trades: false`.
+Per-symbol classifiers on candle features, time-ordered holdout (no shuffle). Artifacts under `data/ml/`. Research only — `executes_trades: false`. Early holdout numbers have been weak; do not treat them as a trading signal.
 
 ---
 
 ## Math & methodology
+
+What we compute, and why — so runs are comparable. None of this is offered as proof of edge.
 
 ### Execution model (backtest + paper sim)
 
@@ -99,6 +113,8 @@ Computed on the equity curve and paired BUY→SELL round-trips (`workers/trendla
 | **Exposure** | Fraction of equity points with invested capital (equity − cash > 0) |
 | **α vs SPY** | Strategy total return − buy-and-hold SPY return over the same window (**simple excess return**, not CAPM β-adjusted alpha) |
 | **Win rate / streaks** | From fee-adjusted round-trip PnL |
+
+We use these to compare agents and experiment variants under one protocol. High Sharpe in a thin sample is not evidence by itself.
 
 ### Walk-forward OOS
 
@@ -132,13 +148,13 @@ Defaults in `AcceptanceCriteria`:
 | Max DD worsen | ≤ 3 pp | Variant may not deepen DD beyond this |
 | Fold robustness | ≥ 50% of folds | Variant Sharpe ≥ control |
 
-Fail any (except trade count → `insufficient`) → `reject`. Pass all → `accept`. Never mutates paper books.
+Fail any (except trade count → `insufficient`) → `reject`. Pass all → `accept`. Gates only decide whether a variant looks better than control under this protocol. They never mutate paper books.
 
 ### Prediction scoring & calibration
 
 - Realized move: percent change from signal-bar close to a forward bar (1 / 4 / 24 hour offsets on 1h data; wall-clock fallback if sparse).
 - Directional “hit” uses a ±0.05% band for sideways.
-- Calibration table buckets predicted confidence (50–60% … 90%+) vs realized accuracy; flags **overconfident** when accuracy lags bucket midpoint by >5pp (n ≥ 5). Rule-based confidence is **not** guaranteed calibrated.
+- Calibration table buckets predicted confidence (50–60% … 90%+) vs realized accuracy; flags **overconfident** when accuracy lags bucket midpoint by >5pp (n ≥ 5). Rule-based confidence is **not** historically calibrated.
 
 ### ML features, labels, split
 
@@ -179,7 +195,7 @@ npm run ml-predict -- --score-holdout
 npm run ml-predict -- --timeframe 1d
 ```
 
-### Research LLM providers ($0-friendly)
+### Research LLM providers
 
 `TRENDLAB_LLM_PROVIDER=auto` (default) tries free-cloud keys in order, then Ollama, then rule-based fallback. Explicit: `google`, `groq`, `openrouter`, `cloudflare`, `cerebras`, `mistral`, `ollama`, `fallback`.
 
@@ -226,4 +242,4 @@ Apply migrations `001`–`004` under `supabase/migrations/`. Set `SUPABASE_URL` 
 - LLM and ML paths set `executes_trades: false` (schema-enforced where applicable).
 - Experiment accept ≠ promote; paper agent params stay on defaults unless you change code/config yourself.
 - Delayed/IEX vs consolidated feeds are labeled in candle metadata; do not treat IEX as SIP.
-- Not a broker, not investment advice, not a claim of edge. Metrics are research diagnostics under the assumptions above (fees/slippage heuristics, simple SPY excess return, rule-based confidence).
+- Not a broker, not investment advice, not a claim of edge. Metrics are research diagnostics under the assumptions above.
