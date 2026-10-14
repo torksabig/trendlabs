@@ -19,6 +19,14 @@ from trendlabs.config import (
 
 Source = Literal["alpaca", "yfinance"]
 
+# Yahoo Finance hard caps by interval (as of 2024/2025 public API behavior).
+YFINANCE_MAX_PERIOD = {
+    "15m": "60d",
+    "1h": "730d",
+    "4h": "730d",  # resampled from 60m
+    "1d": "max",
+}
+
 
 class MarketDataClient:
     def __init__(self) -> None:
@@ -33,17 +41,24 @@ class MarketDataClient:
         symbol: str,
         timeframe: str = "1h",
         limit: int = LOOKBACK_BARS,
+        *,
+        full_history: bool = False,
     ) -> pd.DataFrame:
         if timeframe not in TIMEFRAMES:
             raise ValueError(f"Unsupported timeframe: {timeframe}")
 
-        if self.alpaca_ready:
+        if self.alpaca_ready and not full_history:
             try:
                 return self._fetch_alpaca(symbol, timeframe, limit)
             except Exception:
                 # Fall through to Yahoo so local/CI runs stay $0 and unblocked.
                 pass
-        return self._fetch_yfinance(symbol, timeframe, limit)
+        return self._fetch_yfinance(
+            symbol,
+            timeframe,
+            limit,
+            full_history=full_history,
+        )
 
     def _fetch_alpaca(self, symbol: str, timeframe: str, limit: int) -> pd.DataFrame:
         tf = TIMEFRAMES[timeframe]["alpaca"]
@@ -89,12 +104,22 @@ class MarketDataClient:
         df["adjusted"] = True
         return df
 
-    def _fetch_yfinance(self, symbol: str, timeframe: str, limit: int) -> pd.DataFrame:
+    def _fetch_yfinance(
+        self,
+        symbol: str,
+        timeframe: str,
+        limit: int,
+        *,
+        full_history: bool = False,
+    ) -> pd.DataFrame:
         cfg = TIMEFRAMES[timeframe]
         interval = cfg["yf"]
-        period = cfg["period"]
+        period = YFINANCE_MAX_PERIOD.get(timeframe, cfg["period"]) if full_history else cfg["period"]
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period=period, interval=interval, auto_adjust=True)
+        if hist.empty and full_history and timeframe == "1d":
+            # Explicit start for QQQ-era ETFs if period=max fails
+            hist = ticker.history(start="1990-01-01", interval=interval, auto_adjust=True)
         if hist.empty:
             raise ValueError(f"No Yahoo Finance data for {symbol} {timeframe}")
 
@@ -114,7 +139,10 @@ class MarketDataClient:
         df = df.sort_values("ts")
         if timeframe == "4h":
             df = self._resample_ohlcv(df, "4h")
-        df = self._drop_duplicates(df).tail(limit).reset_index(drop=True)
+        df = self._drop_duplicates(df)
+        if not full_history:
+            df = df.tail(limit)
+        df = df.reset_index(drop=True)
         df["symbol"] = symbol.upper()
         df["timeframe"] = timeframe
         df["source"] = "yfinance"
