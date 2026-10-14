@@ -10,6 +10,8 @@
     "extract": "cd workers && ../.venv/bin/python -m trendlabs.extract",
     "collect": "cd workers && ../.venv/bin/python -m trendlabs.collect",
     "test:extract": "cd workers && ../.venv/bin/python -m unittest trendlabs.test_market_data -v",
+    "repeating-trends": "cd workers && ../.venv/bin/python -m trendlabs.repeating_trends",
+    "test:repeating-trends": "cd workers && ../.venv/bin/python -m unittest trendlabs.test_repeating_trends -v",
     "simulate": "cd workers && ../.venv/bin/python -m trendlabs.simulate",
     "research": "cd workers && ../.venv/bin/python -m trendlabs.research",
     "predict": "cd workers && ../.venv/bin/python -m trendlabs.predict",

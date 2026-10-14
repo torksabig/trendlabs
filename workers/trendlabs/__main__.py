@@ -7,6 +7,7 @@ USAGE = """TrendLab workers
 
 Usage:
   python -m trendlabs.extract [--symbols AAPL MSFT] [--timeframes 1d 1h]
+  python -m trendlabs.repeating_trends [--symbols AAPL] [--timeframe 1d] [--window 20]
   python -m trendlabs.collect [--symbols AAPL MSFT] [--timeframe 1h] [--full-history]
   python -m trendlabs.simulate [--timeframe 1h]
   python -m trendlabs.backtest [--timeframe 1h]

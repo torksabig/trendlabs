@@ -64,3 +64,6 @@ data/experiments/*
 data/prediction_eval/*
 !data/prediction_eval/.gitkeep
 !data/prediction_eval/latest.json
+data/repeating_trends/*
+!data/repeating_trends/.gitkeep
+!data/repeating_trends/latest.json
