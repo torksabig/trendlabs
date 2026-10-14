@@ -15,6 +15,8 @@
     "walk-forward": "cd workers && ../.venv/bin/python -m trendlabs.walk_forward --also-full-backtest",
     "experiment": "cd workers && ../.venv/bin/python -m trendlabs.experiments",
     "predict-eval": "cd workers && ../.venv/bin/python -m trendlabs.prediction_eval",
+    "ml-train": "cd workers && ../.venv/bin/python -m trendlabs.ml_train",
+    "ml-predict": "cd workers && ../.venv/bin/python -m trendlabs.ml_predict",
     "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
   },
   "dependencies": {
