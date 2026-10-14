@@ -80,6 +80,7 @@ data/prediction_engine/*
 !data/prediction_engine/baselines_results.json
 !data/prediction_engine/xgb_results.json
 !data/prediction_engine/ic_comparison.json
+!data/prediction_engine/economic_eval.json
 !data/prediction_engine/pe_dataset_v1.parquet
 # CSV duplicate of parquet — regenerate via npm run pe-dataset
 data/prediction_engine/*.csv

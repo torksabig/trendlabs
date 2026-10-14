@@ -1,4 +1,4 @@
-"""TrendLab Prediction Engine V1 — research ranking stack (Phases A–C scaffold).
+"""TrendLab Prediction Engine V1 — research ranking stack (Phases A–E).
 
 See docs/PREDICTION_ENGINE_V1.md. Separate from legacy ternary ml_train.py.
 """

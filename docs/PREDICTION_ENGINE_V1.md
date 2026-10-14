@@ -1,7 +1,7 @@
 # TrendLab Prediction Engine V1 — Engineering Spec
 
 **Status:** Research / exploratory  
-**Scope this pass:** Phases A + B (+ light Phase C scaffold)  
+**Scope this pass:** Phases A–E (dataset, baselines, light XGB, OOS quintiles, economic simulator + V1 gate)  
 **Out of scope:** Dashboard UI, conformal calibration, full quantile Q10/Q50/Q90 (interfaces may be stubbed), point-in-time S&P 500 membership, live capital, intraday, brokerage deploy
 
 **Disclaimer (all outputs):** `EXPLORATORY — SURVIVORSHIP BIAS NOT FULLY CONTROLLED`
@@ -164,7 +164,20 @@ Per test day with ≥2 names:
 - XGBoost **regressor** predicting \(z\) (not ternary classification).
 - Same purged walk-forward and IC metrics as baselines.
 - Simple regularized hyperparameters; **no** hyperparameter hunt.
+- **Scaling:** Ridge keeps `StandardScaler` fit on **train only**. XGBoost uses **raw features** (no StandardScaler) — trees do not need it.
 - Stub interfaces for future quantile heads (Q10 / Q50 / Q90) and conformal calibration — not fully implemented.
+
+---
+
+## Phase D/E — OOS Quintiles + Economic Simulator
+
+After purged walk-forward OOS \(\hat{z}\):
+
+1. **Quintiles** — each OOS date, rank by \(\hat{z}\) into Q1…Q5 (SPY excluded from ranks when that convention is on). Report mean realized \(z\) and tradable \(R=\ln(\mathrm{close}_{t+5}/\mathrm{open}_{t+1})\) per quintile; flag broadly monotonic Q1\<…\<Q5; keep Q5−Q1 spreads on \(z\) and \(R\).
+2. **Paper portfolio** — long equal-weight Q5; entry open\(_{t+1}\), exit close\(_{t+5}\); rebalance on non-overlapping prediction schedule (every horizon dates). Turnover → cost models **10 bps** and **20 bps** round-trip. Metrics: total return, CAGR, Sharpe, max DD, mean turnover. Optional long Q5 / short Q1 spread net of costs.
+3. **V1 gate** (fixed bars — do not lower after seeing results): MeanIC \> 0.03; positive WF folds ≥ 60%; broadly monotonic quantiles; beat 12−1 momentum predictively or economically; Q5−Q1 net Sharpe @ 10 bps \> 0.5; 20 bps stress positive expectancy. Always stamp `EXPLORATORY — SURVIVORSHIP BIAS NOT FULLY CONTROLLED`. Decision `PASS` / `FAIL` / `INSUFFICIENT` with reasons JSON in `economic_eval.json`.
+
+No new features in D/E — evaluation only.
 
 ---
 
@@ -173,8 +186,8 @@ Per test day with ≥2 names:
 1. Sort dates chronologically.
 2. Expanding or rolling train window; default expanding with minimum train length.
 3. Purge gap \(G \ge 5\) trading days after last train label-origin date before first test date.
-4. Fit scalers/models on train fold only; apply to test.
-5. Report IC table for all baselines + XGB.
+4. Fit Ridge scaler/model on train fold only; XGB on raw train features only; apply to test.
+5. Report IC table for all baselines + XGB; then quintiles, economic stress, and V1 gate.
 
 ---
 
@@ -185,6 +198,7 @@ Per test day with ≥2 names:
 | `npm run pe-dataset` | Build/export research dataset + manifest |
 | `npm run pe-baselines` | Run baselines; write IC results JSON |
 | `npm run pe-train` | Train XGB regressor; write IC results JSON |
+| `npm run pe-eval` | OOS quintiles + economic sim + V1 gate → `economic_eval.json` |
 
 Artifacts under `data/prediction_engine/`.
 
@@ -193,10 +207,11 @@ Artifacts under `data/prediction_engine/`.
 ## Tests (Required)
 
 - Features contain **no future bars** (shift/leakage checks).
-- Target uses **open\_{t+1}** and **close\_{t+5}**.
+- Target uses **open\_{t+1}** and **close\_{t+5}** (no same-bar entry).
 - Walk-forward **purge gap** ≥ 5.
 - Baseline **determinism** (same seed → same scores/IC).
-- Scaling / Ridge / XGB fit on **train only**.
+- Ridge scaler fit on **train only**; XGB **unscaled**.
+- Cost / turnover helpers; deterministic quintile labels.
 
 ---
 
@@ -209,6 +224,7 @@ Artifacts under `data/prediction_engine/`.
 - Production quantile model
 - Point-in-time index membership
 - Intraday features or labels
+- New predictive features beyond the frozen V1 set
 
 ---
 

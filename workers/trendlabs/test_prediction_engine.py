@@ -20,8 +20,12 @@ from trendlabs.prediction.baselines import (
 from trendlabs.prediction.dataset import build_research_dataset, write_dataset
 from trendlabs.prediction.features import FEATURE_COLUMNS, symbol_features
 from trendlabs.prediction.targets import actionable_return, attach_targets, sigma_at_t, daily_log_returns
+from trendlabs.prediction.economic import cost_from_turnover, one_way_turnover, simulate_paper_portfolio
+from trendlabs.prediction.metrics_ic import assign_quintiles
+from trendlabs.prediction.targets import actionable_return
 from trendlabs.prediction.train import fit_xgb_predict
 from trendlabs.prediction.walk_forward import generate_purged_folds, purge_gap_ok
+from xgboost import XGBRegressor
 
 
 def _synth_ohlcv(symbol: str, n: int = 800, seed: int = 7, start: str = "2010-01-04") -> pd.DataFrame:
@@ -154,6 +158,90 @@ class ScalingTrainOnlyTests(unittest.TestCase):
         a = fit_xgb_predict(train, test)
         b = fit_xgb_predict(train, test)
         self.assertTrue(np.allclose(a.dropna(), b.dropna(), rtol=1e-5, atol=1e-5))
+
+    def test_xgb_does_not_use_standard_scaler(self) -> None:
+        """XGBoost must fit/predict on raw features; Ridge still scales."""
+        import trendlabs.prediction.train as train_mod
+
+        full = symbol_features(attach_targets(_synth_ohlcv("NVDA", n=700, seed=9)))
+        full["RS_SPY_20"] = full["MOM20"]
+        full["SPY_MOM20"] = 0.0
+        full["SPY_VOL20"] = 0.01
+        full["XS_Dispersion"] = 0.01
+        full = full.dropna(subset=FEATURE_COLUMNS + ["z"]).reset_index(drop=True)
+        split = int(len(full) * 0.75)
+        train = full.iloc[:split].copy()
+        test = full.iloc[split:].copy()
+
+        # Guard: StandardScaler must not be imported or constructed in the XGB train module
+        self.assertFalse(hasattr(train_mod, "StandardScaler"))
+        import inspect
+
+        mod_src = inspect.getsource(train_mod)
+        self.assertNotIn("from sklearn.preprocessing import StandardScaler", mod_src)
+        self.assertNotIn("StandardScaler()", mod_src)
+
+        pe_pred = fit_xgb_predict(train, test)
+        # Manual unscaled XGB with same hyperparams defaults used in train module
+        from trendlabs.prediction.train import XGB_PARAMS
+
+        model = XGBRegressor(**XGB_PARAMS)
+        X_tr = train[FEATURE_COLUMNS].astype(float)
+        y_tr = train["z"].astype(float)
+        ok_tr = X_tr.notna().all(axis=1) & y_tr.notna()
+        model.fit(X_tr.loc[ok_tr], y_tr.loc[ok_tr])
+        X_te = test[FEATURE_COLUMNS].astype(float)
+        ok_te = X_te.notna().all(axis=1)
+        manual = pd.Series(np.nan, index=test.index, dtype=float)
+        manual.loc[ok_te] = model.predict(X_te.loc[ok_te])
+        self.assertTrue(np.allclose(pe_pred.dropna(), manual.dropna(), rtol=1e-5, atol=1e-5))
+
+        # Ridge path still uses StandardScaler (contrast)
+        ridge_src = inspect.getsource(fit_ridge_predict)
+        self.assertIn("StandardScaler()", ridge_src)
+
+
+class QuintileDeterminismTests(unittest.TestCase):
+    def test_quintiles_deterministic(self) -> None:
+        rng = np.random.default_rng(0)
+        scores = pd.Series(rng.normal(size=50))
+        a = assign_quintiles(scores)
+        b = assign_quintiles(scores)
+        self.assertTrue(np.array_equal(a.to_numpy(), b.to_numpy(), equal_nan=True))
+        self.assertEqual(set(a.dropna().unique()), {1.0, 2.0, 3.0, 4.0, 5.0})
+
+
+class EconomicCostTests(unittest.TestCase):
+    def test_turnover_and_cost(self) -> None:
+        prev = {"A": 0.5, "B": 0.5}
+        nxt = {"A": 0.0, "B": 0.5, "C": 0.5}
+        # Δ: A -0.5, B 0, C +0.5 → sum abs = 1.0 → one-way = 0.5
+        self.assertAlmostEqual(one_way_turnover(prev, nxt), 0.5)
+        self.assertAlmostEqual(cost_from_turnover(0.5, 10.0), 0.5 * 10 / 10_000)
+        self.assertAlmostEqual(cost_from_turnover(1.0, 20.0), 20 / 10_000)
+
+    def test_no_same_bar_entry_in_target(self) -> None:
+        df = _synth_ohlcv("TEST", n=40, seed=11)
+        R = actionable_return(df["open"], df["close"], horizon=5)
+        t = 10
+        # Same-bar (wrong) would use close[t]; correct uses open[t+1]
+        wrong = np.log(df["close"].iloc[t + 5] / df["close"].iloc[t])
+        right = np.log(df["close"].iloc[t + 5] / df["open"].iloc[t + 1])
+        self.assertTrue(np.isclose(R.iloc[t], right))
+        self.assertFalse(np.isclose(R.iloc[t], wrong) and not np.isclose(right, wrong))
+
+    def test_simulate_applies_costs(self) -> None:
+        # Two signal dates, full turnover each time
+        holdings = pd.DataFrame(
+            [
+                {"ts": pd.Timestamp("2020-01-02", tz="UTC"), "long_symbols": ("A", "B"), "short_symbols": (), "gross_R": 0.01, "n_long": 2, "n_short": 0},
+                {"ts": pd.Timestamp("2020-01-09", tz="UTC"), "long_symbols": ("C", "D"), "short_symbols": (), "gross_R": 0.01, "n_long": 2, "n_short": 0},
+            ]
+        )
+        zero = simulate_paper_portfolio(holdings, round_trip_bps=0.0, horizon_days=5, rebalance_every=1)
+        taxed = simulate_paper_portfolio(holdings, round_trip_bps=20.0, horizon_days=5, rebalance_every=1)
+        self.assertGreater(zero["total_return"], taxed["total_return"])
+        self.assertTrue(taxed["mean_turnover"] is not None and taxed["mean_turnover"] > 0)
 
 
 class IntegrationDatasetTests(unittest.TestCase):

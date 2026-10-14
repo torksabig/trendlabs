@@ -10,14 +10,13 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from xgboost import XGBRegressor
 
 from trendlabs.prediction import DATASET_VERSION, DISCLAIMER, PURGE_GAP_DAYS
 from trendlabs.prediction.baselines import run_baselines_walk_forward
 from trendlabs.prediction.dataset import PE_DIR, load_exported_dataset
 from trendlabs.prediction.features import FEATURE_COLUMNS
-from trendlabs.prediction.metrics_ic import evaluate_scores
+from trendlabs.prediction.metrics_ic import evaluate_scores, fold_mean_ic_stats
 from trendlabs.prediction.walk_forward import generate_purged_folds, mask_dates, unique_sorted_dates
 
 # Simple regularized defaults — no hyperparameter hunt.
@@ -44,7 +43,7 @@ def fit_xgb_predict(
     feature_cols: list[str] = FEATURE_COLUMNS,
     params: dict[str, Any] | None = None,
 ) -> pd.Series:
-    """Fit scaler + XGB on train only; predict z_hat on test."""
+    """Fit XGB on raw train features only; predict z_hat on test (no StandardScaler)."""
     params = {**XGB_PARAMS, **(params or {})}
     X_train = train[feature_cols].astype(float)
     y_train = train["z"].astype(float)
@@ -55,15 +54,13 @@ def fit_xgb_predict(
     if len(X_train) < 50:
         return pred
 
-    scaler = StandardScaler()
-    Xs = scaler.fit_transform(X_train)
     model = XGBRegressor(**params)
-    model.fit(Xs, y_train)
+    model.fit(X_train, y_train)
 
     X_test = test[feature_cols].astype(float)
     ok = X_test.notna().all(axis=1)
     if ok.any():
-        pred.loc[ok] = model.predict(scaler.transform(X_test.loc[ok]))
+        pred.loc[ok] = model.predict(X_test.loc[ok])
     return pred
 
 
@@ -75,6 +72,7 @@ def run_xgb_walk_forward(
     step_days: int | None = None,
     purge_gap: int = PURGE_GAP_DAYS,
     rank_exclude_spy: bool = True,
+    return_oos: bool = False,
 ) -> dict[str, Any]:
     work = panel.copy()
     work["ts"] = pd.to_datetime(work["ts"], utc=True)
@@ -89,7 +87,10 @@ def run_xgb_walk_forward(
         purge_gap=purge_gap,
     )
     if not folds:
-        return {"disclaimer": DISCLAIMER, "error": "no_folds", "xgboost": {}}
+        out: dict[str, Any] = {"disclaimer": DISCLAIMER, "error": "no_folds", "xgboost": {}}
+        if return_oos:
+            out["oos"] = pd.DataFrame()
+        return out
 
     oos_parts: list[pd.DataFrame] = []
     for fold in folds:
@@ -97,16 +98,22 @@ def run_xgb_walk_forward(
         test = mask_dates(rank_panel, fold.test_dates)
         if test.empty or train.empty:
             continue
-        chunk = test[["symbol", "ts", "z", "R"]].copy()
+        keep_cols = [c for c in ["symbol", "ts", "z", "R", "open", "close", "MOM12_1"] if c in test.columns]
+        chunk = test[keep_cols].copy()
         chunk["fold_id"] = fold.fold_id
         chunk["z_hat"] = fit_xgb_predict(train, test)
         oos_parts.append(chunk)
 
     if not oos_parts:
-        return {"disclaimer": DISCLAIMER, "error": "empty_oos", "xgboost": {}}
+        out = {"disclaimer": DISCLAIMER, "error": "empty_oos", "xgboost": {}}
+        if return_oos:
+            out["oos"] = pd.DataFrame()
+        return out
 
     oos = pd.concat(oos_parts, ignore_index=True)
-    return {
+    xgb_metrics = evaluate_scores(oos, score_col="z_hat")
+    xgb_metrics["fold_ic"] = fold_mean_ic_stats(oos, score_col="z_hat")
+    result: dict[str, Any] = {
         "disclaimer": DISCLAIMER,
         "dataset_version": DATASET_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -122,11 +129,14 @@ def run_xgb_walk_forward(
             "rank_exclude_spy": rank_exclude_spy,
             "chronological": True,
             "random_splits": False,
-            "scaling": "StandardScaler fit on train fold only",
+            "scaling": "none (XGBoost on raw features; Ridge baselines still StandardScaler train-only)",
         },
-        "xgboost": evaluate_scores(oos, score_col="z_hat"),
+        "xgboost": xgb_metrics,
         "fold_purge_gaps": [f.purge_gap_days for f in folds],
     }
+    if return_oos:
+        result["oos"] = oos
+    return result
 
 
 def main() -> int:

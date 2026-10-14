@@ -83,6 +83,10 @@ Rule-based hourly outlooks (`indicator_score_v1`: up / down / sideways) from EMA
 
 Per-symbol classifiers on candle features, time-ordered holdout (no shuffle). Artifacts under `data/ml/`. Research only — `executes_trades: false`. Early holdout numbers have been weak; do not treat them as a trading signal.
 
+### Prediction Engine V1 (cross-sectional ranking)
+
+Separate from the ternary classifier: daily features → purged walk-forward \(\hat{z}\) → OOS quintiles and a simple paper book (enter next open, exit close \(t+5\)), with 10/20 bps cost stress and a fixed V1 gate. Artifacts under `data/prediction_engine/` (`pe-dataset`, `pe-baselines`, `pe-train`, `pe-eval`). All outputs carry **EXPLORATORY — SURVIVORSHIP BIAS NOT FULLY CONTROLLED**. Not live trading.
+
 ---
 
 ## Math & methodology
@@ -193,6 +197,11 @@ npm run predict-eval
 npm run ml-train -- --symbols QQQ AAPL --timeframe 1d
 npm run ml-predict -- --score-holdout
 npm run ml-predict -- --timeframe 1d
+
+npm run pe-dataset
+npm run pe-baselines
+npm run pe-train
+npm run pe-eval
 ```
 
 ### Research LLM providers
