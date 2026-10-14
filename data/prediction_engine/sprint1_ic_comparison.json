@@ -1,0 +1,58 @@
+{
+  "disclaimer": "EXPLORATORY \u2014 SURVIVORSHIP BIAS NOT FULLY CONTROLLED",
+  "sprint": 1,
+  "question": "Did MeanIC improve vs prior ~0.025?",
+  "answer": "No",
+  "detail": {
+    "prior_reference_MeanIC": 0.025,
+    "prior_xgb_MeanIC": 0.023401427984700147,
+    "sprint1_xgb_MeanIC": 0.02020713996778781,
+    "improved_vs_0.025": false,
+    "improved_vs_prior_xgb": false,
+    "prior_dataset_version": "pe_dataset_v1",
+    "sprint1_dataset_version": "pe_dataset_v2"
+  },
+  "table": [
+    {
+      "model": "random",
+      "MeanIC_before": 0.00532711103715805,
+      "MeanIC_after": 0.0021910150299207214,
+      "delta_MeanIC": -0.0031360960072373285,
+      "ICIR_before": 0.016214187993656138,
+      "ICIR_after": 0.0066988214004971
+    },
+    {
+      "model": "historical_mean",
+      "MeanIC_before": 0.017276891221833287,
+      "MeanIC_after": 0.02108626650017168,
+      "delta_MeanIC": 0.0038093752783383943,
+      "ICIR_before": 0.04758497277073685,
+      "ICIR_after": 0.05852476413620648
+    },
+    {
+      "model": "mom12_1",
+      "MeanIC_before": 0.025366351558476132,
+      "MeanIC_after": 0.025585681659694246,
+      "delta_MeanIC": 0.00021933010121811397,
+      "ICIR_before": 0.0655865964648591,
+      "ICIR_after": 0.06614135143300703
+    },
+    {
+      "model": "ridge",
+      "MeanIC_before": 0.02067389503795398,
+      "MeanIC_after": 0.011612850028167582,
+      "delta_MeanIC": -0.0090610450097864,
+      "ICIR_before": 0.05346613107077136,
+      "ICIR_after": 0.031575664221869394
+    },
+    {
+      "model": "xgboost",
+      "MeanIC_before": 0.023401427984700147,
+      "MeanIC_after": 0.02020713996778781,
+      "delta_MeanIC": -0.003194288016912336,
+      "ICIR_before": 0.06475869568782294,
+      "ICIR_after": 0.056061415576222746
+    }
+  ],
+  "created_at": "2026-10-14T12:51:37.482909+00:00"
+}
