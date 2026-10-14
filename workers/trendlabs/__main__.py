@@ -15,6 +15,9 @@ Usage:
   python -m trendlabs.prediction_eval
   python -m trendlabs.ml_train [--symbols QQQ] [--timeframe 1d]
   python -m trendlabs.ml_predict [--score-holdout]
+  python -m trendlabs.prediction.dataset
+  python -m trendlabs.prediction.baselines
+  python -m trendlabs.prediction.train [--with-baselines]
   python -m trendlabs.seed [--timeframe 1h]
 """
 

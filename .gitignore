@@ -71,3 +71,15 @@ data/ml/**/*_report.json
 !data/ml/latest_predictions.json
 !data/ml/latest_ml_eval.json
 !data/ml/latest_holdout_predictions.json
+
+# Prediction Engine V1 artifacts (keep manifests + latest IC summaries)
+data/prediction_engine/*
+!data/prediction_engine/.gitkeep
+!data/prediction_engine/*_manifest.json
+!data/prediction_engine/latest_manifest.json
+!data/prediction_engine/baselines_results.json
+!data/prediction_engine/xgb_results.json
+!data/prediction_engine/ic_comparison.json
+# Large panel dumps stay local / CI-generated
+!data/prediction_engine/pe_dataset_v1.parquet
+!data/prediction_engine/pe_dataset_v1.csv

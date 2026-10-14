@@ -100,29 +100,30 @@ TIMEFRAMES = {
     "1d": {"yf": "1d", "alpaca": "1Day", "period": "5y"},
 }
 
+# Rule-based benchmarks for paper simulation / backtests — not Prediction Engine models.
 AGENTS = [
     {
         "id": "ema_trend",
         "name": "Agent A — EMA Trend",
         "strategy": "ema_trend",
-        "description": "EMA 20/50/200 trend confirmation with protective stops.",
+        "description": "Rule benchmark: EMA 20/50/200 trend confirmation with protective stops.",
     },
     {
         "id": "breakout",
         "name": "Agent B — Breakout",
         "strategy": "breakout",
-        "description": "Enter above 20-bar highs; exit below 10-bar lows.",
+        "description": "Rule benchmark: enter above 20-bar highs; exit below 10-bar lows.",
     },
     {
         "id": "momentum",
         "name": "Agent C — Momentum",
         "strategy": "momentum",
-        "description": "Momentum + ADX + trend filter alignment.",
+        "description": "Rule benchmark: momentum + ADX + trend filter alignment.",
     },
     {
         "id": "supertrend",
         "name": "Agent D — Supertrend",
         "strategy": "supertrend",
-        "description": "Volatility-adjusted Supertrend direction follower.",
+        "description": "Rule benchmark: volatility-adjusted Supertrend direction follower.",
     },
 ]
