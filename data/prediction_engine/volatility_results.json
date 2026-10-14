@@ -1,0 +1,51 @@
+{
+  "disclaimer": "EXPLORATORY \u2014 SURVIVORSHIP BIAS NOT FULLY CONTROLLED",
+  "dataset_version": "pe_dataset_v2",
+  "created_at": "2026-10-14T13:24:14.878879+00:00",
+  "experiment": "pe_volatility_v1",
+  "target": "future_rv_5 = sqrt(sum_{j=1..5} r_{t+j}^2)",
+  "models_described": {
+    "rv5_persistence": "hat = past RV5 = sqrt(sum_{j=0..4} r_{t-j}^2)",
+    "har_log_vol": "log(future_rv_5) ~ log_rv_d + log_rv_w + log_rv_m (OLS, train-only; predict exp)"
+  },
+  "protocol": {
+    "min_train_days": 252,
+    "test_days": 63,
+    "step_days": 63,
+    "purge_gap": 5,
+    "n_folds": 129,
+    "n_oos_rows": 93087,
+    "rank_exclude_spy": true,
+    "chronological": true,
+    "random_splits": false
+  },
+  "models": {
+    "rv5_persistence": {
+      "MAE": 0.01770831815300097,
+      "RMSE": 0.030040083783282635,
+      "QLIKE": 1.110132447226043,
+      "n": 93087,
+      "RankIC": 0.5021689499541105,
+      "RankICIR": 1.7922348001402857,
+      "RankIC_PositiveRate": 0.9417989417989417,
+      "RankIC_n_days": 8127
+    },
+    "har_log_vol": {
+      "MAE": 0.014405819432304592,
+      "RMSE": 0.025324164391768975,
+      "QLIKE": 0.6086097665906681,
+      "n": 93087,
+      "RankIC": 0.5999627131410078,
+      "RankICIR": 2.4663180767348956,
+      "RankIC_PositiveRate": 0.9762519995078135,
+      "RankIC_n_days": 8127
+    }
+  },
+  "comparison": {
+    "har_beats_persistence_QLIKE": true,
+    "har_beats_persistence_MAE": true,
+    "har_beats_persistence_RMSE": true,
+    "har_beats_persistence_RankIC": true,
+    "recommendation": "HAR beats RV5 persistence on QLIKE and at least one of MAE/RankIC \u2014 proceed to OHLC estimators / XGBoost volatility."
+  }
+}
