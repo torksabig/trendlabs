@@ -32,9 +32,11 @@ def score_random(panel: pd.DataFrame, *, seed: int = 42) -> pd.Series:
     return scores
 
 
-def score_historical_mean(train_z: pd.Series, test_index: pd.Index) -> pd.Series:
-    mu = float(train_z.dropna().mean()) if train_z.notna().any() else 0.0
-    return pd.Series(mu, index=test_index, dtype=float)
+def score_historical_mean(train: pd.DataFrame, test: pd.DataFrame) -> pd.Series:
+    """Per-symbol train-set mean of z (cross-sectional ranks); global mean fallback."""
+    by_sym = train.groupby("symbol")["z"].mean()
+    global_mu = float(train["z"].dropna().mean()) if train["z"].notna().any() else 0.0
+    return test["symbol"].map(by_sym).fillna(global_mu).astype(float)
 
 
 def score_mom12_1(panel: pd.DataFrame) -> pd.Series:
@@ -117,7 +119,7 @@ def run_baselines_walk_forward(
         chunk = test[["symbol", "ts", "z", "R", "MOM12_1"]].copy()
         chunk["fold_id"] = fold.fold_id
         chunk["score_random"] = score_random(test, seed=random_seed + fold.fold_id)
-        chunk["score_hist_mean"] = score_historical_mean(train["z"], test.index)
+        chunk["score_hist_mean"] = score_historical_mean(train, test)
         chunk["score_mom12_1"] = score_mom12_1(test)
         chunk["score_ridge"] = fit_ridge_predict(train, test, alpha=ridge_alpha)
         # Reindex scores to chunk index (score_* already on test.index)

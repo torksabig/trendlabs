@@ -143,7 +143,7 @@ Deterministic baselines on the **same** dataset and purged walk-forward:
 | Baseline | Score |
 | --- | --- |
 | Random ranking | Fixed-seed random scores (reproducible) |
-| Historical mean | Train-set mean of \(z\) (constant prediction) |
+| Historical mean | Per-symbol train-set mean of \(z\) (cross-sectional rank; global mean fallback) |
 | 12−1 momentum | Rank by `MOM12_1` |
 | Ridge regression | Ridge on standardized feature matrix; scaler + model **fit on train only** |
 

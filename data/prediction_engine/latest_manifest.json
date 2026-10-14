@@ -1,0 +1,69 @@
+{
+  "dataset_version": "pe_dataset_v1",
+  "created_at": "2026-10-14T11:17:52.881736+00:00",
+  "git_sha": "b720ffcd6b8b85fb8f7ff982c48da979d7b9a0d8",
+  "disclaimer": "EXPLORATORY \u2014 SURVIVORSHIP BIAS NOT FULLY CONTROLLED",
+  "execution_rule": "Signal at close of day t; enter at open of t+1; exit at close of t+5. Target R = ln(close_{t+5}/open_{t+1}); z = R/(sigma_20*sqrt(5)) with sigma from past 20 daily log returns at t only. Purge gap \u2265 5 trading days in walk-forward.",
+  "horizon_days": 5,
+  "purge_gap_days": 5,
+  "vol_window": 20,
+  "timeframe": "1d",
+  "universe_requested": [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "AMD",
+    "JPM",
+    "GS",
+    "XOM",
+    "CVX",
+    "JNJ",
+    "UNH",
+    "SPY",
+    "QQQ"
+  ],
+  "universe_present": [
+    "AAPL",
+    "AMD",
+    "CVX",
+    "GS",
+    "JNJ",
+    "JPM",
+    "MSFT",
+    "NVDA",
+    "QQQ",
+    "SPY",
+    "UNH",
+    "XOM"
+  ],
+  "n_rows": 95948,
+  "n_symbols": 12,
+  "date_min": "1993-03-01 05:00:00+00:00",
+  "date_max": "2026-10-06 04:00:00+00:00",
+  "feature_columns": [
+    "MOM20",
+    "MOM60",
+    "MOM12_1",
+    "VOL20",
+    "VOL120",
+    "VOLRatio",
+    "ATRNorm",
+    "DollarVolume",
+    "VolumeZ",
+    "RS_SPY_20",
+    "SPY_MOM20",
+    "SPY_VOL20",
+    "XS_Dispersion"
+  ],
+  "target_columns": [
+    "R",
+    "z",
+    "sigma_20"
+  ],
+  "files": {
+    "parquet": "data/prediction_engine/pe_dataset_v1.parquet",
+    "csv": "data/prediction_engine/pe_dataset_v1.csv"
+  },
+  "survivorship_note": "Fixed liquid universe from available TrendLab symbols; point-in-time index membership not reconstructed.",
+  "agents_note": "TrendLab rule agents (ema_trend, breakout, momentum, supertrend) are rule-based benchmarks, not PE predictors."
+}
