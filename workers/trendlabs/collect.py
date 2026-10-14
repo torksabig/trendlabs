@@ -14,27 +14,56 @@ def main() -> int:
     parser.add_argument("--symbols", nargs="*", default=SYMBOLS)
     parser.add_argument("--timeframe", default=DEFAULT_TIMEFRAME)
     parser.add_argument("--lookback", type=int, default=LOOKBACK_BARS)
+    parser.add_argument(
+        "--full-history",
+        action="store_true",
+        help="Fetch max available history for the timeframe (Yahoo caps: 1h≈730d, 1d=all).",
+    )
+    parser.add_argument(
+        "--timeframes",
+        nargs="*",
+        default=None,
+        help="Optional list of timeframes to collect (overrides --timeframe).",
+    )
+    parser.add_argument(
+        "--no-snapshot",
+        action="store_true",
+        help="Skip snapshot rewrite (useful for bulk historical loads).",
+    )
     args = parser.parse_args()
 
     store = Store()
     client = MarketDataClient()
     total = 0
     errors: list[str] = []
+    timeframes = args.timeframes or [args.timeframe]
 
-    for symbol in args.symbols:
-        try:
-            df = client.fetch(symbol, args.timeframe, args.lookback)
-            n = store.upsert_candles(df)
-            total += n
-            print(f"{symbol}: upserted {n} bars from {df.iloc[0]['source']}")
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"{symbol}: {exc}")
-            print(f"{symbol}: ERROR {exc}")
+    for timeframe in timeframes:
+        for symbol in args.symbols:
+            try:
+                df = client.fetch(
+                    symbol,
+                    timeframe,
+                    args.lookback,
+                    full_history=args.full_history,
+                )
+                n = store.upsert_candles(df)
+                total += n
+                src = df.iloc[0]["source"] if len(df) else "?"
+                print(
+                    f"{symbol} {timeframe}: upserted {n} bars "
+                    f"({df.iloc[0]['ts']} → {df.iloc[-1]['ts']}) from {src}"
+                )
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{symbol} {timeframe}: {exc}")
+                print(f"{symbol} {timeframe}: ERROR {exc}")
 
     store.set_meta("last_collection", datetime.now(timezone.utc).isoformat())
     store.set_meta("data_source", client.preferred_source)
-    store.set_meta("collection_timeframe", args.timeframe)
-    write_snapshot(store, timeframe=args.timeframe)
+    store.set_meta("collection_timeframe", ",".join(timeframes))
+    if not args.no_snapshot:
+        # Snapshot still uses default/primary timeframe for the Arena.
+        write_snapshot(store, timeframe=args.timeframe if args.timeframe in timeframes else timeframes[0])
 
     print(f"Done. bars={total} source={client.preferred_source} errors={len(errors)}")
     return 1 if errors and total == 0 else 0
