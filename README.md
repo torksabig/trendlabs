@@ -1,21 +1,21 @@
 # TrendLab
 
-Multi-agent stock market research and **paper-trading** platform targeting **$0/month** infrastructure.
+Paper-trading research lab for trend-following equities strategies. Four deterministic agents each manage a simulated **$10,000** book across a fixed 12-symbol universe. A fifth **research LLM** (free-tier cloud, local Ollama, or rule-based fallback) interprets Python-verified analytics and proposes experiments — it **never** places orders.
 
-Four independent trend-following agents each manage a simulated $10,000 book across 12 stocks and ETFs. A fifth **shared research agent** (switchable free-tier cloud LLMs, local Ollama, or rule-based fallback) interprets verified Python analytics and proposes experiments — it never executes trades.
+Built for a **$0/month** posture: Vercel Hobby dashboard, GitHub Actions workers, optional free-tier market data and LLMs, SQLite locally, optional Supabase.
 
 ## Architecture
 
-| Layer | Technology | Cost posture |
+| Layer | Stack | Cost posture |
 | --- | --- | --- |
 | Dashboard | Next.js + Tailwind on Vercel Hobby | Free |
 | Charts | TradingView Lightweight Charts | Free |
-| Market data | Alpaca Basic (optional) or Yahoo Finance fallback | Free tier / public |
+| Market data | Alpaca Basic (optional) or Yahoo Finance | Free tier / public |
 | Trading agents | Deterministic Python strategies | Free |
 | Research agent | Free-tier cloud LLMs / Ollama / fallback | $0-friendly |
-| Automation | GitHub Actions (data + paper trades + research) | Free within limits |
-| Local AI schedule | macOS `launchd` every ~4 hours (optional) | Free |
-| Database | SQLite workers + Supabase schema | Free tier |
+| Automation | GitHub Actions (collect, simulate, research) | Free within limits |
+| Local AI (optional) | macOS `launchd` + Ollama | Free |
+| Persistence | SQLite workers + optional Supabase schema | Free tier |
 
 ```
 Alpaca / Yahoo → Python indicators & agents → snapshot JSON
@@ -23,29 +23,134 @@ Alpaca / Yahoo → Python indicators & agents → snapshot JSON
      Gemini / Groq / OpenRouter / Workers AI / Cerebras / Mistral
               or Ollama (Mac) or rule-based fallback
                       ↓
-         agent_reports → Supabase / snapshot → Vercel dashboard
+         agent_reports → Supabase (optional) / snapshot → Vercel dashboard
 ```
 
-Pick a provider in the Arena sidebar (or `TRENDLAB_LLM_PROVIDER`). On Vercel, research jobs dispatch GitHub Actions with that provider input and use repo secrets for API keys.
+Python workers own all numbers (fills, metrics, regimes, experiment decisions). Vercel serves the UI and can dispatch GitHub Actions via `/api/jobs` when Arena buttons run remotely. Locally, jobs spawn Python when Actions credentials are absent (or `TRENDLAB_JOB_MODE=local`).
+
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for Vercel + Actions wiring (`GITHUB_TOKEN` / `GITHUB_REPOSITORY`, LLM secrets on Actions, never `NEXT_PUBLIC_` for tokens).
 
 ## Universe
 
 AAPL, MSFT, NVDA, AMD, JPM, GS, XOM, CVX, JNJ, UNH, SPY, QQQ
 
-## Agents
+## Capabilities
 
-**Trading (deterministic)**  
-1. EMA Trend — EMA 20/50/200 confirmation  
-2. Breakout — 20-bar high entries / 10-bar low exits  
-3. Momentum — ROC + ADX + volume filter  
-4. Supertrend — volatility-adjusted trend follower  
+### Trading agents (deterministic, paper only)
 
-**Research (switchable LLM)**  
-5. Shared research agent — explains regimes, risks, agent performance, and strategy experiments for Python to backtest (`executes_trades: false`)
+| ID | Strategy | Default logic |
+| --- | --- | --- |
+| `ema_trend` | EMA Trend | Long when EMA 20 > 50 > 200 and close > fast EMA; optional ADX gate for experiments |
+| `breakout` | Breakout | Long on close above prior 20-bar high; flatten below 10-bar low |
+| `momentum` | Momentum | Positive N-bar ROC + ADX ≥ 22 + EMA20 > EMA50 + volume > 20-bar SMA |
+| `supertrend` | Supertrend | Follow ATR-based Supertrend direction (period 10, mult 3) |
 
-Shared trading rules: long-only, max 3 positions, 1% equity risk budget, fees + slippage, idempotent fills.
+Shared risk defaults: **long-only**, **max 3 positions**, **1% equity** risk budget per entry, ATR-based stops, **5 bps fee + 5 bps slippage**, idempotent fills. Agent `signal_strength` is a fixed heuristic in `[0, 1]` — **not** calibrated hit-rate confidence.
+
+### Research LLM
+
+Switch provider in the Arena sidebar or via `TRENDLAB_LLM_PROVIDER` (`auto` tries free-cloud keys → Ollama → fallback). Explains regimes, risks, and agent performance; proposes structured experiment variants for Python to evaluate. Schema forces `executes_trades: false`. Numerical claims are reconciled against Python snapshots.
+
+### Backtesting & walk-forward
+
+Historical replay is **separate** from forward paper books. Full-period backtests write `data/backtests/`; rolling OOS folds write `data/walk_forward/` (leaderboard stitches **test folds only**).
+
+### Regimes
+
+Rule-based labels on each bar (`risk_off`, `high_volatility`, `trending_bullish` / `trending_bearish`, `low_volatility`, `sideways`, `unknown`) with trade attribution and fit scores for strategy evaluation.
+
+### Experiment engine
+
+Control vs variant on walk-forward OOS folds → `accept` / `reject` / `insufficient`. Catalog experiments ship without an LLM; `npm run llm-experiment` asks the research LLM for 1–3 structured proposals, then Python evaluates them. **Accepted variants are never auto-promoted** into live paper agents.
+
+### Predictions & calibration
+
+Rule-based hourly outlooks (`indicator_score_v1`: up / down / sideways) from EMA/RSI/ADX/trend score. Confidence is a **heuristic** (score magnitude + ADX boost), not a probability from historical calibration. `predict-eval` scores 1h / 4h / 24h realized moves and builds a confidence-bucket calibration table.
+
+### XGBoost ML (research)
+
+Per-symbol classifiers on candle features, time-ordered holdout (no shuffle). Artifacts under `data/ml/`. Research only — `executes_trades: false`.
+
+---
+
+## Math & methodology
+
+### Execution model (backtest + paper sim)
+
+1. Indicators and signals use completed bars through index `i` (no look-ahead).
+2. Orders fill at bar `i+1` **open**, never the signal-bar close.
+3. Buy: `fill = open × (1 + slippage_bps/10_000)`; sell: `fill = open × (1 − slippage_bps/10_000)`.
+4. Fee = `notional × fee_bps/10_000` (default **5 bps** each side; slippage default **5 bps**).
+5. Stop-losses checked against the fill bar’s low/high before discretionary exits.
+6. Position size from risk budget: `qty ≈ (equity × risk_per_trade) / risk_per_share`, capped by cash, max positions, and min notional ($25).
+
+### Performance metrics
+
+Computed on the equity curve and paired BUY→SELL round-trips (`workers/trendlabs/metrics.py`):
+
+| Metric | Definition used here |
+| --- | --- |
+| **Total return** | Ending equity / starting cash − 1 |
+| **CAGR** | `(end/start)^(1/years) − 1` using wall-clock span of the curve |
+| **Sharpe** | `(mean r / std r) × √periods_per_year` (sample std); periods inferred from timeframe (e.g. 1h ≈ 252×6.5) |
+| **Sortino** | Same with downside-only std; `None` if no negative returns |
+| **Max drawdown** | Min of equity / running peak − 1 |
+| **Profit factor** | Gross winning round-trips / |gross losing| |
+| **Exposure** | Fraction of equity points with invested capital (equity − cash > 0) |
+| **α vs SPY** | Strategy total return − buy-and-hold SPY return over the same window (**simple excess return**, not CAPM β-adjusted alpha) |
+| **Win rate / streaks** | From fee-adjusted round-trip PnL |
+
+### Walk-forward OOS
+
+- Rolling folds: warm-up → **calibrate** window (recorded for future tuning) → **test** window.
+- Defaults (typical CLI): warm-up 120, calibrate 80, test 60 bars; step defaults to `test_bars`.
+- Indicators may use history before `test_start`; **metrics combine OOS test periods only**.
+- Fold equity curves are **stitched by chaining period returns** onto continuous capital (each fold restarts relative scale from its own start).
+- Leaderboard prefers `mean_fold_sharpe`, then Sharpe, then total return.
+
+### Regime classification
+
+Mutually exclusive labels, **priority order**:
+
+1. **risk_off** — 20-bar return ≤ −6%, or (close below EMA200 and vol ≥ high threshold and ret < −2%)
+2. **high_volatility** — vol ≥ expanding-median×1.35 and ADX < 22
+3. **trending_bullish** — ADX ≥ 22, EMA20 > EMA50, close > EMA50
+4. **trending_bearish** — ADX ≥ 22, EMA20 < EMA50, close < EMA50
+5. **low_volatility** — vol ≤ median×0.65 and ADX < 18
+6. **sideways** — otherwise (including low ADX chop)
+
+Vol thresholds are adaptive (expanding median of 20-bar annualized vol). Regime fit labels (`excellent` / `good` / `mediocre` / `poor` / `insufficient`) are heuristics from per-regime trade count, win rate, and average PnL.
+
+### Experiment accept / reject
+
+Defaults in `AcceptanceCriteria`:
+
+| Gate | Default | Effect |
+| --- | --- | --- |
+| Min trades | 12 | Else `insufficient` |
+| Sharpe lift | +0.15 vs control | Uses `mean_fold_sharpe` when present |
+| Max DD worsen | ≤ 3 pp | Variant may not deepen DD beyond this |
+| Fold robustness | ≥ 50% of folds | Variant Sharpe ≥ control |
+
+Fail any (except trade count → `insufficient`) → `reject`. Pass all → `accept`. Never mutates paper books.
+
+### Prediction scoring & calibration
+
+- Realized move: percent change from signal-bar close to a forward bar (1 / 4 / 24 hour offsets on 1h data; wall-clock fallback if sparse).
+- Directional “hit” uses a ±0.05% band for sideways.
+- Calibration table buckets predicted confidence (50–60% … 90%+) vs realized accuracy; flags **overconfident** when accuracy lags bucket midpoint by >5pp (n ≥ 5). Rule-based confidence is **not** guaranteed calibrated.
+
+### ML features, labels, split
+
+- **Features**: returns (1–20), EMA spreads / price vs EMA, RSI (+norm), ADX, ATR%, vol, volume z/ratio, range/location, Supertrend direction, momentum, regime one-hots (`features.py`).
+- **Label**: forward return over `horizon` bars → `up` / `down` / `sideways` using a timeframe band (e.g. 1h ≈ 0.08%, 1d ≈ 0.2%). Label uses `shift(-h)` only — no look-ahead in features.
+- **Split**: last ~20% of rows (time-ordered, min test size enforced) held out; no shuffle. XGBoost (`hist`, depth 4, 120 trees) reports accuracy, macro-F1, directional accuracy on non-sideways preds, and feature importance.
+
+---
 
 ## Quick start
+
+Scripts below match `package.json` (Python via `.venv`).
 
 ```bash
 npm install
@@ -56,9 +161,27 @@ npm run seed          # collect + simulate + research fallback report
 npm run dev           # http://localhost:3456
 ```
 
+### Workers
+
+```bash
+npm run collect
+npm run simulate
+npm run research -- --symbol AAPL --provider fallback
+npm run predict
+
+npm run backtest
+npm run walk-forward
+npm run experiment
+npm run llm-experiment
+npm run predict-eval
+npm run ml-train -- --symbols QQQ AAPL --timeframe 1d
+npm run ml-predict -- --score-holdout
+npm run ml-predict -- --timeframe 1d
+```
+
 ### Research LLM providers ($0-friendly)
 
-Set `TRENDLAB_LLM_PROVIDER=auto` (default) to try free-cloud keys in order, then Ollama, then rule-based fallback. Or pick one explicitly: `google`, `groq`, `openrouter`, `cloudflare`, `cerebras`, `mistral`, `ollama`, `fallback`.
+`TRENDLAB_LLM_PROVIDER=auto` (default) tries free-cloud keys in order, then Ollama, then rule-based fallback. Explicit: `google`, `groq`, `openrouter`, `cloudflare`, `cerebras`, `mistral`, `ollama`, `fallback`.
 
 | Provider | Env / Actions secret | Default model |
 | --- | --- | --- |
@@ -72,88 +195,35 @@ Set `TRENDLAB_LLM_PROVIDER=auto` (default) to try free-cloud keys in order, then
 | Fallback | (none) | deterministic report |
 
 ```bash
-# Cloud free-tier example
 export GROQ_API_KEY=...
 npm run research -- --symbol AAPL --provider groq
 
-# Local Mac Ollama
 ollama pull qwen3:14b-q4_K_M
 npm run research -- --symbol AAPL --provider ollama
 
-# No keys → validated rule-based report (CI-safe)
 npm run research -- --symbol AAPL --provider fallback
 ```
 
-Optional every-4-hours Mac schedule: copy `ops/macos/com.trendlabs.research.plist`, edit paths, then `launchctl load ~/Library/LaunchAgents/com.trendlabs.research.plist`.
+Optional Mac schedule: copy `ops/macos/com.trendlabs.research.plist`, edit paths, `launchctl load ~/Library/LaunchAgents/com.trendlabs.research.plist`.
 
-## Evaluation (V2)
+### Supabase (optional)
 
-Deterministic historical replay is separate from forward paper-trading state.
+Apply migrations `001`–`004` under `supabase/migrations/`. Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the **worker** environment to upload research reports. Never put the secret key in the Next.js client bundle.
 
-```bash
-npm run backtest        # full-period backtest → data/backtests/
-npm run walk-forward    # rolling OOS folds (+ full backtest) → data/walk_forward/
-npm run experiment      # control vs variant OOS accept/reject → data/experiments/
-npm run llm-experiment  # research LLM proposes variants → Python OOS evaluate
-npm run predict-eval    # score forecasts + calibration table → data/prediction_eval/
-npm run ml-train -- --symbols QQQ AAPL --timeframe 1d
-npm run ml-predict -- --score-holdout
-npm run ml-predict -- --timeframe 1d
-```
-
-- Next-bar open fills, fees/slippage, Sharpe / Sortino / drawdown / α vs SPY  
-- Walk-forward combines **out-of-sample** folds only  
-- Experiment engine compares parameter variants on OOS folds (never mutates paper books)  
-- LLM experiment loop (`npm run llm-experiment`) uses `TRENDLAB_LLM_PROVIDER` / auto (OpenRouter model: `OPENROUTER_MODEL`, default `openrouter/free`) for structured variants; Python evaluates them and never auto-promotes accepted results into live paper agents  
-
-- Prediction eval stores 1h/4h/24h realized moves and confidence calibration  
-- Market regimes + strategy configs in `workers/trendlabs/`
-
-## Supabase
-
-Apply:
-
-1. `supabase/migrations/001_trendlabs_schema.sql`  
-2. `supabase/migrations/002_agent_reports.sql`  
-3. `supabase/migrations/003_backtests_experiments.sql`  
-4. `supabase/migrations/004_market_regimes_walk_forward.sql`  
-
-Set `SUPABASE_URL` + `SUPABASE_SECRET_KEY` in the worker environment to upload research reports. Never put the secret key in the Next.js client bundle.
-
-## Automation split
+### Automation split
 
 | Schedule | Where | Job |
 | --- | --- | --- |
 | Every 15–60m (market hours) | GitHub Actions | Collect candles + run paper agents |
-| On demand (Arena / workflow_dispatch) | GitHub Actions | Research with selected LLM provider |
+| On demand (Arena / `workflow_dispatch`) | GitHub Actions | Research with selected LLM provider |
 | Every ~4 hours (optional) | Mac `launchd` + Ollama | Local research report |
 
-## Deploy (Vercel Hobby)
+---
 
-See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the one-click production checklist (Vercel claim/import, GitHub Actions, env vars).
+## Safety / non-goals
 
-1. Push this repo to GitHub.  
-2. Import in Vercel (personal / non-commercial Hobby).  
-3. Dashboard reads `public/data/snapshot.json` (Actions or local research refresh it).  
-4. Do **not** add live brokerage trading credentials.
-
-### Arena job buttons on Vercel
-
-Vercel cannot run the Python workers, so `/api/jobs` dispatches GitHub Actions instead. Set these **server-only** env vars in the Vercel project:
-
-| Variable | Example | Notes |
-| --- | --- | --- |
-| `GITHUB_TOKEN` or `GH_JOB_TOKEN` | `ghp_…` / fine-grained PAT | Needs `actions:write` (and `contents:write` on the token used by Actions to push snapshots). Never use `NEXT_PUBLIC_`. |
-| `GITHUB_REPOSITORY` | `torksabig/trendlabs` | `owner/repo` that hosts `.github/workflows/trendlabs.yml` |
-| `GITHUB_REF` | `main` | Optional; defaults to the Vercel git branch or `main` |
-
-Add the LLM API keys above as **GitHub Actions repository secrets** (used when Arena triggers research). Optionally mirror the same keys (or `TRENDLAB_LLM_PROVIDER`) in Vercel so `/api/llm` can show which providers are configured — secrets are never returned to the browser, only booleans.
-
-Flow: Arena **Research LLM** selector → `POST /api/jobs` with `provider` → `workflow_dispatch` inputs → Python worker on Actions → commit `public/data/snapshot.json` → Vercel redeploy. Locally, jobs still spawn Python when Actions credentials are absent (or `TRENDLAB_JOB_MODE=local`).
-
-## Safety
-
-- Paper trading only.  
-- LLM `executes_trades` is always `false` and is schema-enforced.  
-- Numerical claims in reports are reconciled against Python-calculated snapshots.  
-- Delayed/IEX vs consolidated data is labeled in candle metadata.
+- **Paper trading only** — no live brokerage, no order routing, no real capital.
+- LLM and ML paths set `executes_trades: false` (schema-enforced where applicable).
+- Experiment accept ≠ promote; paper agent params stay on defaults unless you change code/config yourself.
+- Delayed/IEX vs consolidated feeds are labeled in candle metadata; do not treat IEX as SIP.
+- Not a broker, not investment advice, not a claim of edge. Metrics are research diagnostics under the assumptions above (fees/slippage heuristics, simple SPY excess return, rule-based confidence).
