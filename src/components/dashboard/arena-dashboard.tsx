@@ -625,7 +625,7 @@ const DEFAULT_PROVIDERS: LlmProviderRow[] = [
   { id: "auto", label: "Auto (free cloud → Ollama → fallback)", configured: true, default_model: "" },
   { id: "google", label: "Google AI Studio (Gemini)", configured: false, default_model: "gemini-2.0-flash" },
   { id: "groq", label: "Groq", configured: false, default_model: "llama-3.3-70b-versatile" },
-  { id: "openrouter", label: "OpenRouter", configured: false, default_model: "openai/gpt-6-luna" },
+  { id: "openrouter", label: "OpenRouter", configured: false, default_model: "openrouter/free" },
   { id: "cloudflare", label: "Cloudflare Workers AI", configured: false, default_model: "@cf/meta/llama-3.1-8b-instruct" },
   { id: "cerebras", label: "Cerebras", configured: false, default_model: "llama3.1-8b" },
   { id: "mistral", label: "Mistral", configured: false, default_model: "mistral-small-latest" },

@@ -44,7 +44,7 @@ export async function GET() {
       id: "openrouter",
       label: "OpenRouter",
       configured: openrouter,
-      default_model: process.env.OPENROUTER_MODEL || "openai/gpt-6-luna",
+      default_model: process.env.OPENROUTER_MODEL || "openrouter/free",
     },
     {
       id: "cloudflare",

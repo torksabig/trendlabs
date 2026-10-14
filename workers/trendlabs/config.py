@@ -53,10 +53,10 @@ GROQ_API_KEY = _env("GROQ_API_KEY")
 GROQ_BASE_URL = _env("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 GROQ_MODEL = _env("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-# OpenRouter — default model openai/gpt-6-luna (override via OPENROUTER_MODEL)
+# OpenRouter — free model variants (:free / openrouter/free)
 OPENROUTER_API_KEY = _env("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = _env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL = _env("OPENROUTER_MODEL", "openai/gpt-6-luna")
+OPENROUTER_MODEL = _env("OPENROUTER_MODEL", "openrouter/free")
 
 # Cloudflare Workers AI — free daily neuron allocation
 CLOUDFLARE_ACCOUNT_ID = _env("CLOUDFLARE_ACCOUNT_ID")

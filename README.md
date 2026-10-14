@@ -64,7 +64,7 @@ Set `TRENDLAB_LLM_PROVIDER=auto` (default) to try free-cloud keys in order, then
 | --- | --- | --- |
 | Google AI Studio | `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY` | `gemini-2.0-flash` |
 | Groq | `GROQ_API_KEY` | `llama-3.3-70b-versatile` |
-| OpenRouter | `OPENROUTER_API_KEY` | `openai/gpt-6-luna` |
+| OpenRouter | `OPENROUTER_API_KEY` | `openrouter/free` |
 | Cloudflare Workers AI | `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` | `@cf/meta/llama-3.1-8b-instruct` |
 | Cerebras | `CEREBRAS_API_KEY` | `llama3.1-8b` |
 | Mistral | `MISTRAL_API_KEY` | `mistral-small-latest` |
