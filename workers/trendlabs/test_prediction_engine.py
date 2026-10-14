@@ -18,14 +18,56 @@ from trendlabs.prediction.baselines import (
     score_random,
 )
 from trendlabs.prediction.dataset import build_research_dataset, write_dataset
-from trendlabs.prediction.features import FEATURE_COLUMNS, symbol_features
+from trendlabs.prediction.features import FEATURE_COLUMNS, attach_market_context, symbol_features
 from trendlabs.prediction.targets import actionable_return, attach_targets, sigma_at_t, daily_log_returns
 from trendlabs.prediction.economic import cost_from_turnover, one_way_turnover, simulate_paper_portfolio
 from trendlabs.prediction.metrics_ic import assign_quintiles
-from trendlabs.prediction.targets import actionable_return
 from trendlabs.prediction.train import fit_xgb_predict
 from trendlabs.prediction.walk_forward import generate_purged_folds, purge_gap_ok
 from xgboost import XGBRegressor
+
+# Per-symbol features that must be leakage-safe (excludes cross-sectional broadcast cols).
+_SYMBOL_FEATURE_LEAK_COLS = [
+    "MOM5",
+    "MOM10",
+    "MOM20",
+    "MOM60",
+    "MOM120",
+    "MOM12_1",
+    "MOMACCEL_10_20",
+    "MOMACCEL_20_60",
+    "TREND_SLOPE20",
+    "TREND_R2_20",
+    "TREND_SLOPE60",
+    "TREND_R2_60",
+    "VOL20",
+    "VOL120",
+    "VOLRatio",
+    "ATRNorm",
+    "DollarVolume",
+    "VolumeZ",
+    "OVERNIGHT_RET",
+    "INTRADAY_RET",
+    "OVERNIGHT_RET5",
+    "OVERNIGHT_RET20",
+    "INTRADAY_RET5",
+    "INTRADAY_RET20",
+]
+
+
+def _fill_market_context_stub(df: pd.DataFrame) -> pd.DataFrame:
+    """Fill cross-sectional / SPY-broadcast columns for single-symbol unit tests."""
+    out = df.copy()
+    out["RS_SPY_5"] = out.get("MOM5", 0.0)
+    out["RS_SPY_20"] = out.get("MOM20", 0.0)
+    out["RS_SPY_60"] = out.get("MOM60", 0.0)
+    out["SPY_MOM20"] = 0.0
+    out["SPY_VOL20"] = 0.01
+    out["XS_Dispersion"] = 0.01
+    out["BREADTH20"] = 0.5
+    out["BREADTH50"] = 0.5
+    out["BREADTH200"] = 0.5
+    return out
 
 
 def _synth_ohlcv(symbol: str, n: int = 800, seed: int = 7, start: str = "2010-01-04") -> pd.DataFrame:
@@ -78,16 +120,58 @@ class FeatureLeakageTests(unittest.TestCase):
         df = _synth_ohlcv("AAPL", n=400, seed=3)
         feat = symbol_features(df)
         t = 300
-        # Corrupt future closes/volumes; features at t must stay identical
+        # Corrupt future OHLCV; features at t must stay identical
         poisoned = df.copy()
         poisoned.loc[t + 1 :, "close"] = poisoned.loc[t + 1 :, "close"] * 10
+        poisoned.loc[t + 1 :, "open"] = poisoned.loc[t + 1 :, "open"] * 10
         poisoned.loc[t + 1 :, "volume"] = poisoned.loc[t + 1 :, "volume"] * 10
         poisoned.loc[t + 1 :, "high"] = poisoned.loc[t + 1 :, "high"] * 10
         poisoned.loc[t + 1 :, "low"] = poisoned.loc[t + 1 :, "low"] * 0.1
         feat_p = symbol_features(poisoned)
-        for col in ["MOM20", "MOM60", "MOM12_1", "VOL20", "VOL120", "VOLRatio", "ATRNorm", "DollarVolume", "VolumeZ"]:
+        for col in _SYMBOL_FEATURE_LEAK_COLS:
             self.assertTrue(
                 np.isclose(feat[col].iloc[t], feat_p[col].iloc[t], equal_nan=True),
+                msg=f"Future leak in {col}",
+            )
+
+    def test_breadth_and_rs_no_future_bars(self) -> None:
+        """Cross-sectional RS/breadth at date t must ignore future bars."""
+        frames = []
+        for i, sym in enumerate(["AAPL", "MSFT", "SPY"]):
+            frames.append(_synth_ohlcv(sym, n=400, seed=20 + i))
+        panel = pd.concat(frames, ignore_index=True)
+        parts = []
+        for _, g in panel.groupby("symbol", sort=False):
+            parts.append(symbol_features(g.sort_values("ts").reset_index(drop=True)))
+        feat = attach_market_context(pd.concat(parts, ignore_index=True))
+
+        poisoned_parts = []
+        for _, g in panel.groupby("symbol", sort=False):
+            g = g.sort_values("ts").reset_index(drop=True)
+            t_local = 300
+            g = g.copy()
+            g.loc[t_local + 1 :, "close"] *= 10
+            g.loc[t_local + 1 :, "open"] *= 10
+            g.loc[t_local + 1 :, "volume"] *= 10
+            poisoned_parts.append(symbol_features(g))
+        feat_p = attach_market_context(pd.concat(poisoned_parts, ignore_index=True))
+
+        ts_t = feat.loc[feat["symbol"] == "AAPL", "ts"].iloc[300]
+        row = feat[(feat["symbol"] == "AAPL") & (feat["ts"] == ts_t)].iloc[0]
+        row_p = feat_p[(feat_p["symbol"] == "AAPL") & (feat_p["ts"] == ts_t)].iloc[0]
+        for col in [
+            "RS_SPY_5",
+            "RS_SPY_20",
+            "RS_SPY_60",
+            "BREADTH20",
+            "BREADTH50",
+            "BREADTH200",
+            "SPY_MOM20",
+            "SPY_VOL20",
+            "XS_Dispersion",
+        ]:
+            self.assertTrue(
+                np.isclose(row[col], row_p[col], equal_nan=True),
                 msg=f"Future leak in {col}",
             )
 
@@ -116,11 +200,7 @@ class DeterminismTests(unittest.TestCase):
 class ScalingTrainOnlyTests(unittest.TestCase):
     def test_ridge_scaler_fit_on_train_only(self) -> None:
         """Scaler/model must be fit on train only; polluting train changes OOS preds."""
-        full = symbol_features(attach_targets(_synth_ohlcv("AAPL", n=700, seed=5)))
-        full["RS_SPY_20"] = full["MOM20"]
-        full["SPY_MOM20"] = 0.01
-        full["SPY_VOL20"] = 0.01
-        full["XS_Dispersion"] = 0.02
+        full = _fill_market_context_stub(symbol_features(attach_targets(_synth_ohlcv("AAPL", n=700, seed=5))))
         full = full.dropna(subset=FEATURE_COLUMNS + ["z"]).reset_index(drop=True)
         split = int(len(full) * 0.75)
         train = full.iloc[:split].copy()
@@ -146,11 +226,7 @@ class ScalingTrainOnlyTests(unittest.TestCase):
         self.assertTrue(np.allclose(pred1.dropna(), pred2.dropna()))
 
     def test_xgb_prediction_stable_given_train(self) -> None:
-        full = symbol_features(attach_targets(_synth_ohlcv("MSFT", n=700, seed=8)))
-        full["RS_SPY_20"] = full["MOM20"]
-        full["SPY_MOM20"] = 0.0
-        full["SPY_VOL20"] = 0.01
-        full["XS_Dispersion"] = 0.01
+        full = _fill_market_context_stub(symbol_features(attach_targets(_synth_ohlcv("MSFT", n=700, seed=8))))
         full = full.dropna(subset=FEATURE_COLUMNS + ["z"]).reset_index(drop=True)
         split = int(len(full) * 0.75)
         train = full.iloc[:split].copy()
@@ -163,11 +239,7 @@ class ScalingTrainOnlyTests(unittest.TestCase):
         """XGBoost must fit/predict on raw features; Ridge still scales."""
         import trendlabs.prediction.train as train_mod
 
-        full = symbol_features(attach_targets(_synth_ohlcv("NVDA", n=700, seed=9)))
-        full["RS_SPY_20"] = full["MOM20"]
-        full["SPY_MOM20"] = 0.0
-        full["SPY_VOL20"] = 0.01
-        full["XS_Dispersion"] = 0.01
+        full = _fill_market_context_stub(symbol_features(attach_targets(_synth_ohlcv("NVDA", n=700, seed=9))))
         full = full.dropna(subset=FEATURE_COLUMNS + ["z"]).reset_index(drop=True)
         split = int(len(full) * 0.75)
         train = full.iloc[:split].copy()

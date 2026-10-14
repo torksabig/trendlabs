@@ -199,7 +199,7 @@ def load_exported_dataset(out_dir: Path | None = None) -> pd.DataFrame:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build Prediction Engine V1 research dataset")
+    parser = argparse.ArgumentParser(description="Build Prediction Engine research dataset (V2 Sprint 1 features)")
     parser.add_argument("--symbols", nargs="*", default=None)
     parser.add_argument("--out-dir", type=Path, default=PE_DIR)
     args = parser.parse_args()
