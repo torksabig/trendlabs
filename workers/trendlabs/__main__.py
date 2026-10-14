@@ -11,6 +11,7 @@ Usage:
   python -m trendlabs.backtest [--timeframe 1h]
   python -m trendlabs.walk_forward [--timeframe 1h]
   python -m trendlabs.experiments [--experiment-id ema_adx20]
+  python -m trendlabs.llm_experiments [--provider openrouter] [--dry-run]
   python -m trendlabs.prediction_eval
   python -m trendlabs.ml_train [--symbols QQQ] [--timeframe 1d]
   python -m trendlabs.ml_predict [--score-holdout]

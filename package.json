@@ -14,6 +14,7 @@
     "backtest": "cd workers && ../.venv/bin/python -m trendlabs.backtest",
     "walk-forward": "cd workers && ../.venv/bin/python -m trendlabs.walk_forward --also-full-backtest",
     "experiment": "cd workers && ../.venv/bin/python -m trendlabs.experiments",
+    "llm-experiment": "cd workers && ../.venv/bin/python -m trendlabs.llm_experiments",
     "predict-eval": "cd workers && ../.venv/bin/python -m trendlabs.prediction_eval",
     "ml-train": "cd workers && ../.venv/bin/python -m trendlabs.ml_train",
     "ml-predict": "cd workers && ../.venv/bin/python -m trendlabs.ml_predict",
