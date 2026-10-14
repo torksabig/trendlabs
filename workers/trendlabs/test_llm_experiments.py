@@ -86,7 +86,7 @@ class FakeLLM(LLMProvider):
         return self._configured
 
     def default_model(self) -> str:
-        return "openai/gpt-6-luna"
+        return "openrouter/free"
 
     def chat_json(self, system: str, user: str, model: str | None = None) -> dict[str, Any]:
         self.calls.append((system[:40], user[:40], model))

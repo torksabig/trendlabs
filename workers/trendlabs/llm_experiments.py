@@ -1,10 +1,11 @@
-"""LLM-proposed experiment loop (OpenRouter gpt-6-luna → Python OOS evaluate).
+"""LLM-proposed experiment loop (research LLM → Python OOS evaluate).
 
 Flow:
   1. Gather compact verified stats from walk-forward / backtest / experiment JSON
      and light DB regime summaries (Python-owned numbers only).
-  2. Ask the research LLM (default: OpenRouter openai/gpt-6-luna) for 1–3
-     structured ExperimentProposal objects.
+  2. Ask the research LLM (TRENDLAB_LLM_PROVIDER / auto; OpenRouter uses
+     OPENROUTER_MODEL, default openrouter/free) for 1–3 structured
+     ExperimentProposal objects.
   3. Map proposals → ExperimentSpec via strategy_config.override_config.
   4. Run ExperimentEngine.evaluate; persist under data/experiments/ + SQLite.
 
@@ -30,9 +31,6 @@ from trendlabs.config import (
     ROOT,
     SYMBOLS,
 )
-
-# Experiment loop default — pin to gpt-6-luna even if OPENROUTER_MODEL falls back to free.
-DEFAULT_EXPERIMENT_MODEL = "openai/gpt-6-luna"
 from trendlabs.db import Store
 from trendlabs.experiments import (
     EXPERIMENT_DIR,
@@ -46,6 +44,7 @@ from trendlabs.indicators import enrich
 from trendlabs.llm_providers import (
     LLMError,
     LLMProvider,
+    PROVIDER_IDS,
     get_registry,
     resolve_provider,
 )
@@ -315,7 +314,7 @@ def run_llm_experiments(
     *,
     symbols: list[str],
     timeframe: str = DEFAULT_TIMEFRAME,
-    provider_id: str | None = "openrouter",
+    provider_id: str | None = None,
     model: str | None = None,
     max_experiments: int = 3,
     criteria: AcceptanceCriteria | None = None,
@@ -341,10 +340,7 @@ def run_llm_experiments(
     if model:
         used_model = model
     elif selected.id == "openrouter":
-        # Prefer env override, else the gpt-6-luna experiment default.
-        used_model = OPENROUTER_MODEL or DEFAULT_EXPERIMENT_MODEL
-        if used_model == "openrouter/free":
-            used_model = DEFAULT_EXPERIMENT_MODEL
+        used_model = OPENROUTER_MODEL or "openrouter/free"
     else:
         used_model = selected.default_model()
     batch = propose_experiments(
@@ -436,13 +432,14 @@ def main() -> int:
     parser.add_argument("--timeframe", default=DEFAULT_TIMEFRAME)
     parser.add_argument(
         "--provider",
-        default="openrouter",
-        help="LLM provider id (default: openrouter / gpt-6-luna)",
+        default=None,
+        choices=[*PROVIDER_IDS, "auto"],
+        help="LLM provider id (default: TRENDLAB_LLM_PROVIDER / auto)",
     )
     parser.add_argument(
         "--model",
         default=None,
-        help=f"Model override (default OpenRouter: {DEFAULT_EXPERIMENT_MODEL})",
+        help=f"Model override (OpenRouter default: {OPENROUTER_MODEL})",
     )
     parser.add_argument("--max-experiments", type=int, default=3)
     parser.add_argument("--min-trades", type=int, default=12)

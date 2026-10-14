@@ -94,7 +94,7 @@ Deterministic historical replay is separate from forward paper-trading state.
 npm run backtest        # full-period backtest → data/backtests/
 npm run walk-forward    # rolling OOS folds (+ full backtest) → data/walk_forward/
 npm run experiment      # control vs variant OOS accept/reject → data/experiments/
-npm run llm-experiment  # OpenRouter gpt-6-luna proposes variants → Python OOS evaluate
+npm run llm-experiment  # research LLM proposes variants → Python OOS evaluate
 npm run predict-eval    # score forecasts + calibration table → data/prediction_eval/
 npm run ml-train -- --symbols QQQ AAPL --timeframe 1d
 npm run ml-predict -- --score-holdout
@@ -104,7 +104,8 @@ npm run ml-predict -- --timeframe 1d
 - Next-bar open fills, fees/slippage, Sharpe / Sortino / drawdown / α vs SPY  
 - Walk-forward combines **out-of-sample** folds only  
 - Experiment engine compares parameter variants on OOS folds (never mutates paper books)  
-- LLM experiment loop (`npm run llm-experiment`) asks OpenRouter `openai/gpt-6-luna` for structured variants; Python evaluates them and never auto-promotes accepted results into live paper agents  
+- LLM experiment loop (`npm run llm-experiment`) uses `TRENDLAB_LLM_PROVIDER` / auto (OpenRouter model: `OPENROUTER_MODEL`, default `openrouter/free`) for structured variants; Python evaluates them and never auto-promotes accepted results into live paper agents  
+
 - Prediction eval stores 1h/4h/24h realized moves and confidence calibration  
 - Market regimes + strategy configs in `workers/trendlabs/`
 
