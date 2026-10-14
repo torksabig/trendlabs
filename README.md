@@ -95,6 +95,9 @@ npm run backtest        # full-period backtest → data/backtests/
 npm run walk-forward    # rolling OOS folds (+ full backtest) → data/walk_forward/
 npm run experiment      # control vs variant OOS accept/reject → data/experiments/
 npm run predict-eval    # score forecasts + calibration table → data/prediction_eval/
+npm run ml-train -- --symbols QQQ AAPL --timeframe 1d
+npm run ml-predict -- --score-holdout
+npm run ml-predict -- --timeframe 1d
 ```
 
 - Next-bar open fills, fees/slippage, Sharpe / Sortino / drawdown / α vs SPY  

@@ -64,3 +64,10 @@ data/experiments/*
 data/prediction_eval/*
 !data/prediction_eval/.gitkeep
 !data/prediction_eval/latest.json
+data/ml/models/*.joblib
+data/ml/**/*_report.json
+!data/ml/.gitkeep
+!data/ml/latest_train.json
+!data/ml/latest_predictions.json
+!data/ml/latest_ml_eval.json
+!data/ml/latest_holdout_predictions.json

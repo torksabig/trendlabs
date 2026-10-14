@@ -1,0 +1,157 @@
+{
+  "kind": "ml_predictions",
+  "created_at": "2026-10-14T09:06:36.771448+00:00",
+  "timeframe": "1d",
+  "predictions": [
+    {
+      "symbol": "AAPL",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.4629,
+      "expected_move_pct": 0.988,
+      "last_close": 341.2699890136719,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.37169981002807617,
+        "sideways": 0.16536715626716614,
+        "up": 0.4629330039024353
+      },
+      "model": "AAPL_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:28.303029+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 60.49520544278001,
+        "adx_14": 16.174391587568614,
+        "market_regime": "low_volatility",
+        "ret_1": 0.0008798069973745548
+      }
+    },
+    {
+      "symbol": "AMD",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.4977,
+      "expected_move_pct": 2.0284,
+      "last_close": 605.530029296875,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.4318678677082062,
+        "sideways": 0.07044705003499985,
+        "up": 0.49768510460853577
+      },
+      "model": "AMD_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:30.501959+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 55.83180917768862,
+        "adx_14": 23.612568725016885,
+        "market_regime": "trending_bullish",
+        "ret_1": 0.018999123667269746
+      }
+    },
+    {
+      "symbol": "MSFT",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.5245,
+      "expected_move_pct": 1.0516,
+      "last_close": 543.4500122070312,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.3091186583042145,
+        "sideways": 0.16635587811470032,
+        "up": 0.5245254635810852
+      },
+      "model": "MSFT_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:32.480597+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 70.78434274757237,
+        "adx_14": 40.832808785683696,
+        "market_regime": "trending_bullish",
+        "ret_1": 0.004250185141281504
+      }
+    },
+    {
+      "symbol": "NVDA",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "down",
+      "confidence": 0.4326,
+      "expected_move_pct": -1.2227,
+      "last_close": 228.52000427246094,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.43260976672172546,
+        "sideways": 0.1375107765197754,
+        "up": 0.42987942695617676
+      },
+      "model": "NVDA_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:33.814993+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 52.02906900627231,
+        "adx_14": 16.25762002365504,
+        "market_regime": "low_volatility",
+        "ret_1": 0.009720735582561923
+      }
+    },
+    {
+      "symbol": "QQQ",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.4986,
+      "expected_move_pct": 0.5952,
+      "last_close": 743.5700073242188,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.3558427095413208,
+        "sideways": 0.14552149176597595,
+        "up": 0.49863579869270325
+      },
+      "model": "QQQ_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:35.158411+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 54.737776028390265,
+        "adx_14": 13.216116196649658,
+        "market_regime": "sideways",
+        "ret_1": -0.003310775261207932
+      }
+    },
+    {
+      "symbol": "SPY",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "down",
+      "confidence": 0.3786,
+      "expected_move_pct": -0.3883,
+      "last_close": 778.010009765625,
+      "as_of": "2026-10-13 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.37864914536476135,
+        "sideways": 0.3412218689918518,
+        "up": 0.28012898564338684
+      },
+      "model": "SPY_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-14T09:06:36.770265+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 59.799032629043026,
+        "adx_14": 9.29423778122915,
+        "market_regime": "sideways",
+        "ret_1": -0.00011562244330465266
+      }
+    }
+  ]
+}
