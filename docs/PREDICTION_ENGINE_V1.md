@@ -199,6 +199,7 @@ No new features in D/E — evaluation only.
 | `npm run pe-baselines` | Run baselines; write IC results JSON |
 | `npm run pe-train` | Train XGB regressor; write IC results JSON |
 | `npm run pe-eval` | OOS quintiles + economic sim + V1 gate → `economic_eval.json` |
+| `npm run pe-volatility` | RV5 persistence vs HAR log-vol → `volatility_results.json` |
 
 Artifacts under `data/prediction_engine/`.
 

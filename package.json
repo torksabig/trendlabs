@@ -22,6 +22,7 @@
     "pe-baselines": "cd workers && ../.venv/bin/python -m trendlabs.prediction.baselines",
     "pe-train": "cd workers && ../.venv/bin/python -m trendlabs.prediction.train --with-baselines",
     "pe-eval": "cd workers && ../.venv/bin/python -m trendlabs.prediction.eval",
+    "pe-volatility": "cd workers && ../.venv/bin/python -m trendlabs.prediction.volatility",
     "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
   },
   "dependencies": {
