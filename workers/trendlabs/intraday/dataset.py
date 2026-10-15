@@ -133,7 +133,11 @@ def build_panel(
     horizon_bars: int = DEFAULT_HORIZON_BARS,
     vol_window: int = VOL_WINDOW,
 ) -> pd.DataFrame:
-    symbols = symbols or DEFAULT_UNIVERSE
+    symbols = list(symbols or DEFAULT_UNIVERSE)
+    # SPY carries broadcast market-context features; without it every row is NaN-context
+    # and silently filtered. Always include it (ranking stages exclude it themselves).
+    if BENCHMARK_SYMBOL not in symbols:
+        symbols.append(BENCHMARK_SYMBOL)
     bars_per_day = BARS_PER_DAY[tf]
     frames: list[pd.DataFrame] = []
     source_map: dict[str, str] = {}

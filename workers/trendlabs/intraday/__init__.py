@@ -17,9 +17,9 @@ part of this intraday product metric.
 
 from __future__ import annotations
 
-from trendlabs.config import ROOT, SYMBOLS
+from trendlabs.config import DATA_DIR, SYMBOLS
 
-INTRA_DIR = ROOT / "data" / "intraday"
+INTRA_DIR = DATA_DIR / "intraday"
 BARS_DIR = INTRA_DIR / "bars"
 
 # Liquid universe — same set as the daily PE track for comparability.

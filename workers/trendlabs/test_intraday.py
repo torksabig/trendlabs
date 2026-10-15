@@ -201,3 +201,25 @@ def test_runner_emits_plan_baselines_and_is_deterministic() -> None:
 
     r1.pop("generated_at"), r2.pop("generated_at")
     assert r1 == r2  # same seed + deterministic scores → identical payload
+
+
+def test_session_bootstrap_ci_and_q5q1_bps() -> None:
+    from trendlabs.intraday.baselines import q5q1_r_bps, session_bootstrap_ci
+
+    rng = np.random.default_rng(3)
+    sess = pd.Series(rng.normal(0.01, 0.05, 60))
+    ci = session_bootstrap_ci(sess, draws=500)
+    assert ci["n_sessions"] == 60
+    lo, hi = ci["ci95"]
+    assert lo <= float(sess.mean()) <= hi
+    assert session_bootstrap_ci(pd.Series([np.nan] * 4))["ci95"] is None
+
+    # Perfectly ranking score within each bar → positive raw-R spread
+    ts = pd.date_range("2025-01-02 09:30", periods=4, freq="15min", tz="UTC")
+    rows = [pd.DataFrame({"ts": t, "score": np.arange(10, dtype=float), "R": np.arange(10) * 0.001}) for t in ts]
+    panel = pd.concat(rows, ignore_index=True)
+    bps = q5q1_r_bps(panel, score_col="score")
+    assert bps is not None and bps > 0
+    inv = panel.copy()
+    inv["score"] = -inv["score"]
+    assert q5q1_r_bps(inv, score_col="score") is not None and q5q1_r_bps(inv, score_col="score") < 0

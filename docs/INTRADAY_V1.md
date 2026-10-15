@@ -43,9 +43,28 @@ Source resolution per panel: `15m: alpaca 5m → yahoo 5m → yahoo 15m`; `1h/4h
 Momentum over wall-clock horizons (`MOM_1h/4h/1d/5d`, accel), trend quality (rolling OLS slope/R², 1d & 5d), vol (`VOL_1h/1d`, ratio, `RANGE_1d`, overnight `GAP`/`GAP_Z`), volume (`VolumeZ`, `DollarVolume`, `RVOL_SLOT` = volume vs same time-of-day slot over prior sessions), time-of-day/calendar (`BAR_FRAC`, sin/cos, day-of-week), market context broadcast per bar (`SPY_MOM_1h/1d`, `SPY_VOL_1d`, RS, cross-sectional dispersion, breadth).
 
 ## Status
-- Pipeline: collect → panel → targets → purged WF → baselines — working (Yahoo 1h/15m, keyless).
-- Next: Alpaca 5m backfill (needs keys) → rebuild panels with ~10y depth → re-run baselines; XGBoost per horizon **only** if a baseline/model clears the gate.
+- Pipeline: collect → panel → targets → purged WF → baselines — working (Yahoo 1h/15m/4h panels, keyless). All seven baselines run on all three horizons.
+- **Measurement rule (2026-10-15):** per-bar cross-sectional IC clusters within sessions (same ordering repeated across the day's bars), so per-bar MeanIC overstates confidence. Headline reads use session-aggregated IC + session-block bootstrap CI95 + Q5−Q1 spread on raw R in bps vs round-trip cost `2×(FEE_BPS+SLIPPAGE_BPS)` = 20bps. All three are now emitted per baseline in `baselines_{tf}.json` (`session_ic.ci95`, `economic`).
+- Deep-dive on the 15m ridge (+0.021 per-bar MeanIC): session-aggregated IC spans zero (CI95 ≈ [−0.03, +0.04]); signal flips by slot (open +0.031 → mid −0.033); concentrated in XOM/CVX/AMD vs JPM/GS over one 60d window; Q5−Q1 = +2.5 bps gross vs 20 bps round trip → **uneconomic, likely clustering + time-of-day artifact**.
+- The only session-robust structure is short-horizon **reversal**: `short_mom` session IC −0.039 (CI95 [−0.069, −0.012]) on 15m. Observation; a sign-flipped candidate must be declared before the deep-panel run, never after.
+- Next: Alpaca 5m backfill (needs keys) → rebuild panels with ~10y depth → re-run baselines with cluster-robust reads; XGBoost per horizon **only** if a pre-declared score clears the gate AND beats costs at depth.
 - Daily PE FAIL + HAR-vol remain method benchmarks; never mixed into the intraday product metric.
+
+## Pre-declared hypotheses (2026-10-15 21:20 UTC+3 — before any Alpaca deep panel exists)
+
+Registered before the 10y backfill so no score can be declared post-hoc. Deep-panel evaluation
+re-runs all seven baselines plus the flips below with the same gate bars and the cluster-robust
+reads (session IC CI95 + economics vs 20 bps round trip).
+
+| ID | Hypothesis | Score tested | Accept (all of) |
+|---|---|---|---|
+| H1 | Intraday reversal: negative short-horizon momentum predicts positive next-bar z | `-score_short_mom` (2h wall-clock) | session IC ≥ 0.03, CI95 excludes 0, folds+ ≥ 0.60, Q5−Q1 ≥ 20 bps, ≥ 100 folds |
+| H2 | Time-of-day conditioning: cross-sectional ranking skill concentrates at session-open bars | ridge per-slot (open vs rest) | open-slot session IC ≥ 0.03, CI95 excludes 0, and ≥ 2× the rest-of-session IC |
+| H3 | Momentum-as-edge (positive short momentum) — **expected to fail** | `score_short_mom`, `score_mom` | rejected if session IC CI95 upper bound < 0.03 |
+
+Rules: no additional sign flips may be introduced after seeing deep-panel OOS; any new candidate
+score must be registered in this table before its first deep-panel evaluation. XGBoost per horizon
+is unlocked only by H1/H2 clearing on the deep panel (H3 rejection is a result, not a blocker).
 
 ## Tests
 `workers/trendlabs/test_intraday.py`: session-anchored resampling (15m/4h), execution-rule targets + NaN tail, purged-fold label/no-overlap invariants, PIT property of `RVOL_SLOT`, PIT value checks + future-bar perturbation invariance for `persistence`/`short_mom`/`range_rv_signed`, and a deterministic end-to-end runner check emitting all seven baselines with the extended metrics.

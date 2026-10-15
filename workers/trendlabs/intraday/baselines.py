@@ -23,6 +23,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from trendlabs.config import FEE_BPS, SLIPPAGE_BPS
 from trendlabs.intraday import BARS_PER_DAY, DATASET_VERSION, DEFAULT_HORIZON_BARS, DISCLAIMER, INTRA_DIR
 from trendlabs.prediction.gate import (
     GATE_MEAN_IC_MIN,
@@ -31,7 +32,13 @@ from trendlabs.prediction.gate import (
     GATE_POSITIVE_FOLD_RATE_MIN,
     GATE_Q5_Q1_SHARPE_10BPS_MIN,
 )
-from trendlabs.prediction.metrics_ic import daily_spearman_ic, evaluate_scores, fold_mean_ic_stats, summarize_ic
+from trendlabs.prediction.metrics_ic import (
+    assign_quintiles,
+    daily_spearman_ic,
+    evaluate_scores,
+    fold_mean_ic_stats,
+    summarize_ic,
+)
 from trendlabs.prediction.walk_forward import generate_purged_folds, mask_dates, unique_sorted_dates
 
 RANK_EXCLUDE_SPY = True
@@ -121,6 +128,52 @@ def mae_standardized(panel: pd.DataFrame, *, score_col: str) -> float | None:
     sz = (panel[score_col] - g.transform("mean")) / sd.replace(0.0, np.nan)
     diff = (sz - panel["z"]).abs().dropna()
     return float(diff.mean()) if len(diff) else None
+
+
+def session_bootstrap_ci(
+    sess_ic: pd.Series,
+    *,
+    draws: int = 1000,
+    seed: int = 0,
+) -> dict[str, Any]:
+    """Bootstrap CI of session-mean IC — per-bar ICs cluster within a session
+    (same ordering repeated every bar), so per-bar t-stats overstate confidence.
+    Sessions are the exchange unit; resample sessions with replacement."""
+    s = sess_ic.dropna()
+    if len(s) < 5:
+        return {"n_sessions": int(len(s)), "ci95": None}
+    rng = np.random.default_rng(seed)
+    arr = s.to_numpy(dtype=float)
+    means = np.empty(draws)
+    for i in range(draws):
+        idx = rng.integers(0, len(arr), size=len(arr))
+        means[i] = arr[idx].mean()
+    lo, hi = np.percentile(means, [2.5, 97.5])
+    return {"n_sessions": int(len(s)), "ci95": [float(lo), float(hi)]}
+
+
+def q5q1_r_bps(
+    panel: pd.DataFrame,
+    *,
+    score_col: str,
+    min_names: int = 10,
+) -> float | None:
+    """Mean per-bar Q5−Q1 spread on the raw tradable R (log return), in bps.
+
+    First-cut economic check: must beat round-trip costs (2 × (fee + slippage)).
+    """
+    spreads: list[float] = []
+    for _, g in panel.groupby("ts", sort=True):
+        sub = g[[score_col, "R"]].dropna()
+        if len(sub) < min_names:
+            continue
+        q = assign_quintiles(sub[score_col])
+        if q.notna().sum() < min_names or q.nunique(dropna=True) < 5:
+            continue
+        spreads.append(sub.loc[q == 5, "R"].mean() - sub.loc[q == 1, "R"].mean())
+    if not spreads:
+        return None
+    return float(np.mean(spreads) * 1e4)
 
 
 def fit_ridge_predict(
@@ -237,6 +290,12 @@ def run_baselines_walk_forward(
         folds_stats = fold_mean_ic_stats(oos, score_col=col)
         sess = session_level_ic(oos, score_col=col)
         stats["session_ic"] = summarize_ic(sess)
+        stats["session_ic"]["ci95"] = session_bootstrap_ci(sess)["ci95"]
+        stats["economic"] = {
+            "q5q1_bps": q5q1_r_bps(oos, score_col=col),
+            "cost_side_bps": float(FEE_BPS + SLIPPAGE_BPS),
+            "cost_round_trip_bps": float(2.0 * (FEE_BPS + SLIPPAGE_BPS)),
+        }
         stats["folds"] = folds_stats
         stats["rank_ic"] = summarize_ic(rank_ic_series(oos, score_col=col))
         stats["hit_rate"] = hit_rate(oos, score_col=col)
@@ -289,9 +348,15 @@ def main() -> int:
     out_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(f"Wrote {out_path}")
     for name, stats in result.get("baselines", {}).items():
+        si = stats.get("session_ic") or {}
+        ci = si.get("ci95")
+        econ = stats.get("economic") or {}
         print(
             f"{name}: MeanIC={stats.get('MeanIC')} ICIR={stats.get('ICIR')} "
-            f"folds+={stats['folds'].get('positive_fold_rate')}"
+            f"folds+={stats['folds'].get('positive_fold_rate')} "
+            f"sessIC={si.get('MeanIC') if si.get('MeanIC') is not None else None}"
+            f" CI95={ci if ci is None else [round(x, 4) for x in ci]} "
+            f"Q5Q1={econ.get('q5q1_bps') if econ.get('q5q1_bps') is not None else None}bps"
         )
     return 0 if result.get("baselines") else 1
 
