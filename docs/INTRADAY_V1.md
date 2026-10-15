@@ -66,5 +66,23 @@ Rules: no additional sign flips may be introduced after seeing deep-panel OOS; a
 score must be registered in this table before its first deep-panel evaluation. XGBoost per horizon
 is unlocked only by H1/H2 clearing on the deep panel (H3 rejection is a result, not a blocker).
 
+### H1–H3 results, keyless panels (2026-10-15)
+| Hypothesis | 15m (6 folds) | 1h (140 folds) | 4h (139 folds) |
+|---|---|---|---|
+| H1 reversal | REJECTED (sessIC 0.029 < 0.03; 1.0 bps < 20; depth) | REJECTED (0.008; CI spans 0; 0.4 bps) | REJECTED (0.019; CI spans 0; −1.7 bps) |
+| H2 open-slot | REJECTED (CI [−0.07, +0.19]) | REJECTED (sessIC −0.004) | REJECTED (sessIC −0.003) |
+| H3 momentum edge | REJECTED | REJECTED (CI95 [−0.025, −0.004] < 0.03) | REJECTED (CI95 [−0.037, +0.002] < 0.03) |
+
+`xgboost_unlocked: false` on all three horizons. H1's 15m session MeanIC (0.029) sits one hair under
+the bar with 6 folds — the deep panel is the only way to separate it from noise.
+
+## Gradient-boosting stage (`intraday/boost.py`)
+Exploratory GBM walk-forward per horizon (xgboost when its libomp dylib loads; falls back to sklearn
+`HistGradientBoostingRegressor` — same family, works locally). Fit on `z` per purged fold, evaluated
+with the same cluster-robust stats; output `data/intraday/boost_{tf}.json`, status string
+`EXPLORATORY — not a gate decision`. Keyless 15m: per-bar MeanIC 0.030, session IC 0.017 with
+CI95 [−0.04, +0.06] (spans zero), Q5−Q1 2.3 bps — consistent with the baselines: the model memorizes
+the thin panel's day-level structure; no economic edge at 60d depth.
+
 ## Tests
 `workers/trendlabs/test_intraday.py`: session-anchored resampling (15m/4h), execution-rule targets + NaN tail, purged-fold label/no-overlap invariants, PIT property of `RVOL_SLOT`, PIT value checks + future-bar perturbation invariance for `persistence`/`short_mom`/`range_rv_signed`, and a deterministic end-to-end runner check emitting all seven baselines with the extended metrics.
