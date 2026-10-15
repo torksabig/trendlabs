@@ -67,3 +67,12 @@ data/prediction_eval/*
 data/repeating_trends/*
 !data/repeating_trends/.gitkeep
 !data/repeating_trends/latest.json
+data/ml_prediction_eval/*
+!data/ml_prediction_eval/.gitkeep
+!data/ml_prediction_eval/latest.json
+
+# Trained model binaries (metrics JSON under models/ may be committed selectively)
+models/**/model.pkl
+models/**/model.json
+models/**/*.ubj
+*.pkl
