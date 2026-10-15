@@ -15,6 +15,7 @@ import pandas as pd
 
 from trendlabs.config import SYMBOLS
 from trendlabs.db import Store, normalize_ts, utc_now
+import trendlabs.store_ml  # noqa: F401  # install ML Store methods
 from trendlabs.indicators import adx, atr, ema, rsi
 
 FEATURE_VERSION = "v1"
