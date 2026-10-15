@@ -1,0 +1,30 @@
+{
+  "kind": "ml_prediction_evaluation",
+  "created_at": "2026-10-15T20:19:02.728717+00:00",
+  "timeframe": "1d",
+  "horizon_bars": 4,
+  "backfilled_predictions": 0,
+  "scored_this_run": 0,
+  "skipped_insufficient_future": 12,
+  "summary": {
+    "n": 480,
+    "accuracy": 0.6958333333333333,
+    "mean_prob_up": 0.5099605509079993,
+    "mean_realized_return": 0.0015174254870063224
+  },
+  "by_symbol": {
+    "AAPL": {"n": 40, "accuracy": 0.7, "mean_prob_up": 0.47316552326083183, "mean_realized_return": -0.011529443823411844},
+    "AMD": {"n": 40, "accuracy": 0.575, "mean_prob_up": 0.4794044591486454, "mean_realized_return": -0.0033595463318457585},
+    "CVX": {"n": 40, "accuracy": 0.5, "mean_prob_up": 0.490936441719532, "mean_realized_return": 0.0031262762781469637},
+    "GS": {"n": 40, "accuracy": 0.725, "mean_prob_up": 0.5266580946743489, "mean_realized_return": 0.007177786682276166},
+    "JNJ": {"n": 40, "accuracy": 0.825, "mean_prob_up": 0.5214607000350953, "mean_realized_return": 0.007116601414097956},
+    "JPM": {"n": 40, "accuracy": 0.725, "mean_prob_up": 0.5052866101264953, "mean_realized_return": -0.00013041912886892215},
+    "MSFT": {"n": 40, "accuracy": 0.675, "mean_prob_up": 0.5458938799798488, "mean_realized_return": 0.0004508850739728898},
+    "NVDA": {"n": 40, "accuracy": 0.75, "mean_prob_up": 0.5259752672165632, "mean_realized_return": 0.005671135114674278},
+    "QQQ": {"n": 40, "accuracy": 0.675, "mean_prob_up": 0.4871807642281055, "mean_realized_return": -0.006292686925650023},
+    "SPY": {"n": 40, "accuracy": 0.85, "mean_prob_up": 0.6221715316176415, "mean_realized_return": 0.007771802440120074},
+    "UNH": {"n": 40, "accuracy": 0.75, "mean_prob_up": 0.4426456309854984, "mean_realized_return": 0.004984792723039727},
+    "XOM": {"n": 40, "accuracy": 0.6, "mean_prob_up": 0.4987477079033852, "mean_realized_return": 0.0032219223275243626}
+  },
+  "scored_sample": []
+}

@@ -1,0 +1,8 @@
+{
+  "model_version": "AAPL_1d_xgb_v1_20261014T085315Z",
+  "symbol": "AAPL",
+  "timeframe": "1d",
+  "feature_version": "v1",
+  "horizon_bars": 4,
+  "artifact_path": "models/AAPL/1d/AAPL_1d_xgb_v1_20261014T085315Z"
+}
