@@ -19,7 +19,12 @@
     "walk-forward": "cd workers && ../.venv/bin/python -m trendlabs.walk_forward --also-full-backtest",
     "experiment": "cd workers && ../.venv/bin/python -m trendlabs.experiments",
     "predict-eval": "cd workers && ../.venv/bin/python -m trendlabs.prediction_eval",
-    "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama"
+    "seed": "cd workers && ../.venv/bin/python -m trendlabs.seed --no-ollama",
+    "features": "cd workers && ../.venv/bin/python -m trendlabs.features",
+    "train-ml": "cd workers && ../.venv/bin/python -m trendlabs.train_ml",
+    "ml-predict": "cd workers && ../.venv/bin/python -m trendlabs.ml_predict",
+    "ml-eval": "cd workers && ../.venv/bin/python -m trendlabs.ml_eval",
+    "test:ml": "cd workers && ../.venv/bin/python -m unittest trendlabs.test_features trendlabs.test_train_ml -v"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.4.0",
