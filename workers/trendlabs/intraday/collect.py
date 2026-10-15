@@ -157,7 +157,10 @@ def collect_symbol(source: Source, symbol: str, timeframe: str, *, years: float,
     path = cache_path(source, symbol, timeframe)
     if source == "alpaca":
         start = datetime.now(timezone.utc) - timedelta(days=int(years * 365.25))
-        df = fetch_alpaca_bars(symbol, timeframe, start=start, feed=feed)
+        # Free Basic plan cannot query the most recent 15 minutes of SIP data
+        # (docs: historical `end` must be >= 15 min old without a subscription).
+        end = datetime.now(timezone.utc) - timedelta(minutes=16)
+        df = fetch_alpaca_bars(symbol, timeframe, start=start, end=end, feed=feed)
     elif source == "yahoo":
         df = fetch_yahoo_bars(symbol, timeframe)
     else:
