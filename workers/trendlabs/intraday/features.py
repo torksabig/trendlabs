@@ -114,7 +114,11 @@ def symbol_features(df: pd.DataFrame, *, tf: str, bars_per_day: int) -> pd.DataF
 
     # --- Volatility / range ---
     log_ret = np.log(close / close.shift(1).replace(0.0, np.nan))
-    out["VOL_1h"] = log_ret.rolling(w_1h, min_periods=w_1h).std() * _ANN
+    # Window-1 std is degenerate (always NaN); a 1-bar short-vol proxy is |log_ret|.
+    if w_1h <= 1:
+        out["VOL_1h"] = log_ret.abs() * _ANN
+    else:
+        out["VOL_1h"] = log_ret.rolling(w_1h, min_periods=w_1h).std() * _ANN
     out["VOL_1d"] = log_ret.rolling(w_1d, min_periods=w_1d).std() * _ANN
     out["VOLRatio"] = out["VOL_1h"] / out["VOL_1d"].replace(0.0, np.nan)
     out["RANGE_1d"] = ((high - out["low"].astype(float)) / close.replace(0.0, np.nan)).rolling(

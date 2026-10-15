@@ -148,8 +148,8 @@ def build_panel(
             print(f"skip {sym}: only {len(bars)} base bars")
             continue
         panel_tf = resample_bars(bars, tf)
+        panel_tf.insert(0, "symbol", sym)
         feats = symbol_features(panel_tf, tf=tf, bars_per_day=bars_per_day)
-        feats.insert(0, "symbol", sym)
         frames.append(feats)
         source_map[sym] = f"{source}:{base_tf}->{tf}"
 

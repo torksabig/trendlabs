@@ -53,8 +53,10 @@ def _normalize_yahoo(df: pd.DataFrame) -> pd.DataFrame:
         out.index = out.index.tz_localize("UTC")
     else:
         out.index = out.index.tz_convert("UTC")
-    out = out.reset_index().rename(
-        columns={"Date": "ts", "Open": "open", "High": "high", "Low": "low", "Close": "close", "Volume": "volume"}
+    out = out.reset_index()
+    ts_col = out.columns[0]  # yfinance index name varies by version (Date/Datetime)
+    out = out.rename(
+        columns={ts_col: "ts", "Open": "open", "High": "high", "Low": "low", "Close": "close", "Volume": "volume"}
     )
     out["ts"] = pd.to_datetime(out["ts"], utc=True)
     cols = [c for c in _BARS_COLUMNS if c in out.columns]

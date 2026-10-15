@@ -87,3 +87,9 @@ data/prediction_engine/*
 !data/prediction_engine/pe_dataset_v2.parquet
 # CSV duplicate of parquet — regenerate via npm run pe-dataset
 data/prediction_engine/*.csv
+
+# Intraday PE artifacts (keep manifests + baseline results + parquet panels; raw bars cache is refetchable)
+data/intraday/*
+!data/intraday/*_manifest.json
+!data/intraday/baselines_*.json
+!data/intraday/pe_intra_v1_*.parquet
