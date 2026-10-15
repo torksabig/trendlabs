@@ -32,7 +32,7 @@ Horizons (decision at bar \(t\), feature prices ≤ \(t\)):
 | --- | --- |
 | Source | Yahoo Finance via `yfinance` (no paid secrets) |
 | Interval | **5-minute** bars (preferred over 1m for history length) |
-| Yahoo window | Typically **~60 calendar days** for 5m; **~7 days** for 1m (1m not used) |
+| Yahoo window | Request `period=60d` for 5m (typical public cap); **~7 days** for 1m (1m not used). Actual span may vary slightly by symbol/run — see `intraday/manifest.json`. |
 | Symbols | QQQ, SPY, AAPL, MSFT, NVDA |
 | Storage | `data/prediction_engine/intraday/` (`panel_5m.parquet`, `manifest.json`) |
 | Results | `data/prediction_engine/intraday_results.json` |
