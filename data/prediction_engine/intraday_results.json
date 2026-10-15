@@ -1,0 +1,180 @@
+{
+  "disclaimer": "EXPLORATORY \u2014 SURVIVORSHIP BIAS NOT FULLY CONTROLLED",
+  "experiment": "pe_intraday_v1",
+  "created_at": "2026-10-15T13:28:02.149724+00:00",
+  "bar_interval": "5m",
+  "price_basis": "close",
+  "symbols": [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "QQQ",
+    "SPY"
+  ],
+  "n_rows": 23400,
+  "n_timestamps": 4680,
+  "ts_min": "2026-07-22T13:30:00+00:00",
+  "ts_max": "2026-10-14T19:55:00+00:00",
+  "yfinance_period": "60d",
+  "horizons_bars": {
+    "15m": 3,
+    "1h": 12,
+    "4h": 48
+  },
+  "max_purge_bars": 48,
+  "baselines_described": {
+    "persistence": "hat = ln(close_t / close_{t-h}) \u2014 last realized same horizon",
+    "short_mom": "hat = ln(close_t / close_{t-6}) \u2014 ~30m momentum",
+    "range_rv_signed": "hat = mean((high-low)/close, 12 bars) * sign(short_mom)"
+  },
+  "data_limits": {
+    "yahoo_5m": "~60 calendar days public history",
+    "yahoo_1m_not_used": "~7 days; too short for purged WF at 4h",
+    "survivorship": "Fixed liquid list; not universe-complete",
+    "paper_only": true,
+    "brokerage": false
+  },
+  "horizons": {
+    "15m": {
+      "horizon_bars": 3,
+      "target": "R = ln(close_{t+3} / close_t)",
+      "price_basis": "close",
+      "protocol": {
+        "min_train_bars": 1500,
+        "test_bars": 400,
+        "step_bars": 400,
+        "purge_gap_bars": 3,
+        "n_folds": 7,
+        "n_oos_rows": 14000,
+        "chronological": true,
+        "random_splits": false
+      },
+      "models": {
+        "persistence": {
+          "n": 14000,
+          "SpearmanIC": 0.0024426194120122243,
+          "RankIC": -0.012999999999999998,
+          "RankICIR": -0.023536374488708836,
+          "RankIC_PositiveRate": 0.4664285714285714,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.49423311125438785,
+          "MAE": 0.0022309114533359195
+        },
+        "short_mom": {
+          "n": 14000,
+          "SpearmanIC": -0.020258280002295157,
+          "RankIC": -0.031416744974591196,
+          "RankICIR": -0.05643521024267067,
+          "RankIC_PositiveRate": 0.45071428571428573,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.47926069202664945,
+          "MAE": 0.002838955015026615
+        },
+        "range_rv_signed": {
+          "n": 14000,
+          "SpearmanIC": -0.02866243710637147,
+          "RankIC": -0.03116025038656991,
+          "RankICIR": -0.05630837251346221,
+          "RankIC_PositiveRate": 0.44821428571428573,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.47926069202664945,
+          "MAE": 0.002150139042551863
+        }
+      }
+    },
+    "1h": {
+      "horizon_bars": 12,
+      "target": "R = ln(close_{t+12} / close_t)",
+      "price_basis": "close",
+      "protocol": {
+        "min_train_bars": 1500,
+        "test_bars": 400,
+        "step_bars": 400,
+        "purge_gap_bars": 12,
+        "n_folds": 7,
+        "n_oos_rows": 14000,
+        "chronological": true,
+        "random_splits": false
+      },
+      "models": {
+        "persistence": {
+          "n": 14000,
+          "SpearmanIC": -0.029116073494429996,
+          "RankIC": -0.04517857142857142,
+          "RankICIR": -0.082368989278567,
+          "RankIC_PositiveRate": 0.4432142857142857,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.4894864826205121,
+          "MAE": 0.0050848462175265875
+        },
+        "short_mom": {
+          "n": 14000,
+          "SpearmanIC": -0.047814899840029235,
+          "RankIC": -0.03865932258828115,
+          "RankICIR": -0.0697123730650504,
+          "RankIC_PositiveRate": 0.44535714285714284,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.47561150050064366,
+          "MAE": 0.004333917576062499
+        },
+        "range_rv_signed": {
+          "n": 14000,
+          "SpearmanIC": -0.05557844000983547,
+          "RankIC": -0.039985390151153495,
+          "RankICIR": -0.07303639861347884,
+          "RankIC_PositiveRate": 0.43714285714285717,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.47561150050064366,
+          "MAE": 0.0037389641498754033
+        }
+      }
+    },
+    "4h": {
+      "horizon_bars": 48,
+      "target": "R = ln(close_{t+48} / close_t)",
+      "price_basis": "close",
+      "protocol": {
+        "min_train_bars": 1500,
+        "test_bars": 400,
+        "step_bars": 400,
+        "purge_gap_bars": 48,
+        "n_folds": 7,
+        "n_oos_rows": 14000,
+        "chronological": true,
+        "random_splits": false
+      },
+      "models": {
+        "persistence": {
+          "n": 14000,
+          "SpearmanIC": -0.05671518192050596,
+          "RankIC": -0.05303571428571428,
+          "RankICIR": -0.09399466195050998,
+          "RankIC_PositiveRate": 0.42964285714285716,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.4888857122435852,
+          "MAE": 0.011837573419578012
+        },
+        "short_mom": {
+          "n": 14000,
+          "SpearmanIC": -0.011306913873530769,
+          "RankIC": -0.007467996907440738,
+          "RankICIR": -0.013292951157112555,
+          "RankIC_PositiveRate": 0.46464285714285714,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.49581874061896936,
+          "MAE": 0.008442610705417948
+        },
+        "range_rv_signed": {
+          "n": 14000,
+          "SpearmanIC": -0.02816565592566351,
+          "RankIC": -0.019105287260565342,
+          "RankICIR": -0.034909811092513954,
+          "RankIC_PositiveRate": 0.45571428571428574,
+          "RankIC_n_timestamps": 2800,
+          "hit_rate": 0.49581874061896936,
+          "MAE": 0.007999039644087012
+        }
+      }
+    }
+  }
+}
