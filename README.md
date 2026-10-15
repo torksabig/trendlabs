@@ -85,7 +85,7 @@ Per-symbol classifiers on candle features, time-ordered holdout (no shuffle). Ar
 
 ### Prediction Engine V1 (cross-sectional ranking)
 
-Separate from the ternary classifier: daily features → purged walk-forward \(\hat{z}\) → OOS quintiles and a simple paper book (enter next open, exit close \(t+5\)), with 10/20 bps cost stress and a fixed V1 gate. Artifacts under `data/prediction_engine/` (`pe-dataset`, `pe-baselines`, `pe-train`, `pe-eval`, `pe-volatility`). Volatility V1 compares 5-day RV persistence vs HAR log-vol (`volatility_results.json`). All outputs carry **EXPLORATORY — SURVIVORSHIP BIAS NOT FULLY CONTROLLED**. Not live trading.
+Separate from the ternary classifier: daily features → purged walk-forward \(\hat{z}\) → OOS quintiles and a simple paper book (enter next open, exit close \(t+5\)), with 10/20 bps cost stress and a fixed V1 gate. Artifacts under `data/prediction_engine/` (`pe-dataset`, `pe-baselines`, `pe-train`, `pe-eval`, `pe-volatility`, `pe-intraday`). Volatility V1 compares 5-day RV persistence vs HAR log-vol (`volatility_results.json`). Intraday V1 is a separate exploratory slice: Yahoo **5m** bars on a small liquid set → 15m/1h/4h close-to-close baselines (`intraday_results.json`); Yahoo 5m history is short (~60d) — treat as scaffolding. All outputs carry **EXPLORATORY — SURVIVORSHIP BIAS NOT FULLY CONTROLLED**. Not live trading.
 
 ---
 
@@ -203,6 +203,7 @@ npm run pe-baselines
 npm run pe-train
 npm run pe-eval
 npm run pe-volatility
+npm run pe-intraday
 ```
 
 ### Research LLM providers

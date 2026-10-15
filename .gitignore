@@ -82,8 +82,14 @@ data/prediction_engine/*
 !data/prediction_engine/ic_comparison.json
 !data/prediction_engine/economic_eval.json
 !data/prediction_engine/volatility_results.json
+!data/prediction_engine/intraday_results.json
 !data/prediction_engine/sprint1_ic_*.json
 !data/prediction_engine/pe_dataset_v1.parquet
 !data/prediction_engine/pe_dataset_v2.parquet
+# Intraday cache (regenerate via npm run pe-intraday -- --refresh)
+!data/prediction_engine/intraday/
+data/prediction_engine/intraday/**
+!data/prediction_engine/intraday/.gitkeep
+!data/prediction_engine/intraday/manifest.json
 # CSV duplicate of parquet — regenerate via npm run pe-dataset
 data/prediction_engine/*.csv
