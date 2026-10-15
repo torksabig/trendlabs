@@ -1,7 +1,7 @@
 {
   "dataset_version": "pe_intra_v1_15m",
-  "created_at": "2026-10-15T17:18:52.290925+00:00",
-  "git_sha": "aec006783e37736b0f02afe2b0189c794555ed92",
+  "created_at": "2026-10-15T18:50:14.593788+00:00",
+  "git_sha": "76e99104b6990039cdb8490e6cd3e0302477e168",
   "disclaimer": "EXPLORATORY \u2014 SURVIVORSHIP BIAS NOT FULLY CONTROLLED",
   "execution_rule": "Signal at close of bar t (no future bars); enter at open of bar t+1; exit at close of bar t+h. R = ln(close_{t+h} / open_{t+1}); z = R / (sigma_vol_window * sqrt(h)) with sigma from past vol_window bar log returns at t only. Panel bars are RTH-only, session-anchored at 9:30 ET (last 4h bar of a session is 2.5h: 13:30-16:00).",
   "timeframe": "15m",
@@ -36,10 +36,10 @@
     "UNH",
     "XOM"
   ],
-  "n_rows": 17016,
+  "n_rows": 780785,
   "n_symbols": 12,
-  "ts_min": "2026-07-30 13:30:00+00:00",
-  "ts_max": "2026-10-15 16:45:00+00:00",
+  "ts_min": "2016-10-24 13:30:00+00:00",
+  "ts_max": "2026-10-15 18:15:00+00:00",
   "feature_columns": [
     "MOM_1h",
     "MOM_4h",
@@ -78,18 +78,18 @@
     "sigma"
   ],
   "source_map": {
-    "AAPL": "yahoo:15m->15m",
-    "MSFT": "yahoo:15m->15m",
-    "NVDA": "yahoo:15m->15m",
-    "AMD": "yahoo:15m->15m",
-    "JPM": "yahoo:15m->15m",
-    "GS": "yahoo:15m->15m",
-    "XOM": "yahoo:15m->15m",
-    "CVX": "yahoo:15m->15m",
-    "JNJ": "yahoo:15m->15m",
-    "UNH": "yahoo:15m->15m",
-    "SPY": "yahoo:15m->15m",
-    "QQQ": "yahoo:15m->15m"
+    "AAPL": "alpaca:5m->15m",
+    "MSFT": "alpaca:5m->15m",
+    "NVDA": "alpaca:5m->15m",
+    "AMD": "alpaca:5m->15m",
+    "JPM": "alpaca:5m->15m",
+    "GS": "alpaca:5m->15m",
+    "XOM": "alpaca:5m->15m",
+    "CVX": "alpaca:5m->15m",
+    "JNJ": "alpaca:5m->15m",
+    "UNH": "alpaca:5m->15m",
+    "SPY": "alpaca:5m->15m",
+    "QQQ": "alpaca:5m->15m"
   },
   "files": {
     "parquet": "data/intraday/pe_intra_v1_15m.parquet"

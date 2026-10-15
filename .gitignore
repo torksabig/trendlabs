@@ -93,3 +93,6 @@ data/intraday/*
 !data/intraday/*_manifest.json
 !data/intraday/baselines_*.json
 !data/intraday/pe_intra_v1_*.parquet
+
+# intraday parquet panels are reproducible from bars cache; keep manifests only
+data/intraday/*.parquet

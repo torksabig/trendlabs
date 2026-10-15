@@ -1,6 +1,6 @@
 {
   "kind": "ml_predictions",
-  "created_at": "2026-10-14T09:06:36.771448+00:00",
+  "created_at": "2026-10-15T20:40:23.862006+00:00",
   "timeframe": "1d",
   "predictions": [
     {
@@ -8,24 +8,24 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4629,
-      "expected_move_pct": 0.988,
-      "last_close": 341.2699890136719,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "confidence": 0.475,
+      "expected_move_pct": 0.9717,
+      "last_close": 342.0,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.37169981002807617,
-        "sideways": 0.16536715626716614,
-        "up": 0.4629330039024353
+        "down": 0.3630313277244568,
+        "sideways": 0.16195876896381378,
+        "up": 0.47500988841056824
       },
       "model": "AAPL_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:28.303029+00:00",
+      "created_at": "2026-10-15T20:40:12.391518+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 60.49520544278001,
-        "adx_14": 16.174391587568614,
+        "rsi_14": 60.59311178967236,
+        "adx_14": 17.421227443288576,
         "market_regime": "low_volatility",
-        "ret_1": 0.0008798069973745548
+        "ret_1": -0.0027991354064512697
       }
     },
     {
@@ -33,24 +33,124 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4977,
-      "expected_move_pct": 2.0284,
-      "last_close": 605.530029296875,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "confidence": 0.4875,
+      "expected_move_pct": 2.3696,
+      "last_close": 562.22998046875,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.4318678677082062,
-        "sideways": 0.07044705003499985,
-        "up": 0.49768510460853577
+        "down": 0.4570465087890625,
+        "sideways": 0.05548553168773651,
+        "up": 0.48746800422668457
       },
       "model": "AMD_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:30.501959+00:00",
+      "created_at": "2026-10-15T20:40:13.481518+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 55.83180917768862,
-        "adx_14": 23.612568725016885,
+        "rsi_14": 44.52251866572423,
+        "adx_14": 22.19152998974074,
         "market_regime": "trending_bullish",
-        "ret_1": 0.018999123667269746
+        "ret_1": -0.015048573535001775
+      }
+    },
+    {
+      "symbol": "CVX",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "down",
+      "confidence": 0.4685,
+      "expected_move_pct": -1.011,
+      "last_close": 219.32000732421875,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.4684646427631378,
+        "sideways": 0.11108776181936264,
+        "up": 0.42044755816459656
+      },
+      "model": "CVX_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:14.971353+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 65.50358996878502,
+        "adx_14": 19.546171048312953,
+        "market_regime": "sideways",
+        "ret_1": -0.012249982184105668
+      }
+    },
+    {
+      "symbol": "GS",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "down",
+      "confidence": 0.5412,
+      "expected_move_pct": -1.36,
+      "last_close": 891.280029296875,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.5411903262138367,
+        "sideways": 0.14533035457134247,
+        "up": 0.3134792745113373
+      },
+      "model": "GS_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:15.614464+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 36.88090823587793,
+        "adx_14": 36.1411210908405,
+        "market_regime": "risk_off",
+        "ret_1": 0.014293585001487807
+      }
+    },
+    {
+      "symbol": "JNJ",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.5096,
+      "expected_move_pct": 1.2528,
+      "last_close": 253.27999877929688,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.41260984539985657,
+        "sideways": 0.07778578996658325,
+        "up": 0.5096043348312378
+      },
+      "model": "JNJ_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:17.213990+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 40.904993469475606,
+        "adx_14": 16.97792081606538,
+        "market_regime": "risk_off",
+        "ret_1": -0.002481213318601183
+      }
+    },
+    {
+      "symbol": "JPM",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.4828,
+      "expected_move_pct": 0.9442,
+      "last_close": 335.5299987792969,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.38844937086105347,
+        "sideways": 0.12879131734371185,
+        "up": 0.48275935649871826
+      },
+      "model": "JPM_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:18.285200+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 45.868077044219405,
+        "adx_14": 22.935363151758395,
+        "market_regime": "trending_bearish",
+        "ret_1": 0.000745645433399611
       }
     },
     {
@@ -58,49 +158,49 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.5245,
-      "expected_move_pct": 1.0516,
-      "last_close": 543.4500122070312,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "confidence": 0.4067,
+      "expected_move_pct": 1.0603,
+      "last_close": 539.4400024414062,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3091186583042145,
-        "sideways": 0.16635587811470032,
-        "up": 0.5245254635810852
+        "down": 0.40123286843299866,
+        "sideways": 0.1920577585697174,
+        "up": 0.40670934319496155
       },
       "model": "MSFT_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:32.480597+00:00",
+      "created_at": "2026-10-15T20:40:19.258962+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 70.78434274757237,
-        "adx_14": 40.832808785683696,
+        "rsi_14": 65.08409523024605,
+        "adx_14": 39.30020954553178,
         "market_regime": "trending_bullish",
-        "ret_1": 0.004250185141281504
+        "ret_1": 0.010774044808214756
       }
     },
     {
       "symbol": "NVDA",
       "timeframe": "1d",
       "horizon": "1bar",
-      "direction": "down",
-      "confidence": 0.4326,
-      "expected_move_pct": -1.2227,
-      "last_close": 228.52000427246094,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "direction": "up",
+      "confidence": 0.4959,
+      "expected_move_pct": 1.3836,
+      "last_close": 217.22999572753906,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.43260976672172546,
-        "sideways": 0.1375107765197754,
-        "up": 0.42987942695617676
+        "down": 0.3663690984249115,
+        "sideways": 0.13774651288986206,
+        "up": 0.49588435888290405
       },
       "model": "NVDA_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:33.814993+00:00",
+      "created_at": "2026-10-15T20:40:19.921822+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 52.02906900627231,
-        "adx_14": 16.25762002365504,
+        "rsi_14": 40.20329097028522,
+        "adx_14": 16.63564668751593,
         "market_regime": "low_volatility",
-        "ret_1": 0.009720735582561923
+        "ret_1": -0.018391356837292316
       }
     },
     {
@@ -108,49 +208,99 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4986,
-      "expected_move_pct": 0.5952,
-      "last_close": 743.5700073242188,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "confidence": 0.514,
+      "expected_move_pct": 0.6711,
+      "last_close": 728.0,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3558427095413208,
-        "sideways": 0.14552149176597595,
-        "up": 0.49863579869270325
+        "down": 0.3480939269065857,
+        "sideways": 0.1378660798072815,
+        "up": 0.5140400528907776
       },
       "model": "QQQ_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:35.158411+00:00",
+      "created_at": "2026-10-15T20:40:20.565005+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 54.737776028390265,
-        "adx_14": 13.216116196649658,
+        "rsi_14": 44.233900490949004,
+        "adx_14": 15.254799684448471,
         "market_regime": "sideways",
-        "ret_1": -0.003310775261207932
+        "ret_1": -0.0013032611168424246
       }
     },
     {
       "symbol": "SPY",
       "timeframe": "1d",
       "horizon": "1bar",
-      "direction": "down",
-      "confidence": 0.3786,
-      "expected_move_pct": -0.3883,
-      "last_close": 778.010009765625,
-      "as_of": "2026-10-13 04:00:00+00:00",
+      "direction": "up",
+      "confidence": 0.4271,
+      "expected_move_pct": 0.4251,
+      "last_close": 771.7899780273438,
+      "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.37864914536476135,
-        "sideways": 0.3412218689918518,
-        "up": 0.28012898564338684
+        "down": 0.3247140944004059,
+        "sideways": 0.2481631487607956,
+        "up": 0.42712274193763733
       },
       "model": "SPY_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-14T09:06:36.770265+00:00",
+      "created_at": "2026-10-15T20:40:21.382395+00:00",
       "executes_trades": false,
       "drivers": {
-        "rsi_14": 59.799032629043026,
-        "adx_14": 9.29423778122915,
+        "rsi_14": 52.264818395507554,
+        "adx_14": 10.115550009198337,
         "market_regime": "sideways",
-        "ret_1": -0.00011562244330465266
+        "ret_1": 0.00284563735821175
+      }
+    },
+    {
+      "symbol": "UNH",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "up",
+      "confidence": 0.4834,
+      "expected_move_pct": 1.4408,
+      "last_close": 406.6700134277344,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.4225749373435974,
+        "sideways": 0.09403730183839798,
+        "up": 0.48338782787323
+      },
+      "model": "UNH_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:22.356159+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 68.22487109643916,
+        "adx_14": 28.28663706108074,
+        "market_regime": "sideways",
+        "ret_1": 0.027930889355766153
+      }
+    },
+    {
+      "symbol": "XOM",
+      "timeframe": "1d",
+      "horizon": "1bar",
+      "direction": "down",
+      "confidence": 0.5247,
+      "expected_move_pct": -1.0222,
+      "last_close": 174.67999267578125,
+      "as_of": "2026-10-15 04:00:00+00:00",
+      "class_probs": {
+        "down": 0.5247017741203308,
+        "sideways": 0.09134324640035629,
+        "up": 0.3839550018310547
+      },
+      "model": "XOM_1d_h1",
+      "source": "xgboost",
+      "created_at": "2026-10-15T20:40:23.860650+00:00",
+      "executes_trades": false,
+      "drivers": {
+        "rsi_14": 68.12135458935073,
+        "adx_14": 23.238764172609496,
+        "market_regime": "trending_bullish",
+        "ret_1": -0.013163108882898178
       }
     }
   ]

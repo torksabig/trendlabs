@@ -48,7 +48,7 @@ Momentum over wall-clock horizons (`MOM_1h/4h/1d/5d`, accel), trend quality (rol
 - Deep-dive on the 15m ridge (+0.021 per-bar MeanIC): session-aggregated IC spans zero (CI95 ≈ [−0.03, +0.04]); signal flips by slot (open +0.031 → mid −0.033); concentrated in XOM/CVX/AMD vs JPM/GS over one 60d window; Q5−Q1 = +2.5 bps gross vs 20 bps round trip → **uneconomic, likely clustering + time-of-day artifact**.
 - The only session-robust structure is short-horizon **reversal**: `short_mom` session IC −0.039 (CI95 [−0.069, −0.012]) on 15m. Observation; a sign-flipped candidate must be declared before the deep-panel run, never after.
 - Next: Alpaca 5m backfill (needs keys) → rebuild panels with ~10y depth → re-run baselines with cluster-robust reads; XGBoost per horizon **only** if a pre-declared score clears the gate AND beats costs at depth.
-- Daily PE FAIL + HAR-vol remain method benchmarks; never mixed into the intraday product metric.
+- **Deep-panel verdict (2026-10-15, 10y Alpaca 5m × 12 symbols, 497 folds / 2,486 sessions):** structure is statistically real but economically microscopic — best session IC +0.0064 (CI95 [0.0032, 0.0094], hist_mean and ridge), Q5−Q1 ≤ 0.26 bps vs 20 bps round trip; reversal family −0.007…−0.011 (CIs exclude zero). H1/H2/H3 rejected at keyless depth; H1's accept criteria still unmet at 10y (reversed short_mom session IC ≈ +0.007 << 0.03). **Intraday boosting stays locked; track demoted to optional per ML_PLAN Phase C.** Daily PE FAIL + HAR-vol remain method benchmarks; never mixed into the intraday product metric.
 
 ## Pre-declared hypotheses (2026-10-15 21:20 UTC+3 — before any Alpaca deep panel exists)
 
