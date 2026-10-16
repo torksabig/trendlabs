@@ -402,5 +402,32 @@ class ModelQualityTests(unittest.TestCase):
             self.assertGreater(float((y_cls[strongly_up] == "up").mean()), 0.9)
 
 
+    def test_wf_policy_structure_on_synthetic(self) -> None:
+        from trendlabs.ml_wf import run_wf_policy
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        store = Store(Path(tmp.name) / "wf.db")
+        store.init_schema()
+        # 3 symbols × 900 business days — enough for small fold params
+        for i, sym in enumerate(("AAA", "MSFT", "SPY")):
+            store.upsert_candles(_synth(sym, n=900, seed=40 + i))
+        payload = run_wf_policy(
+            store,
+            timeframe="1d",
+            horizon=5,
+            min_train_sessions=200,
+            test_sessions=60,
+            step_sessions=60,
+            symbols=["AAA", "MSFT"],
+        )
+        self.assertEqual(payload["n_symbols"], 2)
+        for r in payload["rows"]:
+            self.assertNotIn("error", r)
+            self.assertIn("gate", r)
+            self.assertGreater(r.get("n_folds", 0), 0)
+        self.assertIn("created_at", payload)
+
+
 if __name__ == "__main__":
     unittest.main()

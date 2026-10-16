@@ -299,7 +299,16 @@ def dataset_reg_from_panel(
         return pd.DataFrame(), pd.Series(dtype=float), pd.Series(dtype=object), pd.DataFrame()
     z = make_forward_z(sub, horizon=horizon, vol_window=vol_window)
     y_cls = make_labels_vol_scaled(sub, horizon=horizon)
-    meta = pd.DataFrame({"ts": sub["ts"], "close": sub["close"].astype(float), "symbol": sub["symbol"], "timeframe": sub.get("timeframe")})
+    sigma = sub["close"].astype(float).pct_change().rolling(vol_window, min_periods=vol_window).std()
+    meta = pd.DataFrame(
+        {
+            "ts": sub["ts"],
+            "close": sub["close"].astype(float),
+            "symbol": sub["symbol"],
+            "timeframe": sub.get("timeframe"),
+            "sigma": sigma,
+        }
+    )
     X = sub[FEATURE_COLUMNS].apply(pd.to_numeric, errors="coerce").astype(float)
     core = [c for c in FEATURE_COLUMNS if c not in _CONTEXT_COLUMNS]
     ctx_cols = [c for c in FEATURE_COLUMNS if c in _CONTEXT_COLUMNS]

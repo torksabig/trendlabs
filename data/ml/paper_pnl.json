@@ -1,6 +1,6 @@
 {
   "kind": "paper_pnl",
-  "created_at": "2026-10-16T09:15:08.887666+00:00",
+  "created_at": "2026-10-16T09:23:57.584415+00:00",
   "note": "Paper P&L only \u2014 separate from model accuracy. Execution: enter open(t+1), exit close(t+h).",
   "closed_this_run": 0,
   "summary": {

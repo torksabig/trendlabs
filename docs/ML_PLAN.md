@@ -90,6 +90,38 @@ OOS per fold — no reuse of the burned holdout): trade sign of pred_z only when
 train-fold-chosen quantile threshold; report per-fold directional hit-rate + net-of-20bps P&L.
 Gate: mean fold hit-rate > 0.5 with CI excluding 0.5, and positive net P&L.
 
+### C2 verdict (2026-10-16): 5/12 APPROVED as registered — with two recorded caveats
+
+Walk-forward: 47–61 folds/symbol (expanding train ≥ 750 sessions, 126-session test, purge 5),
+|pred_z| ≥ τ (80th pct of TRAIN preds) → ~1,000–2,000 calls per symbol over 2016–2026:
+
+| Symbol | Folds | Calls | Hit-rate | CI95 | Bull share | ΣPnL% | Gate |
+|---|---:|---:|---:|---|---:|---:|---|
+| UNH | 60 | 1415 | 0.606 | [.565, .650] | 0.74 | +768 | **approved** |
+| MSFT | 61 | 1377 | 0.621 | [.573, .667] | 0.83 | +727 | **approved** |
+| CVX | 60 | 1403 | 0.590 | [.546, .634] | 0.67 | +230 | **approved** |
+| SPY | 60 | 1078 | 0.599 | [.554, .646] | 0.69 | +195 | **approved** |
+| XOM | 61 | 1587 | 0.568 | [.529, .607] | 0.73 | +66 | **approved** |
+| JNJ | 61 | 1185 | 0.547 | [.498, .597] | 0.76 | +153 | watch |
+| GS | 48 | 907 | 0.546 | [.492, .602] | 0.64 | −27 | watch |
+| JPM | 61 | 1189 | 0.535 | [.489, .582] | 0.69 | −63 | watch |
+| AAPL | 61 | 2074 | 0.532 | [.491, .568] | 0.85 | +137 | watch |
+| QQQ | 47 | 789 | 0.546 | [.483, .606] | 0.48 | +74 | watch |
+| AMD | 60 | 1030 | 0.506 | [.452, .560] | 0.69 | +45 | watch |
+| NVDA | 47 | 1046 | 0.500 | [.446, .561] | 0.75 | +438 | watch |
+
+**Caveat 1 — long bias:** calls are 48–85% bullish (10y bull tape). Part of the hit-rate is
+drift beta, not alpha; QQQ (the most balanced book, bull 0.48) has a CI spanning 0.5 — the
+control case did NOT clear. **Caveat 2 — overlap:** 5-day holds entered on consecutive days
+overlap; ΣPnL double-counts concurrent exposure (per-trade edge is real, capital-curve
+interpretation requires a portfolio sim).
+
+Approved-as-registered: UNH, MSFT, CVX, SPY, XOM — research paper-book only, serving still
+locked. **Registered next (C3, not yet evaluated):** beta-controlled version — per fold, compare
+policy hit-rate against (i) always-long hit-rate on the same test rows and (ii) a symmetrized
+book (equal long/short call quotas); gate requires the policy to beat BOTH, plus positive net
+P&L. Nothing in C2 auto-promotes anything to serving.
+
 ## Phase A — lock daily models (done 2026-10-15)
 
 1. **Data extract** — daily OHLCV for all 12 symbols in the local SQLite store:
