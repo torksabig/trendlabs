@@ -1,0 +1,98 @@
+{
+  "AAPL_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.46029668411867364,
+    "majority": 0.47469458987783597,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "AMD_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4770877944325482,
+    "majority": 0.4796573875802998,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "CVX_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4436576354679803,
+    "majority": 0.45535714285714285,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "GS_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.44777209642074506,
+    "majority": 0.46384222059897734,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "JNJ_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.40997830802603036,
+    "majority": 0.42950108459869846,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "JPM_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4516267123287671,
+    "majority": 0.4653253424657534,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "MSFT_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4461387112641417,
+    "majority": 0.4633546483030005,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "NVDA_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.47216196673897326,
+    "majority": 0.5112075198843095,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "QQQ_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.46002906976744184,
+    "majority": 0.46075581395348836,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "SPY_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4362017804154303,
+    "majority": 0.4456973293768546,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "UNH_1d_h1": {
+    "approved": true,
+    "gate": "approved",
+    "accuracy": 0.47072822465492625,
+    "majority": 0.4607329842931937,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  },
+  "XOM_1d_h1": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.4436576354679803,
+    "majority": 0.4482758620689655,
+    "feature_version": "fv1-1ff97c69",
+    "evaluated_at": "2026-10-16T08:31:09.120248+00:00"
+  }
+}

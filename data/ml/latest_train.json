@@ -1,6 +1,6 @@
 {
   "kind": "ml_train_report",
-  "created_at": "2026-10-16T08:25:14.144511+00:00",
+  "created_at": "2026-10-16T08:30:47.865900+00:00",
   "models": [
     {
       "symbol": "AAPL",
@@ -23,6 +23,20 @@
       "accuracy": 0.46029668411867364,
       "macro_f1": 0.3030695464009612,
       "directional_accuracy": 0.46029668411867364,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5226217643723856,
+        "brier_train_calibrated": 0.4601280463061661,
+        "brier_holdout_raw": 0.5991964487410885,
+        "brier_holdout_calibrated": 0.6643444050746634,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.48140403628349304,
       "classification_report": {
         "down": {
@@ -143,6 +157,20 @@
       "accuracy": 0.4461387112641417,
       "macro_f1": 0.315729594172315,
       "directional_accuracy": 0.44679802955665027,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5312446374796296,
+        "brier_train_calibrated": 0.4622041911168222,
+        "brier_holdout_raw": 0.6092815936146304,
+        "brier_holdout_calibrated": 0.6712198537486023,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.47361913323402405,
       "classification_report": {
         "down": {
@@ -263,6 +291,20 @@
       "accuracy": 0.47216196673897326,
       "macro_f1": 0.3075649074409543,
       "directional_accuracy": 0.47216196673897326,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.48783633784238273,
+        "brier_train_calibrated": 0.38420878082025134,
+        "brier_holdout_raw": 0.5576100523600107,
+        "brier_holdout_calibrated": 0.6764731106727182,
+        "policy": {
+          "theta_hi": 0.55,
+          "theta_lo": 0.55,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.5099711418151855,
       "classification_report": {
         "down": {
@@ -383,6 +425,20 @@
       "accuracy": 0.4770877944325482,
       "macro_f1": 0.32940641766994,
       "directional_accuracy": 0.4770877944325482,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.518766935402625,
+        "brier_train_calibrated": 0.45966267783893094,
+        "brier_holdout_raw": 0.562692728544675,
+        "brier_holdout_calibrated": 0.61896628554992,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.503406286239624,
       "classification_report": {
         "down": {
@@ -503,6 +559,20 @@
       "accuracy": 0.4516267123287671,
       "macro_f1": 0.301258499702433,
       "directional_accuracy": 0.4516267123287671,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5395606236959262,
+        "brier_train_calibrated": 0.46750138031092203,
+        "brier_holdout_raw": 0.6124434298024573,
+        "brier_holdout_calibrated": 0.6776122645744871,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.46742740273475647,
       "classification_report": {
         "down": {
@@ -623,6 +693,20 @@
       "accuracy": 0.44777209642074506,
       "macro_f1": 0.31169089176752013,
       "directional_accuracy": 0.44777209642074506,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5114043885532432,
+        "brier_train_calibrated": 0.40740311619245545,
+        "brier_holdout_raw": 0.5993603970309708,
+        "brier_holdout_calibrated": 0.7138195590646986,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.48956534266471863,
       "classification_report": {
         "down": {
@@ -743,6 +827,20 @@
       "accuracy": 0.4436576354679803,
       "macro_f1": 0.3155608800856791,
       "directional_accuracy": 0.4441358024691358,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5680560278782701,
+        "brier_train_calibrated": 0.5255993696519629,
+        "brier_holdout_raw": 0.6073876095681423,
+        "brier_holdout_calibrated": 0.6658678670507469,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.477210134267807,
       "classification_report": {
         "down": {
@@ -863,6 +961,20 @@
       "accuracy": 0.4436576354679803,
       "macro_f1": 0.3074638276633495,
       "directional_accuracy": 0.4448903982710713,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5629269576111321,
+        "brier_train_calibrated": 0.5148493545453041,
+        "brier_holdout_raw": 0.6066874498703151,
+        "brier_holdout_calibrated": 0.6624126429816531,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.47362303733825684,
       "classification_report": {
         "down": {
@@ -983,6 +1095,20 @@
       "accuracy": 0.40997830802603036,
       "macro_f1": 0.288194151490485,
       "directional_accuracy": 0.41010539367637944,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5684237291493577,
+        "brier_train_calibrated": 0.5310372248076246,
+        "brier_holdout_raw": 0.6395635368497898,
+        "brier_holdout_calibrated": 0.666464074773811,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.43939319252967834,
       "classification_report": {
         "down": {
@@ -1103,6 +1229,20 @@
       "accuracy": 0.47072822465492625,
       "macro_f1": 0.3023798669745612,
       "directional_accuracy": 0.47072822465492625,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5405597244054609,
+        "brier_train_calibrated": 0.4829463003479505,
+        "brier_holdout_raw": 0.596051614854973,
+        "brier_holdout_calibrated": 0.6383977726183174,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.48081228137016296,
       "classification_report": {
         "down": {
@@ -1223,6 +1363,20 @@
       "accuracy": 0.4362017804154303,
       "macro_f1": 0.3286005777941161,
       "directional_accuracy": 0.44239338001273076,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5611551918463302,
+        "brier_train_calibrated": 0.5089241180523149,
+        "brier_holdout_raw": 0.6303307099445932,
+        "brier_holdout_calibrated": 0.6630193858918354,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.4593248665332794,
       "classification_report": {
         "down": {
@@ -1343,6 +1497,20 @@
       "accuracy": 0.46002906976744184,
       "macro_f1": 0.30982703446836585,
       "directional_accuracy": 0.4619364375461936,
+      "calibration": {
+        "attempted": true,
+        "kept": true,
+        "brier_train_raw": 0.5268964644132058,
+        "brier_train_calibrated": 0.4499649603920731,
+        "brier_holdout_raw": 0.6149693520107177,
+        "brier_holdout_calibrated": 0.6757586705568098,
+        "policy": {
+          "theta_hi": 0.6,
+          "theta_lo": 0.6,
+          "chosen_on": "train",
+          "min_calls": 30
+        }
+      },
       "mean_confidence": 0.48259299993515015,
       "classification_report": {
         "down": {

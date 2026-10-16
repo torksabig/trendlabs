@@ -59,12 +59,35 @@ def predict_latest(store: Store, symbol: str, timeframe: str, horizon: int = 1) 
     else:
         expected = 0.0
 
+    # Phase D policy layer: calibrated P(up)/P(down) + train-chosen theta.
+    calibrators = bundle.get("calibrators") or {}
+    policy_cfg = bundle.get("policy") or {}
+    classes_list = list(encoder.classes_)
+    col_idx = {c: i for i, c in enumerate(classes_list)}
+    up_raw = float(proba[col_idx["up"]]) if "up" in col_idx else 0.0
+    down_raw = float(proba[col_idx["down"]]) if "down" in col_idx else 0.0
+    up_cal = float(calibrators["up"].predict([up_raw])[0]) if "up" in calibrators else up_raw
+    down_cal = float(calibrators["down"].predict([down_raw])[0]) if "down" in calibrators else down_raw
+    theta = float(policy_cfg.get("theta_hi", 0.5))
+    if up_cal >= theta:
+        policy_signal = "bullish"
+    elif down_cal >= theta:
+        policy_signal = "bearish"
+    else:
+        policy_signal = "watch"
+
     return {
         "symbol": symbol.upper(),
         "timeframe": timeframe,
         "horizon": f"{horizon}bar",
+        "horizon_bars": int(horizon),
         "direction": direction,
         "confidence": round(conf, 4),
+        "policy": policy_signal,
+        "p_up_calibrated": round(up_cal, 4),
+        "p_down_calibrated": round(down_cal, 4),
+        "policy_theta": theta,
+        "calibrated": bool(calibrators),
         "expected_move_pct": round(expected, 4),
         "last_close": float(row["close"]),
         "as_of": str(row["ts"]),
@@ -242,6 +265,13 @@ def main() -> int:
     if not models:
         raise SystemExit("No trained models found. Run: npm run ml-train")
 
+    # Phase D approval gate: paper trades only for scorecard-approved symbols.
+    approved_symbols: set[str] = set()
+    registry_path = ML_DIR / "approved_models.json"
+    if registry_path.exists():
+        registry = json.loads(registry_path.read_text())
+        approved_symbols = {k.split("_")[0] for k, v in registry.items() if v.get("approved")}
+
     preds = []
     for path in models:
         symbol = path.name.split("_")[0]
@@ -270,10 +300,34 @@ def main() -> int:
                         snap, symbol=symbol, timeframe=args.timeframe,
                         feature_version=FEATURE_VERSION, columns=FEATURE_COLUMNS,
                     )
-                store.insert_prediction(db_pred)
+                db_pred["drivers"]["policy"] = pred["policy"]
+                db_pred["drivers"]["p_up_calibrated"] = pred["p_up_calibrated"]
+                db_pred["drivers"]["p_down_calibrated"] = pred["p_down_calibrated"]
+                db_pred["drivers"]["policy_theta"] = pred["policy_theta"]
+                db_pred["drivers"]["calibrated"] = pred["calibrated"]
+                pred_id = store.insert_prediction(db_pred)
+                # Paper trades: approval-gated (Phase D) — only approved symbols trade.
+                if (
+                    symbol.upper() in approved_symbols
+                    and pred["policy"] in ("bullish", "bearish")
+                ):
+                    store.insert_paper_trade(
+                        {
+                            "prediction_id": pred_id,
+                            "symbol": symbol.upper(),
+                            "timeframe": args.timeframe,
+                            "horizon_bars": pred["horizon_bars"],
+                            "policy": pred["policy"],
+                            "as_of_ts": pred["as_of"],
+                            "model": pred["model"],
+                            "feature_version": db_pred["feature_version"],
+                        }
+                    )
             print(
                 f"{symbol}: {pred['direction']} conf={pred['confidence']:.3f} "
-                f"close={pred['last_close']:.2f}"
+                f"policy={pred['policy']} (p_up={pred['p_up_calibrated']:.2f} "
+                f"p_down={pred['p_down_calibrated']:.2f} θ={pred['policy_theta']:.2f} "
+                f"calibrated={pred['calibrated']}) close={pred['last_close']:.2f}"
             )
         except Exception as exc:  # noqa: BLE001
             print(f"{symbol}: ERROR {exc}")

@@ -176,6 +176,25 @@ class Store:
                     created_at TEXT NOT NULL,
                     payload_json TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS paper_trades (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    prediction_id INTEGER NOT NULL,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    horizon_bars INTEGER NOT NULL,
+                    policy TEXT NOT NULL,
+                    as_of_ts TEXT NOT NULL,
+                    entry_ts TEXT,
+                    entry_open REAL,
+                    exit_ts TEXT,
+                    exit_close REAL,
+                    pnl_pct REAL,
+                    status TEXT NOT NULL DEFAULT 'open',
+                    model TEXT,
+                    feature_version TEXT,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (prediction_id) REFERENCES predictions(id)
+                );
                 """
             )
             # Lightweight migration: predictions.feature_version for lineage.
@@ -466,6 +485,66 @@ class Store:
             item["snapshot"] = json.loads(item.pop("snapshot_json"))
             out.append(item)
         return out
+
+    def insert_paper_trade(self, payload: dict[str, Any]) -> int:
+        with self.connect() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO paper_trades (
+                    prediction_id, symbol, timeframe, horizon_bars, policy, as_of_ts,
+                    model, feature_version, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    int(payload["prediction_id"]),
+                    payload["symbol"].upper(),
+                    payload["timeframe"],
+                    int(payload["horizon_bars"]),
+                    payload["policy"],
+                    payload["as_of_ts"],
+                    payload.get("model"),
+                    payload.get("feature_version"),
+                    payload.get("created_at", utc_now()),
+                ),
+            )
+            return int(cur.lastrowid)
+
+    def get_open_paper_trades(self, limit: int = 1000) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM paper_trades WHERE status = 'open' ORDER BY as_of_ts ASC LIMIT ?",
+                (int(limit),),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_paper_trades(self, limit: int = 500) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM paper_trades ORDER BY as_of_ts DESC LIMIT ?",
+                (int(limit),),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def close_paper_trade(
+        self,
+        trade_id: int,
+        *,
+        entry_ts: str,
+        entry_open: float,
+        exit_ts: str,
+        exit_close: float,
+        pnl_pct: float,
+    ) -> None:
+        with self.connect() as conn:
+            conn.execute(
+                """
+                UPDATE paper_trades SET
+                    entry_ts = ?, entry_open = ?, exit_ts = ?, exit_close = ?,
+                    pnl_pct = ?, status = 'closed'
+                WHERE id = ?
+                """,
+                (entry_ts, float(entry_open), exit_ts, float(exit_close), float(pnl_pct), int(trade_id)),
+            )
 
     def insert_prediction(self, payload: dict[str, Any]) -> int:
         with self.connect() as conn:

@@ -140,6 +140,20 @@ def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     (REPORT_DIR / f"scorecard_{args.timeframe}.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
+    # Phase D approval registry — the ONLY place approvals change; ml-persist reads it.
+    registry = {
+        f"{r['symbol']}_{r['timeframe']}_h{r['horizon']}": {
+            "approved": r["gate"] == "approved",
+            "gate": r["gate"],
+            "accuracy": r["accuracy"],
+            "majority": r["baselines"]["majority"]["accuracy"],
+            "feature_version": r.get("feature_version"),
+            "evaluated_at": payload["created_at"],
+        }
+        for r in rows
+    }
+    (REPORT_DIR / "approved_models.json").write_text(json.dumps(registry, indent=2), encoding="utf-8")
+
     lines = [
         f"# ML Scorecard — {args.timeframe} h{args.horizon}",
         "",

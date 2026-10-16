@@ -1,6 +1,6 @@
 # ML Scorecard — 1d h1
 
-Generated 2026-10-16T08:25:31.806600+00:00 · gate: held-out accuracy > majority baseline · 1/12 approved
+Generated 2026-10-16T08:31:09.120248+00:00 · gate: held-out accuracy > majority baseline · 1/12 approved
 
 | Symbol | Acc | MacroF1 | Brier | DirAcc | Majority | Persistence | AlwaysUp | Gate |
 |---|---:|---:|---:|---:|---:|---:|---:|---|

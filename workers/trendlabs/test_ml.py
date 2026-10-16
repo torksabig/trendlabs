@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -169,6 +170,126 @@ class PhaseBTests(unittest.TestCase):
         with store.connect() as conn:
             v = conn.execute("SELECT feature_version FROM predictions WHERE id=?", (pid,)).fetchone()
         self.assertEqual(v[0], FEATURE_VERSION)
+
+
+class PhaseDTests(unittest.TestCase):
+    """Phase D: calibration, train-only thresholds, paper-trade lifecycle, registry."""
+
+    def test_isotonic_calibration_reduces_brier(self) -> None:
+        from sklearn.isotonic import IsotonicRegression
+
+        rng = np.random.default_rng(21)
+        n = 6000
+        p_true = rng.uniform(0.05, 0.95, size=n)
+        y = (rng.uniform(size=n) < p_true).astype(float)
+        raw = np.clip(p_true + 0.25, 0, 1)  # systematically overconfident raw probs
+        tr, te = np.arange(3000), np.arange(3000, n)
+        iso = IsotonicRegression(y_min=0.0, y_max=1.0, increasing=True, out_of_bounds="clip")
+        iso.fit(raw[tr], y[tr])
+        cal = iso.predict(raw[te])
+        brier_raw = float(np.mean((raw[te] - y[te]) ** 2))
+        brier_cal = float(np.mean((cal - y[te]) ** 2))
+        self.assertLess(brier_cal, brier_raw)
+        # monotone non-decreasing calibration curve
+        order = np.argsort(raw[te])
+        diffs = np.diff(cal[order])
+        self.assertTrue((diffs >= -1e-9).all())
+
+    def test_policy_thresholds_train_only_and_tie_to_lowest(self) -> None:
+        from trendlabs.ml_train import _choose_policy_thresholds
+
+        n = 1000
+        up_cal = np.where(np.arange(n) % 2 == 0, 0.70, 0.10)  # every even row bullish
+        down_cal = np.full(n, 0.05)
+        y_up = np.arange(n) % 2 == 0  # bullish calls always correct on train
+        y_down = np.zeros(n, dtype=bool)
+        pol = _choose_policy_thresholds(up_cal, down_cal, y_up, y_down, min_calls=30)
+        # all thetas give precision 1.0 → tie broken toward LOWEST theta
+        self.assertEqual(pol["theta_hi"], 0.40)
+        self.assertEqual(pol["chosen_on"], "train")
+
+        # no theta produces enough calls → default 0.50
+        pol2 = _choose_policy_thresholds(np.zeros(n), np.zeros(n), y_up, y_down, min_calls=30)
+        self.assertEqual(pol2["theta_hi"], 0.50)
+
+    def test_paper_trade_lifecycle_and_pnl_math(self) -> None:
+        from trendlabs.ml_paper import evaluate_paper_trades
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        store = Store(Path(tmp.name) / "paper.db")
+        store.init_schema()
+
+        as_of = "2026-01-02T04:00:00+00:00"  # signal bar is t0; entry is the NEXT bar
+        tid = store.insert_paper_trade(
+            {
+                "prediction_id": 1,
+                "symbol": "UNH",
+                "timeframe": "1d",
+                "horizon_bars": 1,
+                "policy": "bullish",
+                "as_of_ts": as_of,
+                "model": "UNH_1d_h1",
+                "feature_version": "fv1-test",
+            }
+        )
+        self.assertGreater(tid, 0)
+        self.assertEqual(len(store.get_open_paper_trades()), 1)
+
+        # candles: t0 = as_of signal bar; t1 = entry bar (open 100 → close 110); t2 spare
+        candles = pd.DataFrame(
+            {
+                "symbol": "UNH",
+                "timeframe": "1d",
+                "ts": pd.to_datetime(["2026-01-02T04:00:00Z", "2026-01-05T04:00:00Z", "2026-01-06T04:00:00Z"]),
+                "open": [90.0, 100.0, 101.0],
+                "high": [92.0, 111.0, 102.0],
+                "low": [89.0, 99.0, 100.0],
+                "close": [91.0, 110.0, 101.5],
+                "volume": [1e6] * 3,
+                "source": "test",
+                "adjusted": 1,
+            }
+        )
+        store.upsert_candles(candles)
+        payload = evaluate_paper_trades(store)
+        self.assertEqual(payload["closed_this_run"], 1)
+        trades = store.get_paper_trades()
+        closed = [t for t in trades if t["status"] == "closed"][0]
+        self.assertAlmostEqual(closed["pnl_pct"], 10.0, places=6)  # sign*(110/100-1)*100
+        self.assertAlmostEqual(closed["entry_open"], 100.0, places=6)
+        self.assertEqual(closed["entry_ts"], closed["exit_ts"])  # h=1 → exit at entry-bar close
+        self.assertEqual(payload["open_count"], 0)
+        self.assertAlmostEqual(payload["summary"]["win_rate"], 1.0)
+
+        # horizon incomplete (h=3 needs 2 more bars after entry; only 1 exists) → stays open
+        tid2 = store.insert_paper_trade(
+            {
+                "prediction_id": 2,
+                "symbol": "UNH",
+                "timeframe": "1d",
+                "horizon_bars": 3,
+                "policy": "bearish",
+                "as_of_ts": as_of,
+                "model": "UNH_1d_h3",
+                "feature_version": "fv1-test",
+            }
+        )
+        payload2 = evaluate_paper_trades(store)
+        open_rows = store.get_open_paper_trades()
+        self.assertEqual(len(open_rows), 1)
+        self.assertEqual(open_rows[0]["id"], tid2)
+        self.assertEqual(payload2["closed_this_run"], 0)
+
+    def test_approval_registry_roundtrip(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        d = Path(tmp.name)
+        reg = {"UNH_1d_h1": {"approved": True, "gate": "approved"}, "AAPL_1d_h1": {"approved": False, "gate": "watch"}}
+        (d / "approved_models.json").write_text(json.dumps(reg))
+        loaded = json.loads((d / "approved_models.json").read_text())
+        approved = {k.split("_")[0] for k, v in loaded.items() if v.get("approved")}
+        self.assertEqual(approved, {"UNH"})
 
 
 if __name__ == "__main__":

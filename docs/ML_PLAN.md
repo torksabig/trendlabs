@@ -108,11 +108,35 @@ Embargo removed the 1-row label/feature overlap between train and test. Re-train
   Pre-declared H1/H2/H3 all REJECTED (`docs/INTRADAY_V1.md`) → boosting stays locked.
   Treat intraday as an optional upgrade, not the product metric.
 
-## Phase D — paper signals (not live)
+## Phase D — paper signals (implemented 2026-10-15, still not live)
 
-1. Bullish / Bearish / Watch from calibrated probs + thresholds.
-2. Paper trades logged separately from model accuracy.
-3. No auto-retrain every bar — weekly candidate vs approved model only.
+1. **Calibrated policy** — one-vs-rest isotonic on up/down fitted on the TRAIN window only;
+   calibrators kept **only if they improve train-window Brier** (causal keep/drop — holdout
+   never informs it). Policy: Bullish if calibrated P(up) ≥ θ, Bearish if calibrated P(down) ≥ θ,
+   else Watch; θ swept {0.40…0.60} on train precision with ≥ 30 calls, ties → lowest θ
+   (`ml_train._choose_policy_thresholds`). All 12 models kept their calibrators (train Brier
+   0.52–0.57 → 0.38–0.53), θ = 0.55–0.60. Honest caveat: isotonic's train gain does NOT
+   generalize (holdout Brier rises 0.56–0.63 → 0.62–0.71 in the report columns) — the report
+   keeps both numbers visible; θ being conservative (0.6) is partly the correct response.
+2. **Paper trades, separate from accuracy** — `paper_trades` SQLite table;
+   `ml-predict --persist` opens a trade only for **scorecard-approved** symbols with a
+   non-watch signal (execution: enter open(t+1), exit close(t+h)); `npm run ml-paper`
+   matures open trades against candle history and writes `data/ml/paper_pnl.json`
+   (win-rate / mean / total P&L, by policy). Today's live book: **0 trades** — the only
+   approved symbol (UNH) signals Watch (P(up)=0.53 < θ=0.60); the bullish/bearish signals
+   from unapproved symbols are shadow-only. This is the gate working as designed.
+3. **Weekly cadence, no auto-retrain** — nothing retrains on a bar; the only approval
+   path is a scorecard re-run writing `data/ml/approved_models.json`
+   (`ml-train → ml-scorecard → ml-predict --persist → ml-paper`). Candidate models
+   become approved only while their embargoed holdout beats the majority baseline.
+
+Phase D commands:
+```bash
+DYLD_FALLBACK_LIBRARY_PATH="$HOME/libomp/lib" npm run ml-train -- --timeframe 1d
+npm run ml-scorecard -- --timeframe 1d
+DYLD_FALLBACK_LIBRARY_PATH="$HOME/libomp/lib" npm run ml-predict -- --timeframe 1d --horizon 1 --persist
+npm run ml-paper
+```
 
 ## Phase E — later (deferred)
 

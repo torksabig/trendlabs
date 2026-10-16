@@ -47,6 +47,83 @@ def _time_split(
     return idx[:train_end], idx[train_end + embargo :]
 
 
+def _brier_multiclass(proba: np.ndarray, y_enc: np.ndarray) -> float:
+    onehot = np.eye(proba.shape[1])[y_enc]
+    return float(np.mean(np.sum((proba - onehot) ** 2, axis=1)))
+
+
+def _policy_probs(
+    model: Any,
+    calibrators: dict[str, Any] | None,
+    classes_list: list[str],
+    X: pd.DataFrame,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Calibrated P(up), P(down); falls back to raw probs where no calibrator."""
+    proba = model.predict_proba(X)
+    col = {c: i for i, c in enumerate(classes_list)}
+    up_raw = proba[:, col["up"]] if "up" in col else np.zeros(len(X))
+    down_raw = proba[:, col["down"]] if "down" in col else np.zeros(len(X))
+    cal = calibrators or {}
+    up_cal = cal["up"].predict(up_raw) if "up" in cal else up_raw
+    down_cal = cal["down"].predict(down_raw) if "down" in cal else down_raw
+    return np.asarray(up_cal, dtype=float), np.asarray(down_cal, dtype=float)
+
+
+def _choose_policy_thresholds(
+    up_cal: np.ndarray,
+    down_cal: np.ndarray,
+    y_up: np.ndarray,
+    y_down: np.ndarray,
+    *,
+    min_calls: int = 30,
+    thetas: tuple[float, ...] = (0.40, 0.45, 0.50, 0.55, 0.60),
+) -> dict[str, Any]:
+    """Pick theta on the TRAIN window only: highest directional precision among
+    Bullish/Bearish calls with >= min_calls, ties broken toward the lower theta.
+    Holdout is never used for threshold choice."""
+    best: tuple[tuple[float, float], float] | None = None
+    for theta in thetas:
+        bull = up_cal >= theta
+        bear = down_cal >= theta
+        n_dir = int(bull.sum() + bear.sum())
+        if n_dir < min_calls:
+            continue
+        correct = int((bull & y_up).sum() + (bear & y_down).sum())
+        precision = correct / n_dir
+        cand = ((precision, -theta), theta)
+        if best is None or cand[0] > best[0]:
+            best = cand
+    theta = best[1] if best else 0.50
+    return {"theta_hi": float(theta), "theta_lo": float(theta), "chosen_on": "train", "min_calls": min_calls}
+
+
+def _fit_calibrators(
+    model: Any,
+    classes_list: list[str],
+    X_train: pd.DataFrame,
+    y_train_enc: np.ndarray,
+) -> dict[str, Any] | None:
+    """One-vs-rest isotonic calibration for up/down, fit on the TRAIN window only."""
+    from sklearn.isotonic import IsotonicRegression
+
+    if len(X_train) < 300:
+        return None
+    col = {c: i for i, c in enumerate(classes_list)}
+    proba = model.predict_proba(X_train)
+    cal: dict[str, Any] = {}
+    for cls in ("up", "down"):
+        if cls not in col:
+            continue
+        raw = proba[:, col[cls]]
+        y_bin = (y_train_enc == col[cls]).astype(float)
+        if y_bin.min() == y_bin.max():
+            continue  # single-class window: calibration undefined
+        iso = IsotonicRegression(y_min=0.0, y_max=1.0, increasing=True, out_of_bounds="clip")
+        iso.fit(raw, y_bin)
+        cal[cls] = iso
+    return cal or None
+
+
 def train_symbol(
     store: Store,
     symbol: str,
@@ -107,6 +184,39 @@ def train_symbol(
         )
 
     model.fit(X_train, y_train_enc)
+
+    # Phase D: calibrate on TRAIN only; keep calibrators ONLY if they improve
+    # TRAIN-window Brier (holdout never informs the keep/drop or threshold choice).
+    classes_list = list(encoder.classes_)
+    col = {c: i for i, c in enumerate(classes_list)}
+    brier_raw_train = _brier_multiclass(
+        model.predict_proba(X_train), y_train_enc
+    )
+    calibrators = _fit_calibrators(model, classes_list, X_train, y_train_enc)
+    brier_cal_train: float | None = None
+    if calibrators is not None:
+        up_tr, down_tr = _policy_probs(model, calibrators, classes_list, X_train)
+        side_tr = np.clip(1.0 - up_tr - down_tr, 0.0, 1.0)
+        parts = [
+            up_tr if c == "up" else down_tr if c == "down" else (
+                model.predict_proba(X_train)[:, col[c]] if c in col else np.zeros(len(X_train))
+            )
+            for c in classes_list
+        ]
+        cal_train_proba = np.column_stack(parts)
+        cal_train_proba = cal_train_proba / np.clip(cal_train_proba.sum(axis=1, keepdims=True), 1e-12, None)
+        brier_cal_train = _brier_multiclass(cal_train_proba, y_train_enc)
+        if brier_cal_train is None or brier_cal_train >= brier_raw_train:
+            calibrators = None  # isotonic overfit → serve raw probs instead
+
+    up_tr_eff, down_tr_eff = _policy_probs(model, calibrators, classes_list, X_train)
+    policy = _choose_policy_thresholds(
+        up_tr_eff,
+        down_tr_eff,
+        y_train_enc == col["up"] if "up" in col else np.zeros(len(X_train), dtype=bool),
+        y_train_enc == col["down"] if "down" in col else np.zeros(len(X_train), dtype=bool),
+    )
+
     proba = model.predict_proba(X_test)
     pred_enc = model.predict(X_test)
     pred_labels = encoder.inverse_transform(pred_enc)
@@ -121,6 +231,23 @@ def train_symbol(
     )
 
     conf = proba.max(axis=1)
+
+    # Calibration quality on the untouched holdout (report only; no re-tuning):
+    col = {c: i for i, c in enumerate(classes_list)}
+    brier_raw = _brier_multiclass(proba, y_test_enc)
+    up_cal_h, down_cal_h = _policy_probs(model, calibrators, classes_list, X_test)
+    side_cal_h = np.clip(1.0 - up_cal_h - down_cal_h, 0.0, 1.0)
+    cal_parts = []
+    for c in classes_list:
+        if c == "up":
+            cal_parts.append(up_cal_h)
+        elif c == "down":
+            cal_parts.append(down_cal_h)
+        else:
+            cal_parts.append(proba[:, col[c]] if c in col else np.zeros(len(y_test_enc)))
+    cal_proba = np.column_stack(cal_parts)
+    cal_proba = cal_proba / np.clip(cal_proba.sum(axis=1, keepdims=True), 1e-12, None)
+    brier_cal = _brier_multiclass(cal_proba, y_test_enc)
     directional = [
         (p, t)
         for p, t in zip(pred_labels, y_test.astype(str), strict=True)
@@ -139,6 +266,8 @@ def train_symbol(
         "feature_columns": FEATURE_COLUMNS,
         "feature_version": FEATURE_VERSION,
         "embargo": int(horizon),
+        "calibrators": calibrators,
+        "policy": policy,
         "symbol": symbol.upper(),
         "timeframe": timeframe,
         "horizon": horizon,
@@ -179,6 +308,15 @@ def train_symbol(
         "accuracy": acc,
         "macro_f1": f1,
         "directional_accuracy": dir_acc,
+        "calibration": {
+            "attempted": True,
+            "kept": bool(calibrators),
+            "brier_train_raw": brier_raw_train,
+            "brier_train_calibrated": brier_cal_train,
+            "brier_holdout_raw": brier_raw,
+            "brier_holdout_calibrated": brier_cal,
+            "policy": policy,
+        },
         "mean_confidence": float(np.mean(conf)) if len(conf) else None,
         "classification_report": report,
         "feature_importance": feature_importance_frame(model, FEATURE_COLUMNS)[:15],
