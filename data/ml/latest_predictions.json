@@ -1,6 +1,6 @@
 {
   "kind": "ml_predictions",
-  "created_at": "2026-10-15T20:40:23.862006+00:00",
+  "created_at": "2026-10-16T08:26:42.243536+00:00",
   "timeframe": "1d",
   "predictions": [
     {
@@ -8,18 +8,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.475,
+      "confidence": 0.4764,
       "expected_move_pct": 0.9717,
       "last_close": 342.0,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3630313277244568,
-        "sideways": 0.16195876896381378,
-        "up": 0.47500988841056824
+        "down": 0.3638675808906555,
+        "sideways": 0.15972071886062622,
+        "up": 0.4764116704463959
       },
       "model": "AAPL_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:12.391518+00:00",
+      "created_at": "2026-10-16T08:26:15.367103+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 60.59311178967236,
@@ -33,18 +33,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4875,
+      "confidence": 0.4885,
       "expected_move_pct": 2.3696,
       "last_close": 562.22998046875,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.4570465087890625,
-        "sideways": 0.05548553168773651,
-        "up": 0.48746800422668457
+        "down": 0.4560169279575348,
+        "sideways": 0.05549986660480499,
+        "up": 0.48848316073417664
       },
       "model": "AMD_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:13.481518+00:00",
+      "created_at": "2026-10-16T08:26:17.630439+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 44.52251866572423,
@@ -58,18 +58,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "down",
-      "confidence": 0.4685,
+      "confidence": 0.4546,
       "expected_move_pct": -1.011,
       "last_close": 219.32000732421875,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.4684646427631378,
-        "sideways": 0.11108776181936264,
-        "up": 0.42044755816459656
+        "down": 0.45462679862976074,
+        "sideways": 0.10996147245168686,
+        "up": 0.4354117512702942
       },
       "model": "CVX_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:14.971353+00:00",
+      "created_at": "2026-10-16T08:26:20.610362+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 65.50358996878502,
@@ -83,18 +83,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "down",
-      "confidence": 0.5412,
+      "confidence": 0.5467,
       "expected_move_pct": -1.36,
       "last_close": 891.280029296875,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.5411903262138367,
-        "sideways": 0.14533035457134247,
-        "up": 0.3134792745113373
+        "down": 0.5466923117637634,
+        "sideways": 0.14336973428726196,
+        "up": 0.3099379539489746
       },
       "model": "GS_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:15.614464+00:00",
+      "created_at": "2026-10-16T08:26:23.244255+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 36.88090823587793,
@@ -108,18 +108,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.5096,
+      "confidence": 0.5097,
       "expected_move_pct": 1.2528,
       "last_close": 253.27999877929688,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.41260984539985657,
-        "sideways": 0.07778578996658325,
-        "up": 0.5096043348312378
+        "down": 0.41163086891174316,
+        "sideways": 0.0786517783999443,
+        "up": 0.5097173452377319
       },
       "model": "JNJ_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:17.213990+00:00",
+      "created_at": "2026-10-16T08:26:26.751479+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 40.904993469475606,
@@ -133,18 +133,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4828,
+      "confidence": 0.4817,
       "expected_move_pct": 0.9442,
       "last_close": 335.5299987792969,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.38844937086105347,
-        "sideways": 0.12879131734371185,
-        "up": 0.48275935649871826
+        "down": 0.38938385248184204,
+        "sideways": 0.1289256513118744,
+        "up": 0.48169052600860596
       },
       "model": "JPM_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:18.285200+00:00",
+      "created_at": "2026-10-16T08:26:29.514618+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 45.868077044219405,
@@ -158,18 +158,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4067,
+      "confidence": 0.4081,
       "expected_move_pct": 1.0603,
       "last_close": 539.4400024414062,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.40123286843299866,
-        "sideways": 0.1920577585697174,
-        "up": 0.40670934319496155
+        "down": 0.3986664116382599,
+        "sideways": 0.19326075911521912,
+        "up": 0.408072829246521
       },
       "model": "MSFT_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:19.258962+00:00",
+      "created_at": "2026-10-16T08:26:31.637459+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 65.08409523024605,
@@ -183,18 +183,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4959,
+      "confidence": 0.5165,
       "expected_move_pct": 1.3836,
       "last_close": 217.22999572753906,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3663690984249115,
-        "sideways": 0.13774651288986206,
-        "up": 0.49588435888290405
+        "down": 0.34656375646591187,
+        "sideways": 0.13697771728038788,
+        "up": 0.5164585113525391
       },
       "model": "NVDA_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:19.921822+00:00",
+      "created_at": "2026-10-16T08:26:33.290548+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 40.20329097028522,
@@ -208,18 +208,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.514,
+      "confidence": 0.5095,
       "expected_move_pct": 0.6711,
       "last_close": 728.0,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3480939269065857,
-        "sideways": 0.1378660798072815,
-        "up": 0.5140400528907776
+        "down": 0.3539424240589142,
+        "sideways": 0.1365516632795334,
+        "up": 0.5095059275627136
       },
       "model": "QQQ_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:20.565005+00:00",
+      "created_at": "2026-10-16T08:26:34.650153+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 44.233900490949004,
@@ -233,18 +233,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4271,
+      "confidence": 0.4432,
       "expected_move_pct": 0.4251,
       "last_close": 771.7899780273438,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.3247140944004059,
-        "sideways": 0.2481631487607956,
-        "up": 0.42712274193763733
+        "down": 0.3172452449798584,
+        "sideways": 0.23957888782024384,
+        "up": 0.44317591190338135
       },
       "model": "SPY_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:21.382395+00:00",
+      "created_at": "2026-10-16T08:26:36.127259+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 52.264818395507554,
@@ -258,18 +258,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "up",
-      "confidence": 0.4834,
+      "confidence": 0.4706,
       "expected_move_pct": 1.4408,
       "last_close": 406.6700134277344,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.4225749373435974,
-        "sideways": 0.09403730183839798,
-        "up": 0.48338782787323
+        "down": 0.43394890427589417,
+        "sideways": 0.09542815387248993,
+        "up": 0.4706229269504547
       },
       "model": "UNH_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:22.356159+00:00",
+      "created_at": "2026-10-16T08:26:37.993807+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 68.22487109643916,
@@ -283,18 +283,18 @@
       "timeframe": "1d",
       "horizon": "1bar",
       "direction": "down",
-      "confidence": 0.5247,
+      "confidence": 0.5181,
       "expected_move_pct": -1.0222,
       "last_close": 174.67999267578125,
       "as_of": "2026-10-15 04:00:00+00:00",
       "class_probs": {
-        "down": 0.5247017741203308,
-        "sideways": 0.09134324640035629,
-        "up": 0.3839550018310547
+        "down": 0.5180906057357788,
+        "sideways": 0.08918678760528564,
+        "up": 0.39272263646125793
       },
       "model": "XOM_1d_h1",
       "source": "xgboost",
-      "created_at": "2026-10-15T20:40:23.860650+00:00",
+      "created_at": "2026-10-16T08:26:40.672874+00:00",
       "executes_trades": false,
       "drivers": {
         "rsi_14": 68.12135458935073,

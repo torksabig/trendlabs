@@ -19,6 +19,7 @@
     "ml-train": "cd workers && ../.venv/bin/python -m trendlabs.ml_train",
     "ml-predict": "cd workers && ../.venv/bin/python -m trendlabs.ml_predict",
     "ml-scorecard": "cd workers && ../.venv/bin/python -m trendlabs.ml_scorecard",
+    "ml-features": "cd workers && ../.venv/bin/python -m trendlabs.ml_features",
     "pe-dataset": "cd workers && ../.venv/bin/python -m trendlabs.prediction.dataset",
     "pe-baselines": "cd workers && ../.venv/bin/python -m trendlabs.prediction.baselines",
     "pe-train": "cd workers && ../.venv/bin/python -m trendlabs.prediction.train --with-baselines",

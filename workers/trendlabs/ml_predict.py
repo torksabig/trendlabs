@@ -257,6 +257,19 @@ def main() -> int:
                     f"{symbol} {args.timeframe}: XGBoost {pred['direction']} "
                     f"conf={pred['confidence']:.0%} as_of={pred['as_of']}"
                 )
+                # Lineage: freeze the exact feature snapshot used by this prediction.
+                from trendlabs.features import FEATURE_VERSION, build_feature_frame
+
+                db_pred["feature_version"] = FEATURE_VERSION
+                candles = store.load_candles(symbol, args.timeframe)
+                feat = build_feature_frame(candles)
+                as_of_ts = pd.Timestamp(pred["as_of"])
+                snap = feat.loc[pd.to_datetime(feat["ts"], utc=True) == as_of_ts].dropna(subset=FEATURE_COLUMNS)
+                if not snap.empty:
+                    store.upsert_market_features(
+                        snap, symbol=symbol, timeframe=args.timeframe,
+                        feature_version=FEATURE_VERSION, columns=FEATURE_COLUMNS,
+                    )
                 store.insert_prediction(db_pred)
             print(
                 f"{symbol}: {pred['direction']} conf={pred['confidence']:.3f} "

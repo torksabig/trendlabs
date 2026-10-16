@@ -18,6 +18,7 @@ from trendlabs.config import ROOT, SYMBOLS
 from trendlabs.db import Store
 from trendlabs.features import (
     FEATURE_COLUMNS,
+    FEATURE_VERSION,
     dataset_from_candles,
     default_band,
     feature_importance_frame,
@@ -29,15 +30,21 @@ REPORT_DIR = Path(ROOT) / "data" / "ml"
 
 
 def _time_split(
-    n: int, *, test_frac: float = 0.2, min_test: int = 50
+    n: int, *, test_frac: float = 0.2, min_test: int = 50, embargo: int = 0
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Chronological split with an embargo gap between train and test.
+
+    Train labels at row i look ahead to i+horizon; embargo ≥ horizon drops the
+    rows whose label windows touch the test feature window.
+    """
     test_n = max(min_test, int(n * test_frac))
     test_n = min(test_n, n // 3) if n >= 90 else max(1, n // 5)
-    train_end = n - test_n
+    embargo = max(0, int(embargo))
+    train_end = n - test_n - embargo
     if train_end < 30:
-        raise ValueError(f"Not enough rows to train/test split (n={n})")
+        raise ValueError(f"Not enough rows to train/test split (n={n}, embargo={embargo})")
     idx = np.arange(n)
-    return idx[:train_end], idx[train_end:]
+    return idx[:train_end], idx[train_end + embargo :]
 
 
 def train_symbol(
@@ -59,7 +66,8 @@ def train_symbol(
     if len(X) < 80:
         raise RuntimeError(f"{symbol} {timeframe}: feature rows {len(X)} too small")
 
-    train_idx, test_idx = _time_split(len(X), test_frac=test_frac)
+    # Embargo ≥ horizon: train labels may not share their forward window with test features.
+    train_idx, test_idx = _time_split(len(X), test_frac=test_frac, embargo=horizon)
     X_train = X.iloc[train_idx].reset_index(drop=True)
     y_train = y.iloc[train_idx].reset_index(drop=True)
     X_test = X.iloc[test_idx].reset_index(drop=True)
@@ -129,6 +137,8 @@ def train_symbol(
         "model": model,
         "encoder": encoder,
         "feature_columns": FEATURE_COLUMNS,
+        "feature_version": FEATURE_VERSION,
+        "embargo": int(horizon),
         "symbol": symbol.upper(),
         "timeframe": timeframe,
         "horizon": horizon,

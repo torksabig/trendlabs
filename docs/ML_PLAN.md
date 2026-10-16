@@ -69,12 +69,32 @@ Approved models are the only ones allowed to serve predictions downstream.
 - Implication for Phase D: thresholds must come from calibrated ML probabilities,
   not raw rule-agent confidence; rule agents stay method benchmarks only.
 
-## Phase B — features & leakage hardening (next)
+## Phase B — features & leakage hardening (done 2026-10-15)
 
-1. Freeze a `feature_version` string; store feature snapshots with each prediction.
-2. Tests: no future bars in features; embargo between train/val/test
-   (`trendlabs.features.make_labels` documents the only shift(-h) usage today).
-3. Persist features to `market_features` (not only in-memory).
+1. **`feature_version` frozen** — `trendlabs.features.FEATURE_VERSION` = `fv1-` + sha1 of the
+   FEATURE_COLUMNS list (any add/remove/reorder bumps it). Recorded in model bundles, train
+   reports, scorecard rows, and every `--persist`-ed prediction.
+2. **Embargo** — `ml_train._time_split(embargo=h)`: `embargo ≥ horizon` rows dropped between
+   train end and test start (train labels can't share their forward window with test features).
+   Bundle carries `embargo`; the scorecard reproduces the identical split.
+3. **Leakage tests** — `test_ml.py::PhaseBTests`: (a) perturbing the last candle must not change
+   any earlier feature row (caught and fixed a real warm-up lookahead in
+   `regimes.classify_series`'s full-series-median fallback → now expanding-median); (b) embargo
+   gap invariants; (c) `market_features` roundtrip + prediction lineage. 12 tests pass.
+4. **`market_features` persistence** — SQLite table keyed `(symbol, timeframe, ts, feature_version)`;
+   `npm run ml-features` backfills snapshots for the whole candle history (133,200 rows @1d,
+   `fv1-1ff97c69`); `ml-predict --persist` writes the as-of bar's snapshot with each prediction.
+
+### Phase B effect on the gate (honest change)
+
+Embargo removed the 1-row label/feature overlap between train and test. Re-trained all 12 models:
+
+- Gate drops **3/12 → 1/12**: only UNH (acc 0.471 vs majority 0.461). AMD (0.477 vs 0.480) and
+  QQQ (0.460 vs 0.461) were split artifacts — Phase A "approvals" revoked.
+- NVDA still has the best Brier (0.558) but sits below its 0.511 majority class share.
+- Persistence still beats every model directionally. Current table: `data/ml/scorecard_1d.md`.
+- Weekly retrain cadence (Phase D) re-runs the embargoed split; a symbol is approved only while
+  its holdout beats majority on the current window.
 
 ## Phase C — intraday only if daily gate passes
 

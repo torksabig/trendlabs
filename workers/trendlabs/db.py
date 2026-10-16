@@ -40,6 +40,16 @@ class Store:
         with self.connect() as conn:
             conn.executescript(
                 """
+                CREATE TABLE IF NOT EXISTS market_features (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    symbol TEXT NOT NULL,
+                    timeframe TEXT NOT NULL,
+                    ts TEXT NOT NULL,
+                    feature_version TEXT NOT NULL,
+                    features_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    UNIQUE(symbol, timeframe, ts, feature_version)
+                );
                 CREATE TABLE IF NOT EXISTS instruments (
                     symbol TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -168,6 +178,10 @@ class Store:
                 );
                 """
             )
+            # Lightweight migration: predictions.feature_version for lineage.
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(predictions)").fetchall()}
+            if "feature_version" not in cols:
+                conn.execute("ALTER TABLE predictions ADD COLUMN feature_version TEXT")
 
     def seed_reference_data(self) -> None:
         with self.connect() as conn:
@@ -244,6 +258,69 @@ class Store:
             )
         if not df.empty:
             df["ts"] = pd.to_datetime(df["ts"], utc=True)
+        return df
+
+    def upsert_market_features(
+        self,
+        df: pd.DataFrame,
+        *,
+        symbol: str,
+        timeframe: str,
+        feature_version: str,
+        columns: list[str],
+    ) -> int:
+        """Freeze per-bar feature snapshots (cols subset) keyed by (symbol, tf, ts, version)."""
+        if df.empty:
+            return 0
+        ts = pd.to_datetime(df["ts"], utc=True).map(lambda t: t.isoformat())
+        now = utc_now()
+        rows = [
+            (
+                symbol.upper(),
+                timeframe,
+                ts.iloc[i],
+                feature_version,
+                json.dumps({c: (None if pd.isna(v) else float(v)) for c, v in zip(columns, df.iloc[i][columns])}),
+                now,
+            )
+            for i in range(len(df))
+        ]
+        with self.connect() as conn:
+            conn.executemany(
+                """
+                INSERT INTO market_features (
+                    symbol, timeframe, ts, feature_version, features_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(symbol, timeframe, ts, feature_version) DO UPDATE SET
+                    features_json=excluded.features_json, created_at=excluded.created_at
+                """,
+                rows,
+            )
+        return len(rows)
+
+    def get_market_features(
+        self,
+        symbol: str,
+        timeframe: str,
+        *,
+        feature_version: str | None = None,
+        limit: int = 50_000,
+    ) -> pd.DataFrame:
+        """Stored feature snapshots; parsed features_json expanded into columns."""
+        with self.connect() as conn:
+            base = "SELECT ts, feature_version, features_json FROM market_features WHERE symbol = ? AND timeframe = ?"
+            params: list[Any] = [symbol.upper(), timeframe]
+            if feature_version:
+                base += " AND feature_version = ?"
+                params.append(feature_version)
+            base += " ORDER BY ts ASC LIMIT ?"
+            params.append(int(limit))
+            df = pd.read_sql_query(base, conn, params=params)
+        if df.empty:
+            return df
+        parsed = pd.DataFrame([json.loads(r) for r in df["features_json"]])
+        df = pd.concat([df.drop(columns=["features_json"]).reset_index(drop=True), parsed.reset_index(drop=True)], axis=1)
+        df["ts"] = pd.to_datetime(df["ts"], utc=True)
         return df
 
     def list_symbols_with_data(self, timeframe: str) -> list[str]:
@@ -396,8 +473,9 @@ class Store:
                 """
                 INSERT INTO predictions (
                     symbol, timeframe, horizon, direction, confidence, last_close,
-                    drivers_json, summary, model, source, created_at, next_update_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    drivers_json, summary, model, source, created_at, next_update_at,
+                    feature_version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload["symbol"],
@@ -412,6 +490,7 @@ class Store:
                     payload.get("source", "indicators"),
                     payload.get("created_at", utc_now()),
                     payload["next_update_at"],
+                    payload.get("feature_version"),
                 ),
             )
             return int(cur.lastrowid)

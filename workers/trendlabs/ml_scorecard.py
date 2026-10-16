@@ -42,8 +42,9 @@ def _brier_multiclass(proba: np.ndarray, y_enc: np.ndarray) -> float:
 def score_symbol(bundle: dict[str, Any], candles: pd.DataFrame, *, test_frac: float) -> dict[str, Any]:
     horizon = bundle["horizon"]
     band = bundle["band"]
+    embargo = int(bundle.get("embargo", 0))
     X, y, meta = dataset_from_candles(candles, horizon=horizon, band=band)
-    train_idx, test_idx = _time_split(len(X), test_frac=test_frac)
+    train_idx, test_idx = _time_split(len(X), test_frac=test_frac, embargo=embargo)
     X_test = X.iloc[test_idx].reset_index(drop=True)
     y_test_raw = y.iloc[test_idx].reset_index(drop=True)
 
@@ -85,6 +86,8 @@ def score_symbol(bundle: dict[str, Any], candles: pd.DataFrame, *, test_frac: fl
         "timeframe": bundle["timeframe"],
         "horizon": horizon,
         "band": band,
+        "feature_version": bundle.get("feature_version"),
+        "embargo": embargo,
         "test_rows": int(len(y_enc)),
         "accuracy": accuracy,
         "macro_f1": macro_f1,

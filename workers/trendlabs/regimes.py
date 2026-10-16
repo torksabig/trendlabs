@@ -84,8 +84,11 @@ def classify_series(df: pd.DataFrame) -> pd.Series:
     vol = out["volatility_20"]
     # Adaptive thresholds from the series itself (no future peek beyond expanding median early on).
     vol_med = vol.expanding(min_periods=40).median()
-    vol_hi = (vol_med * 1.35).fillna(vol.median() if vol.notna().any() else 0.2)
-    vol_lo = (vol_med * 0.65).fillna(vol.median() if vol.notna().any() else 0.1)
+    # Warm-up fallback uses the expanding median (causal) — the previous
+    # full-series vol.median() peeked at future rows before row 40.
+    causal_med = vol.expanding(min_periods=2).median()
+    vol_hi = (vol_med * 1.35).fillna(causal_med * 1.35 if vol.notna().any() else 0.2)
+    vol_lo = (vol_med * 0.65).fillna(causal_med * 0.65 if vol.notna().any() else 0.1)
 
     labels: list[str] = []
     for i in range(len(out)):

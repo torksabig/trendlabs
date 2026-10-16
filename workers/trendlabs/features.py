@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 import numpy as np
@@ -38,6 +39,11 @@ FEATURE_COLUMNS = [
     "regime_hivol",
     "regime_riskoff",
 ]
+
+# Frozen feature-set identity: deterministic function of the column list, so ANY
+# change to FEATURE_COLUMNS (add/remove/reorder) bumps the version and invalidates
+# old snapshots/models rather than silently mixing feature definitions.
+FEATURE_VERSION = "fv1-" + hashlib.sha1("|".join(FEATURE_COLUMNS).encode("utf-8")).hexdigest()[:8]
 
 
 def build_feature_frame(candles: pd.DataFrame) -> pd.DataFrame:
