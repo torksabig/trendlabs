@@ -47,6 +47,49 @@ Decision rule going forward: a change is kept only if the embargoed scorecard ga
 regressions revert. h=5 regression candidate stays pre-declared for the next session if
 directional accuracy stays under persistence after two fv2 weekly re-runs.
 
+## Pre-declared candidate: h=5 regression on vol-normalized target (registered 2026-10-16,
+## BEFORE evaluation)
+
+Motivation: fv2 cleared the majority gate on 6/12, but accuracy margins are thin and
+persistence still wins — classification on a 3-way band throws away magnitude information.
+Candidate (registered before any run, no post-hoc tuning):
+
+- **Target**: `z = fwd_ret(h=5) / (σ20 · √5)`; σ20 = trailing 20-day simple-return std (PIT,
+  shift-safe). XGBRegressor (300×lr0.05×depth4, subsample 0.9, colsample 0.8, λ=1).
+- **Data**: the same fv2 context panel (`fv2-bda1540a`), embargo = 5 bars, chronological 80/20.
+- **Class mapping for the gate**: predicted class = up if `pred_z > 0.5/√5` (= 0.2236), down if
+  `< −0.2236`, else sideways — exactly consistent with the vol-scaled band (0.5σ_daily) applied
+  to the 5-day forward return.
+- **Accept (all of)**: (a) holdout accuracy > majority baseline on the same window; (b) holdout
+  Spearman IC(pred_z, realized_z) ≥ 0.05. Regressions in the gate vs the h=1 fv2 track revert.
+- Serving impact: none this session — h=5 reg bundles are research-only (`*_reg` suffix, not
+  matched by the h=1 serving glob); promotion to the paper book is a separate pre-declared step.
+
+### h=5 regression verdict (2026-10-16): REJECTED 0/12 — with a signal-bearing diagnostic
+
+| Symbol | Acc | Majority | Spearman IC | Gate |
+|---|---:|---:|---:|---|
+| SPY | 0.333 | 0.504 | **+0.124** | watch |
+| MSFT | 0.332 | 0.466 | **+0.113** | watch |
+| UNH | 0.329 | 0.426 | +0.080 | watch |
+| CVX | 0.328 | 0.451 | +0.077 | watch |
+| NVDA | 0.312 | 0.486 | +0.068 | watch |
+| QQQ | 0.294 | 0.487 | +0.067 | watch |
+| others | 0.258–0.343 | 0.426–0.482 | −0.044…+0.049 | watch |
+
+Criterion (a) fails on all 12 (mapped-class accuracy 0.26–0.34, far below majority — [INFERENCE]
+the |pred_z|>0.2236 class cut is almost never met by an MSE-regressed z, so the model maps nearly
+everything to 'sideways'); criterion (b) passes on 8/12 — **Spearman IC up to +0.124 is the
+strongest single-number signal measured anywhere in this project** (best intraday session IC was
++0.0064; best classifier margin +0.042 accuracy).
+
+Status: candidate REJECTED as registered. The IC finding motivates — but does not by itself
+authorize — a follow-up. **Registered next candidate (C2, not yet evaluated):** rank-based
+policy evaluated by purged walk-forward (expanding-window folds over the full history, fresh
+OOS per fold — no reuse of the burned holdout): trade sign of pred_z only when |pred_z| ≥ a
+train-fold-chosen quantile threshold; report per-fold directional hit-rate + net-of-20bps P&L.
+Gate: mean fold hit-rate > 0.5 with CI excluding 0.5, and positive net P&L.
+
 ## Phase A — lock daily models (done 2026-10-15)
 
 1. **Data extract** — daily OHLCV for all 12 symbols in the local SQLite store:

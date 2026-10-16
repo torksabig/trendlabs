@@ -358,5 +358,49 @@ class ModelQualityTests(unittest.TestCase):
             self.assertFalse(X[col].isna().all(), col)
 
 
+    def test_forward_z_math_and_nan_edges(self) -> None:
+        from trendlabs.features import make_forward_z
+
+        df = build_feature_frame(_synth("AAPL", n=420, seed=17))
+        z = make_forward_z(df, horizon=5)
+        # warm-up: first 20 rows have no sigma → NaN
+        self.assertTrue(z.iloc[:20].isna().all())
+        # tail: last 5 rows lack forward bars → NaN
+        self.assertTrue(z.iloc[-5:].isna().all())
+        # manual check on one row: z = fwd/(σ·√h) with trailing-20 σ
+        i = 100
+        close = df["close"].astype(float).to_numpy()
+        fwd = close[i + 5] / close[i] - 1.0
+        window = close[i - 20 : i + 1]  # rolling(20) of pct_change covers returns i-19..i
+        sigma = np.std(np.diff(window) / window[:-1], ddof=1)
+        expected = fwd / (sigma * np.sqrt(5))
+        self.assertAlmostEqual(float(z.iloc[i]), float(expected), places=10)
+
+    def test_reg_dataset_alignment(self) -> None:
+        import trendlabs.features as F
+        from trendlabs.features import dataset_reg_from_panel
+
+        # reg datasets require the full panel (breadth/dispersion) — build a mini one
+        panel = pd.concat(
+            [F.build_feature_frame(_synth(s, n=600, seed=i)) for i, s in enumerate(("AAPL", "MSFT", "XOM"))],
+            ignore_index=True,
+        )
+        panel = F.attach_market_context(
+            panel, spy_candles=_synth("SPY", n=600, seed=9)
+        )
+        panel = F.attach_panel_context(panel)
+        X, z, y_cls, meta = dataset_reg_from_panel(panel, "AAPL", horizon=5)
+        self.assertGreater(len(X), 300)
+        self.assertEqual(len(X), len(z))
+        self.assertEqual(len(y_cls), len(X))
+        self.assertEqual(len(meta), len(X))
+        self.assertFalse(X.isna().any().any())
+        self.assertFalse(z.isna().any())
+        # z and class labels are grossly consistent: strongly positive z ⇒ mostly up
+        strongly_up = z > 0.5 / np.sqrt(5)
+        if strongly_up.any():
+            self.assertGreater(float((y_cls[strongly_up] == "up").mean()), 0.9)
+
+
 if __name__ == "__main__":
     unittest.main()

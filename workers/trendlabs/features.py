@@ -265,6 +265,53 @@ def make_labels_vol_scaled(
     return labels
 
 
+def make_forward_z(
+    df: pd.DataFrame,
+    *,
+    horizon: int = 5,
+    vol_window: int = 20,
+) -> pd.Series:
+    """Vol-normalized forward return target: z = fwd / (σ20 · √h), PIT.
+
+    σ20 = trailing vol_window-bar simple-return std ending at t (known at t);
+    NaN for the tail (no forward bars) and the σ warm-up head.
+    """
+    close = df["close"].astype(float)
+    fwd = close.shift(-horizon) / close - 1.0
+    sigma = close.pct_change().rolling(vol_window, min_periods=vol_window).std()
+    denom = (sigma * np.sqrt(float(horizon))).replace(0.0, np.nan)
+    z = fwd / denom
+    z[fwd.isna() | denom.isna()] = np.nan
+    return z
+
+
+def dataset_reg_from_panel(
+    panel: pd.DataFrame,
+    symbol: str,
+    *,
+    horizon: int = 5,
+    vol_window: int = 20,
+    min_history: int = 60,
+) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
+    """fv2 regression dataset for one symbol: X + vol-normalized forward-z target."""
+    sub = panel.loc[panel["symbol"].astype(str) == symbol.upper()].copy().reset_index(drop=True)
+    if sub.empty:
+        return pd.DataFrame(), pd.Series(dtype=float), pd.Series(dtype=object), pd.DataFrame()
+    z = make_forward_z(sub, horizon=horizon, vol_window=vol_window)
+    y_cls = make_labels_vol_scaled(sub, horizon=horizon)
+    meta = pd.DataFrame({"ts": sub["ts"], "close": sub["close"].astype(float), "symbol": sub["symbol"], "timeframe": sub.get("timeframe")})
+    X = sub[FEATURE_COLUMNS].apply(pd.to_numeric, errors="coerce").astype(float)
+    core = [c for c in FEATURE_COLUMNS if c not in _CONTEXT_COLUMNS]
+    ctx_cols = [c for c in FEATURE_COLUMNS if c in _CONTEXT_COLUMNS]
+    mask = X[core].notna().all(axis=1) & X[ctx_cols].notna().all(axis=1) & z.notna() & y_cls.notna()
+    if min_history > 0:
+        idx = np.arange(len(X))
+        mask = mask & (idx >= min_history)
+    if horizon > 0:
+        mask.iloc[-horizon:] = False
+    return X.loc[mask].reset_index(drop=True), z.loc[mask].reset_index(drop=True), y_cls.loc[mask].reset_index(drop=True), meta.loc[mask].reset_index(drop=True)
+
+
 def dataset_from_candles(
     candles: pd.DataFrame,
     *,

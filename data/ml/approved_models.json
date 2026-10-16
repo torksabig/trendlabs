@@ -94,5 +94,113 @@
     "majority": 0.3922031896042528,
     "feature_version": "fv2-bda1540a",
     "evaluated_at": "2026-10-16T08:49:48.261757+00:00"
+  },
+  "AAPL_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.34278959810874704,
+    "majority": 0.48167848699763594,
+    "spearman_ic": -0.005997371331520056,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "MSFT_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.33156028368794327,
+    "majority": 0.46631205673758863,
+    "spearman_ic": 0.1134470771798413,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "NVDA_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.3118668596237337,
+    "majority": 0.48625180897250364,
+    "spearman_ic": 0.06757182950146784,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "AMD_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.258274231678487,
+    "majority": 0.43498817966903075,
+    "spearman_ic": -0.04407171799004766,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "JPM_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.30141843971631205,
+    "majority": 0.475177304964539,
+    "spearman_ic": 0.049424582493342605,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "GS_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.3077485380116959,
+    "majority": 0.45321637426900585,
+    "spearman_ic": 0.04688813543903186,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "XOM_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.3067375886524823,
+    "majority": 0.4639479905437352,
+    "spearman_ic": 0.008250762058275131,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "CVX_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.3280141843971631,
+    "majority": 0.4509456264775414,
+    "spearman_ic": 0.0765156524534699,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "JNJ_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.2801418439716312,
+    "majority": 0.44030732860520094,
+    "spearman_ic": -0.01372211381225494,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "UNH_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.32919621749408984,
+    "majority": 0.425531914893617,
+    "spearman_ic": 0.08013362698273749,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "SPY_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.3331353919239905,
+    "majority": 0.5041567695961995,
+    "spearman_ic": 0.12435274927516551,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
+  },
+  "QQQ_1d_h5_reg": {
+    "approved": false,
+    "gate": "watch",
+    "accuracy": 0.2938181818181818,
+    "majority": 0.48654545454545456,
+    "spearman_ic": 0.06694535945419464,
+    "feature_version": "fv2-bda1540a",
+    "evaluated_at": "2026-10-16T09:14:53.811676+00:00"
   }
 }
