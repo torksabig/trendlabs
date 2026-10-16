@@ -88,8 +88,6 @@ authorize — a follow-up. **Registered next candidate (C2, not yet evaluated):*
 policy evaluated by purged walk-forward (expanding-window folds over the full history, fresh
 OOS per fold — no reuse of the burned holdout): trade sign of pred_z only when |pred_z| ≥ a
 train-fold-chosen quantile threshold; report per-fold directional hit-rate + net-of-20bps P&L.
-Gate: mean fold hit-rate > 0.5 with CI excluding 0.5, and positive net P&L.
-
 ### C2 verdict (2026-10-16): 5/12 APPROVED as registered — with two recorded caveats
 
 Walk-forward: 47–61 folds/symbol (expanding train ≥ 750 sessions, 126-session test, purge 5),
@@ -117,10 +115,45 @@ overlap; ΣPnL double-counts concurrent exposure (per-trade edge is real, capita
 interpretation requires a portfolio sim).
 
 Approved-as-registered: UNH, MSFT, CVX, SPY, XOM — research paper-book only, serving still
-locked. **Registered next (C3, not yet evaluated):** beta-controlled version — per fold, compare
-policy hit-rate against (i) always-long hit-rate on the same test rows and (ii) a symmetrized
-book (equal long/short call quotas); gate requires the policy to beat BOTH, plus positive net
-P&L. Nothing in C2 auto-promotes anything to serving.
+locked. **Registered next (C3):** beta-controlled version — per fold, compare policy hit-rate
+against (i) always-long hit-rate on the same test rows and (ii) a symmetrized book (equal
+long/short call quotas); gate requires the policy to beat BOTH, plus positive net P&L.
+Nothing in C2 auto-promotes anything to serving.
+
+### C3 verdict (2026-10-16): REJECTED — the C2 edge is long-market beta, not direction alpha
+
+Same folds, same calls, three comparisons per symbol (registered gate: policy beats BOTH
+controls AND pnl > 0):
+
+| Symbol | Policy hit | Always-long (same rows) | Δ | Δ CI95 | Sym book | Gate |
+|---|---:|---:|---:|---|---:|---|
+| UNH | 0.5845 | 0.5569 | +0.0276 | [−0.009, +0.088] | 0.548 | approved (noise-margin) |
+| SPY | 0.5863 | 0.5835 | **+0.0028** | [−0.076, +0.011] | 0.586 | approved (noise-margin) |
+| AMD | 0.512 | 0.507 | +0.005 | [−0.092, +0.061] | 0.540 | watch |
+| all others | | | **negative** | | | watch |
+
+- Policy beats always-long on the same rows in **3/12** (by +0.005, +0.003, +0.028 — all inside
+  noise; no symbol's Δ CI95 excludes 0 on the positive side; JPM and QQQ are significantly
+  NEGATIVE).
+- Symmetrized (50/50) book performs on par with or better than the policy on most symbols —
+  under equal long/short exposure the direction selection adds nothing.
+- Conclusion: **the C2 hit-rates were long-market beta** — the model learned "this decade drifted
+  up", not cross-sectional or timing skill. C2's approvals are vacated for strategy purposes.
+
+### Where the evidence stands (end of the pre-declared ladder)
+
+1. Daily h=1 classifiers: 6/12 beat majority — margins hair-thin, persistence still better.
+2. Intraday 15m/1h/4h at 10y depth: session-IC ≈ 0.006, Q5−Q1 ≈ 0.1–0.3 bps — microscopic.
+3. h=5 regression: rank IC up to +0.124 held out — but maps to no tradable class edge.
+4. C2 rank policy: 5/12 walk-forward approved — long-beta artifact per C3.
+5. C3 beta control: REJECTED. **Direction-selection alpha on this universe, with free daily
+   data and XGBoost, is not established.** The honest product answer is drift/long-beta, which
+   is not a model result.
+
+The daily paper book (h=1 track, 2 open trades) keeps running as the one remaining live
+experiment; weekly scorecard governs approvals. Any further candidates (e.g., cross-sectional
+market-neutral formulations, universe expansion, alternative targets) must be registered in
+this file before evaluation, same rules.
 
 ## Phase A — lock daily models (done 2026-10-15)
 

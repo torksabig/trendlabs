@@ -1,0 +1,265 @@
+{
+  "kind": "beta_control_eval",
+  "created_at": "2026-10-16T09:30:58.775203+00:00",
+  "registered": "docs/ML_PLAN.md \u2014 C3 beta-controlled (before evaluation)",
+  "gate_rule": "policy_hit > long_called_hit AND policy_hit > sym_hit AND policy_pnl > 0",
+  "feature_version": "fv2-bda1540a",
+  "timeframe": "1d",
+  "horizon": 5,
+  "n_symbols": 12,
+  "n_approved": 2,
+  "rows": [
+    {
+      "symbol": "AAPL",
+      "n_folds": 61,
+      "n_scoring_folds": 61,
+      "n_calls": 2074,
+      "policy_hit": 0.5448,
+      "long_called_hit": 0.5661,
+      "long_test_hit": 0.5597,
+      "sym_hit": 0.5113,
+      "delta_policy_minus_long": -0.0212,
+      "delta_ci95": [
+        -0.0596,
+        0.0342
+      ],
+      "policy_pnl_pct": 137.49,
+      "sym_pnl_pct": -96.36,
+      "beats_long": false,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "MSFT",
+      "n_folds": 61,
+      "n_scoring_folds": 61,
+      "n_calls": 1377,
+      "policy_hit": 0.5962,
+      "long_called_hit": 0.6064,
+      "long_test_hit": 0.5494,
+      "sym_hit": 0.54,
+      "delta_policy_minus_long": -0.0102,
+      "delta_ci95": [
+        -0.0514,
+        0.0154
+      ],
+      "policy_pnl_pct": 727.13,
+      "sym_pnl_pct": 144.68,
+      "beats_long": false,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "NVDA",
+      "n_folds": 48,
+      "n_scoring_folds": 47,
+      "n_calls": 1046,
+      "policy_hit": 0.5076,
+      "long_called_hit": 0.521,
+      "long_test_hit": 0.5539,
+      "sym_hit": 0.4966,
+      "delta_policy_minus_long": -0.0134,
+      "delta_ci95": [
+        -0.1031,
+        0.0149
+      ],
+      "policy_pnl_pct": 437.99,
+      "sym_pnl_pct": 276.37,
+      "beats_long": false,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "AMD",
+      "n_folds": 61,
+      "n_scoring_folds": 60,
+      "n_calls": 1030,
+      "policy_hit": 0.5117,
+      "long_called_hit": 0.5068,
+      "long_test_hit": 0.5138,
+      "sym_hit": 0.5397,
+      "delta_policy_minus_long": 0.0049,
+      "delta_ci95": [
+        -0.0916,
+        0.0607
+      ],
+      "policy_pnl_pct": 44.54,
+      "sym_pnl_pct": 39.19,
+      "beats_long": true,
+      "beats_sym": false,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "JPM",
+      "n_folds": 61,
+      "n_scoring_folds": 61,
+      "n_calls": 1189,
+      "policy_hit": 0.5181,
+      "long_called_hit": 0.5828,
+      "long_test_hit": 0.5498,
+      "sym_hit": 0.5347,
+      "delta_policy_minus_long": -0.0648,
+      "delta_ci95": [
+        -0.1044,
+        -0.0007
+      ],
+      "policy_pnl_pct": -62.84,
+      "sym_pnl_pct": 85.96,
+      "beats_long": false,
+      "beats_sym": false,
+      "pnl_positive": false,
+      "gate": "watch"
+    },
+    {
+      "symbol": "GS",
+      "n_folds": 48,
+      "n_scoring_folds": 48,
+      "n_calls": 907,
+      "policy_hit": 0.4939,
+      "long_called_hit": 0.5711,
+      "long_test_hit": 0.5453,
+      "sym_hit": 0.5167,
+      "delta_policy_minus_long": -0.0772,
+      "delta_ci95": [
+        -0.1142,
+        0.0201
+      ],
+      "policy_pnl_pct": -27.39,
+      "sym_pnl_pct": 79.03,
+      "beats_long": false,
+      "beats_sym": false,
+      "pnl_positive": false,
+      "gate": "watch"
+    },
+    {
+      "symbol": "XOM",
+      "n_folds": 61,
+      "n_scoring_folds": 61,
+      "n_calls": 1587,
+      "policy_hit": 0.535,
+      "long_called_hit": 0.5923,
+      "long_test_hit": 0.5474,
+      "sym_hit": 0.5049,
+      "delta_policy_minus_long": -0.0573,
+      "delta_ci95": [
+        -0.0792,
+        0.0083
+      ],
+      "policy_pnl_pct": 66.1,
+      "sym_pnl_pct": 75.53,
+      "beats_long": false,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "CVX",
+      "n_folds": 61,
+      "n_scoring_folds": 60,
+      "n_calls": 1403,
+      "policy_hit": 0.5488,
+      "long_called_hit": 0.5538,
+      "long_test_hit": 0.5481,
+      "sym_hit": 0.5833,
+      "delta_policy_minus_long": -0.005,
+      "delta_ci95": [
+        -0.0231,
+        0.0742
+      ],
+      "policy_pnl_pct": 229.87,
+      "sym_pnl_pct": 348.23,
+      "beats_long": false,
+      "beats_sym": false,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "JNJ",
+      "n_folds": 61,
+      "n_scoring_folds": 61,
+      "n_calls": 1185,
+      "policy_hit": 0.5553,
+      "long_called_hit": 0.5789,
+      "long_test_hit": 0.541,
+      "sym_hit": 0.5319,
+      "delta_policy_minus_long": -0.0236,
+      "delta_ci95": [
+        -0.0489,
+        0.0329
+      ],
+      "policy_pnl_pct": 152.57,
+      "sym_pnl_pct": 6.58,
+      "beats_long": false,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "watch"
+    },
+    {
+      "symbol": "UNH",
+      "n_folds": 61,
+      "n_scoring_folds": 60,
+      "n_calls": 1415,
+      "policy_hit": 0.5845,
+      "long_called_hit": 0.5569,
+      "long_test_hit": 0.5544,
+      "sym_hit": 0.5481,
+      "delta_policy_minus_long": 0.0276,
+      "delta_ci95": [
+        -0.0094,
+        0.0884
+      ],
+      "policy_pnl_pct": 768.02,
+      "sym_pnl_pct": 210.37,
+      "beats_long": true,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "approved"
+    },
+    {
+      "symbol": "SPY",
+      "n_folds": 60,
+      "n_scoring_folds": 60,
+      "n_calls": 1078,
+      "policy_hit": 0.5863,
+      "long_called_hit": 0.5835,
+      "long_test_hit": 0.5844,
+      "sym_hit": 0.5855,
+      "delta_policy_minus_long": 0.0028,
+      "delta_ci95": [
+        -0.0757,
+        0.0113
+      ],
+      "policy_pnl_pct": 195.18,
+      "sym_pnl_pct": 109.32,
+      "beats_long": true,
+      "beats_sym": true,
+      "pnl_positive": true,
+      "gate": "approved"
+    },
+    {
+      "symbol": "QQQ",
+      "n_folds": 48,
+      "n_scoring_folds": 47,
+      "n_calls": 789,
+      "policy_hit": 0.5311,
+      "long_called_hit": 0.616,
+      "long_test_hit": 0.5902,
+      "sym_hit": 0.5694,
+      "delta_policy_minus_long": -0.0849,
+      "delta_ci95": [
+        -0.1637,
+        -0.0022
+      ],
+      "policy_pnl_pct": 74.12,
+      "sym_pnl_pct": 108.51,
+      "beats_long": false,
+      "beats_sym": false,
+      "pnl_positive": true,
+      "gate": "watch"
+    }
+  ]
+}

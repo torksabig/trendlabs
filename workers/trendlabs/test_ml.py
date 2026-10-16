@@ -429,5 +429,29 @@ class ModelQualityTests(unittest.TestCase):
         self.assertIn("created_at", payload)
 
 
+    def test_symmetrize_quota_logic(self) -> None:
+        from trendlabs.ml_wf import _symmetrize
+
+        called = pd.DataFrame(
+            {
+                "pred_z": [0.9, 0.7, 0.5, -0.8, -0.3],
+                "z": [0.5, -0.2, 0.1, 0.4, -0.6],
+                "sigma": [0.01] * 5,
+            }
+        )
+        n, correct, pnl = _symmetrize(called, horizon=5)
+        # quota = min(3 longs, 2 shorts) = 2 → book: longs [0.9, 0.7] + shorts [-0.8, -0.3]
+        self.assertEqual(n, 4)
+        # hits: 0.9/z0.5 ✓, 0.7/z−0.2 ✗, −0.8/z0.4 ✗, −0.3/z−0.6 ✓
+        self.assertEqual(correct, 2)
+        self.assertAlmostEqual(pnl, 0.318034, places=6)
+
+        # one side empty → no sym book
+        called2 = called.loc[called["pred_z"] > 0]
+        n2, correct2, _ = _symmetrize(called2, horizon=5)
+        self.assertEqual(n2, 0)
+        self.assertIsNone(correct2)
+
+
 if __name__ == "__main__":
     unittest.main()

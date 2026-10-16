@@ -22,6 +22,7 @@
     "ml-features": "cd workers && ../.venv/bin/python -m trendlabs.ml_features",
     "ml-paper": "cd workers && ../.venv/bin/python -m trendlabs.ml_paper",
     "ml-wf": "cd workers && ../.venv/bin/python -m trendlabs.ml_wf",
+    "ml-beta": "cd workers && ../.venv/bin/python -m trendlabs.ml_beta",
     "pe-dataset": "cd workers && ../.venv/bin/python -m trendlabs.prediction.dataset",
     "pe-baselines": "cd workers && ../.venv/bin/python -m trendlabs.prediction.baselines",
     "pe-train": "cd workers && ../.venv/bin/python -m trendlabs.prediction.train --with-baselines",

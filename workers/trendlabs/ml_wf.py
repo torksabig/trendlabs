@@ -28,11 +28,9 @@ from trendlabs.prediction.walk_forward import generate_purged_folds, mask_dates,
 COST_PCT = 0.20  # round trip, percent (2 × (FEE 5 + SLIP 5) bps)
 
 
-def _fold_policy_stats(
-    store: Store,
-    symbol: str,
-    timeframe: str,
+def policy_fold_rows(
     panel: pd.DataFrame,
+    symbol: str,
     *,
     horizon: int,
     min_train_sessions: int,
@@ -40,12 +38,17 @@ def _fold_policy_stats(
     step_sessions: int,
     call_quantile: float,
     seed: int = 42,
-) -> dict[str, Any]:
+) -> tuple[list[dict[str, Any]], int]:
+    """Per-fold policy stats (C2) + beta-control extras (C3): always-long hit on the
+    called rows and on all test rows, and a symmetrized (equal long/short quota) book.
+
+    Every metric is PIT: model + τ from train only; realized outcomes score only.
+    Returns (fold_rows, n_folds_total)."""
     from xgboost import XGBRegressor
 
     X, z, _y_cls, meta = dataset_reg_from_panel(panel, symbol, horizon=horizon)
     if len(X) < min_train_sessions:
-        return {"error": "insufficient_rows", "n_rows": int(len(X))}
+        return [{"error": "insufficient_rows", "n_rows": int(len(X))}], 0
 
     work = X.copy()
     work["ts"] = pd.to_datetime(meta["ts"], utc=True).to_numpy()
@@ -81,29 +84,98 @@ def _fold_policy_stats(
         pred_tr = model.predict(train[list(X.columns)])
         tau = float(np.quantile(np.abs(pred_tr), call_quantile))
         pred_te = model.predict(test[list(X.columns)])
-        called = test.loc[np.abs(pred_te) >= tau].copy()
-        called["pred_z"] = pred_te[np.abs(pred_te) >= tau]
+        mask_called = np.abs(pred_te) >= tau
+        called = test.loc[mask_called].copy()
+        called["pred_z"] = pred_te[mask_called]
+
+        row: dict[str, Any] = {
+            "fold_id": fold.fold_id,
+            "n_test": int(len(test)),
+            "n_calls": int(len(called)),
+        }
         if called.empty:
-            fold_rows.append(
-                {"fold_id": fold.fold_id, "n_calls": 0, "n_bull": 0, "n_bear": 0,
-                 "hit_rate": None, "pnl_sum_pct": 0.0}
-            )
+            row.update({"n_bull": 0, "n_bear": 0, "hit_rate": None, "pnl_sum_pct": 0.0,
+                        "long_called_correct": None, "long_test_correct": None,
+                        "sym_calls": 0, "sym_correct": None, "sym_pnl_sum_pct": 0.0})
+            fold_rows.append(row)
             continue
+
         direction = np.sign(called["pred_z"])
-        realized = np.sign(called["z"])
-        hit = float((direction == realized).mean())
+        realized_sign = np.sign(called["z"])
+        correct = int((direction == realized_sign).sum())
         per_trade = direction * called["z"] * called["sigma"] * np.sqrt(float(horizon)) * 100.0 - COST_PCT
-        fold_rows.append(
+
+        # Always-long on the SAME called rows and on all test rows
+        long_called_correct = int((called["z"] > 0).sum())
+        long_test_correct = int((test["z"] > 0).sum())
+
+        # Symmetrized book: equal long/short quotas among eligible rows (|pred_z| ≥ τ),
+        # strongest |pred_z| on each side.
+        sym_calls, sym_correct, sym_pnl = _symmetrize(called, horizon=horizon)
+
+        row.update(
             {
-                "fold_id": fold.fold_id,
-                "n_calls": int(len(called)),
                 "n_bull": int((direction > 0).sum()),
                 "n_bear": int((direction < 0).sum()),
-                "hit_rate": hit,
+                "hit_rate": float(correct / len(called)),
+                "policy_correct": correct,
                 "pnl_sum_pct": float(per_trade.sum()),
                 "mean_abs_pred_z": float(np.abs(called["pred_z"]).mean()),
+                "long_called_correct": long_called_correct,
+                "long_test_correct": long_test_correct,
+                "sym_calls": sym_calls,
+                "sym_correct": sym_correct,
+                "sym_pnl_sum_pct": sym_pnl,
             }
         )
+        fold_rows.append(row)
+    return fold_rows, len(folds)
+
+
+def _symmetrize(called: pd.DataFrame, *, horizon: int) -> tuple[int, int | None, float]:
+    """Equal long/short quotas among eligible calls; strongest |pred_z| per side.
+
+    Returns (n_sym_calls, sym_correct, sym_pnl_sum_pct). n=0 when one side is empty.
+    """
+    longs = called.loc[called["pred_z"] > 0].sort_values("pred_z", ascending=False)
+    shorts = called.loc[called["pred_z"] < 0].sort_values("pred_z", ascending=True)
+    quota = min(len(longs), len(shorts))
+    if quota == 0:
+        return 0, None, 0.0
+    book = pd.concat([longs.iloc[:quota], shorts.iloc[:quota]])
+    direction = np.sign(book["pred_z"])
+    correct = int((direction == np.sign(book["z"])).sum())
+    pnl = float(
+        (direction * book["z"] * book["sigma"] * np.sqrt(float(horizon)) * 100.0 - COST_PCT).sum()
+    )
+    return 2 * quota, correct, pnl
+
+
+def _fold_policy_stats(
+    store: Store,
+    symbol: str,
+    timeframe: str,
+    panel: pd.DataFrame,
+    *,
+    horizon: int,
+    min_train_sessions: int,
+    test_sessions: int,
+    step_sessions: int,
+    call_quantile: float,
+    seed: int = 42,
+) -> dict[str, Any]:
+    fold_rows, n_folds_total = policy_fold_rows(
+        panel,
+        symbol,
+        horizon=horizon,
+        min_train_sessions=min_train_sessions,
+        test_sessions=test_sessions,
+        step_sessions=step_sessions,
+        call_quantile=call_quantile,
+        seed=seed,
+    )
+    if fold_rows and "error" in fold_rows[0]:
+        return fold_rows[0]
 
     hits = [f["hit_rate"] for f in fold_rows if f["hit_rate"] is not None]
     n_calls = sum(f["n_calls"] for f in fold_rows)
@@ -111,7 +183,7 @@ def _fold_policy_stats(
     n_bear = sum(f["n_bear"] for f in fold_rows)
     total_pnl = float(sum(f["pnl_sum_pct"] for f in fold_rows))
     if not hits:
-        return {"error": "no_scoring_folds", "n_folds": len(folds), "n_calls": n_calls}
+        return {"error": "no_scoring_folds", "n_folds": n_folds_total, "n_calls": n_calls}
 
     from trendlabs.intraday.baselines import session_bootstrap_ci
 
@@ -120,7 +192,7 @@ def _fold_policy_stats(
     gate_hit = mean_hit > 0.5 and ci is not None and ci[0] > 0.5
     gate_pnl = total_pnl > 0
     return {
-        "n_folds": len(folds),
+        "n_folds": n_folds_total,
         "n_scoring_folds": len(hits),
         "n_calls": n_calls,
         "n_bull": n_bull,
