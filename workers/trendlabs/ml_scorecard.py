@@ -39,11 +39,21 @@ def _brier_multiclass(proba: np.ndarray, y_enc: np.ndarray) -> float:
     return float(np.mean(np.sum((proba - onehot) ** 2, axis=1)))
 
 
-def score_symbol(bundle: dict[str, Any], candles: pd.DataFrame, *, test_frac: float) -> dict[str, Any]:
+def score_symbol(bundle: dict[str, Any], candles: pd.DataFrame, *, test_frac: float, store: Store | None = None) -> dict[str, Any]:
     horizon = bundle["horizon"]
     band = bundle["band"]
     embargo = int(bundle.get("embargo", 0))
-    X, y, meta = dataset_from_candles(candles, horizon=horizon, band=band)
+    scheme = bundle.get("label_scheme", "fixed")
+    if scheme == "vol_scaled":
+        # fv2: reproduce the context-attached panel the model was trained on
+        from trendlabs.features import dataset_from_panel, build_panel_features
+
+        if store is None:
+            raise RuntimeError("vol_scaled scorecard needs store= for the SPY panel")
+        panel = build_panel_features(store, bundle["timeframe"])
+        X, y, meta = dataset_from_panel(panel, bundle["symbol"], horizon=horizon, label_scheme=scheme)
+    else:
+        X, y, meta = dataset_from_candles(candles, horizon=horizon, band=band, label_scheme=scheme)
     train_idx, test_idx = _time_split(len(X), test_frac=test_frac, embargo=embargo)
     X_test = X.iloc[test_idx].reset_index(drop=True)
     y_test_raw = y.iloc[test_idx].reset_index(drop=True)
@@ -87,6 +97,7 @@ def score_symbol(bundle: dict[str, Any], candles: pd.DataFrame, *, test_frac: fl
         "horizon": horizon,
         "band": band,
         "feature_version": bundle.get("feature_version"),
+        "label_scheme": bundle.get("label_scheme", "fixed"),
         "embargo": embargo,
         "test_rows": int(len(y_enc)),
         "accuracy": accuracy,
@@ -119,7 +130,7 @@ def main() -> int:
     for path in models:
         bundle = joblib.load(path)
         candles = store.load_candles(bundle["symbol"], bundle["timeframe"])
-        rows.append(score_symbol(bundle, candles, test_frac=args.test_frac))
+        rows.append(score_symbol(bundle, candles, test_frac=args.test_frac, store=store))
         r = rows[-1]
         print(
             f"{r['symbol']}: acc={r['accuracy']:.3f} f1={r['macro_f1']:.3f} brier={r['brier']:.3f} "

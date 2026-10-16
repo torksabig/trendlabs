@@ -3,6 +3,50 @@
 Goal: real per-stock prediction pipeline on free data + local XGBoost. No live trading,
 no UI redesign, no paid deploy.
 
+## Scheduling (operational, since 2026-10-16)
+
+launchd jobs (`~/Library/LaunchAgents/com.trendlabs.{daily,weekly}-ml.plist`), runners in
+`ops/macos/`:
+
+| Job | Schedule | Pipeline |
+|---|---|---|
+| `com.trendlabs.daily-ml` | 16:10 ET daily | collect → ml-features → ml-predict --persist → ml-paper |
+| `com.trendlabs.weekly-ml` | Fri 17:00 ET | + ml-train → ml-scorecard (approval registry) → predict → ml-paper |
+
+Logs: `data/ml/logs/daily_YYYY-MM-DD.log`. No auto-retrain outside the weekly slot.
+
+## fv2 feature/label candidates (2026-10-16, pre-declared before evaluation)
+
+- **+8 market-context columns** (`fv2-bda1540a`): SPY ret1/5/20, SPY vol20, breadth20,
+  RS-SPY 5/20, cross-sectional dispersion — built on a memoized 12-symbol panel
+  (`build_panel_features`), PIT throughout.
+- **Vol-scaled labels** (`label_scheme="vol_scaled"`): band = 0.5 × trailing 20d σ (shifted 1
+  bar, PIT) instead of fixed 0.002 — kills the near-binary label degeneracy, gives 'sideways'
+  a real class share and lowers the majority-class accuracy ceiling.
+
+### fv2 result — gate 1/12 → 6/12 approved
+
+| Symbol | Acc | Majority | Persistence | Gate |
+|---|---:|---:|---:|---|
+| QQQ | 0.444 | 0.402 | 0.335 | **approved** (+0.042) |
+| SPY | 0.454 | 0.416 | 0.352 | **approved** (+0.038) |
+| JPM | 0.432 | 0.423 | 0.368 | **approved** |
+| AAPL | 0.454 | 0.439 | 0.369 | **approved** |
+| GS | 0.438 | 0.433 | 0.381 | **approved** |
+| JNJ | 0.439 | 0.430 | 0.363 | **approved** |
+| NVDA | 0.414 | 0.415 | 0.349 | watch (hairline) |
+| others | 0.389–0.449 | | | watch |
+
+Brier worsens under vol-scaled labels (harder task, ~0.64 vs ~0.60) — not comparable to the
+fixed-band scorecard. Macro-F1 improved broadly. Persistence still beats accuracy everywhere:
+context features moved the ceiling, models remain weak — but 6/12 now clear their own
+majority bar, so the paper book is allowed to trade. First positions: GS bearish, JPM bullish
+(open, maturing via the daily job).
+
+Decision rule going forward: a change is kept only if the embargoed scorecard gate improves;
+regressions revert. h=5 regression candidate stays pre-declared for the next session if
+directional accuracy stays under persistence after two fv2 weekly re-runs.
+
 ## Phase A — lock daily models (done 2026-10-15)
 
 1. **Data extract** — daily OHLCV for all 12 symbols in the local SQLite store:

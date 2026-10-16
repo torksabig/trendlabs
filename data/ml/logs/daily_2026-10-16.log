@@ -1,0 +1,46 @@
+=== daily_ml 2026-10-16 2026-10-16T08:36:39Z ===
+--- collect
+AAPL 1d: upserted 11553 bars (1980-12-12 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+MSFT 1d: upserted 10227 bars (1986-03-13 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+NVDA 1d: upserted 6976 bars (1999-01-22 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+AMD 1d: upserted 11741 bars (1980-03-17 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+JPM 1d: upserted 11741 bars (1980-03-17 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+GS 1d: upserted 6906 bars (1999-05-04 04:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+XOM 1d: upserted 16306 bars (1962-01-02 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+CVX 1d: upserted 16306 bars (1962-01-02 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+JNJ 1d: upserted 16306 bars (1962-01-02 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+UNH 1d: upserted 10580 bars (1984-10-17 04:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+SPY 1d: upserted 8486 bars (1993-01-29 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+QQQ 1d: upserted 6944 bars (1999-03-10 05:00:00+00:00 → 2026-10-15 04:00:00+00:00) from yfinance
+Done. bars=134072 source=alpaca errors=0
+--- ml-features (snapshot new bars)
+QQQ 1d: 6884 snapshots [1999-06-04 04:00:00+00:00 → 2026-10-15 04:00:00+00:00] (fv1-1ff97c69)
+Done. total=133200 feature_version=fv1-1ff97c69
+--- ml-predict
+AAPL: up conf=0.478 policy=watch (p_up=0.52 p_down=0.18 θ=0.60 calibrated=True) close=342.00
+AMD: up conf=0.488 policy=bullish (p_up=0.60 p_down=0.40 θ=0.60 calibrated=True) close=562.23
+CVX: down conf=0.455 policy=watch (p_up=0.40 p_down=0.55 θ=0.60 calibrated=True) close=219.32
+GS: down conf=0.547 policy=bearish (p_up=0.03 p_down=0.96 θ=0.60 calibrated=True) close=891.28
+JNJ: up conf=0.510 policy=bullish (p_up=0.66 p_down=0.38 θ=0.60 calibrated=True) close=253.28
+JPM: up conf=0.482 policy=bullish (p_up=0.64 p_down=0.22 θ=0.60 calibrated=True) close=335.53
+MSFT: up conf=0.408 policy=watch (p_up=0.28 p_down=0.33 θ=0.60 calibrated=True) close=539.44
+NVDA: up conf=0.516 policy=bullish (p_up=0.69 p_down=0.06 θ=0.55 calibrated=True) close=217.23
+QQQ: up conf=0.509 policy=bullish (p_up=0.70 p_down=0.30 θ=0.60 calibrated=True) close=728.00
+SPY: up conf=0.460 policy=watch (p_up=0.45 p_down=0.19 θ=0.60 calibrated=True) close=771.79
+UNH: up conf=0.471 policy=watch (p_up=0.53 p_down=0.48 θ=0.60 calibrated=True) close=406.67
+XOM: down conf=0.517 policy=bearish (p_up=0.28 p_down=0.78 θ=0.60 calibrated=True) close=174.68
+{
+  "path": "/Users/teodor/Desktop/MAIN AI/Trendlabs copy/data/ml/latest_predictions.json",
+  "count": 12
+}
+--- ml-paper
+{
+  "closed_this_run": 0,
+  "summary": {
+    "policy": "all",
+    "n": 0
+  },
+  "open_count": 0,
+  "by_policy": {}
+}
+=== done 2026-10-16T08:37:51Z ===

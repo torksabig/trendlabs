@@ -139,7 +139,12 @@ def train_symbol(
         raise RuntimeError(f"{symbol} {timeframe}: need ≥120 bars, have {len(candles)}")
 
     band = default_band(timeframe) if band is None else band
-    X, y, meta = dataset_from_candles(candles, horizon=horizon, band=band)
+    # fv2 candidates: context-attached multi-symbol panel + vol-scaled labels
+    # (memoized panel build — cheap across the 12-symbol loop).
+    from trendlabs.features import dataset_from_panel, build_panel_features
+
+    panel = build_panel_features(store, timeframe)
+    X, y, meta = dataset_from_panel(panel, symbol, horizon=horizon, label_scheme="vol_scaled")
     if len(X) < 80:
         raise RuntimeError(f"{symbol} {timeframe}: feature rows {len(X)} too small")
 
@@ -265,6 +270,7 @@ def train_symbol(
         "encoder": encoder,
         "feature_columns": FEATURE_COLUMNS,
         "feature_version": FEATURE_VERSION,
+        "label_scheme": "vol_scaled",
         "embargo": int(horizon),
         "calibrators": calibrators,
         "policy": policy,

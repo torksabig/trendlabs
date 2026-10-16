@@ -37,9 +37,18 @@ def load_bundle(symbol: str, timeframe: str, horizon: int = 1) -> dict[str, Any]
 def predict_latest(store: Store, symbol: str, timeframe: str, horizon: int = 1) -> dict[str, Any]:
     bundle = load_bundle(symbol, timeframe, horizon)
     candles = store.load_candles(symbol, timeframe)
-    feat = build_feature_frame(candles)
-    row = feat.dropna(subset=FEATURE_COLUMNS).iloc[-1]
-    X = row[FEATURE_COLUMNS].to_frame().T.apply(pd.to_numeric, errors="coerce").astype(float)
+    model_cols = list(bundle["feature_columns"])  # the columns THIS model was trained on
+    if bundle.get("label_scheme") == "vol_scaled":
+        # fv2: latest bar must come from the same context-attached panel used in training
+        from trendlabs.features import build_panel_features
+
+        feat = build_panel_features(store, timeframe)
+        feat = feat.loc[feat["symbol"].astype(str) == symbol.upper()]
+        row = feat.dropna(subset=model_cols).iloc[-1]
+    else:
+        feat = build_feature_frame(candles)
+        row = feat.dropna(subset=model_cols).iloc[-1]
+    X = row[model_cols].to_frame().T.apply(pd.to_numeric, errors="coerce").astype(float)
     model = bundle["model"]
     encoder = bundle["encoder"]
     proba = model.predict_proba(X)[0]
@@ -88,6 +97,8 @@ def predict_latest(store: Store, symbol: str, timeframe: str, horizon: int = 1) 
         "p_down_calibrated": round(down_cal, 4),
         "policy_theta": theta,
         "calibrated": bool(calibrators),
+        "label_scheme": bundle.get("label_scheme", "fixed"),
+        "model_feature_columns": list(bundle["feature_columns"]),
         "expected_move_pct": round(expected, 4),
         "last_close": float(row["close"]),
         "as_of": str(row["ts"]),
@@ -291,14 +302,27 @@ def main() -> int:
                 from trendlabs.features import FEATURE_VERSION, build_feature_frame
 
                 db_pred["feature_version"] = FEATURE_VERSION
-                candles = store.load_candles(symbol, args.timeframe)
-                feat = build_feature_frame(candles)
                 as_of_ts = pd.Timestamp(pred["as_of"])
-                snap = feat.loc[pd.to_datetime(feat["ts"], utc=True) == as_of_ts].dropna(subset=FEATURE_COLUMNS)
+                if pred.get("label_scheme") == "vol_scaled":
+                    from trendlabs.features import build_panel_features
+
+                    panel = build_panel_features(store, args.timeframe)
+                    snap = panel.loc[
+                        (panel["symbol"].astype(str) == symbol.upper())
+                        & (pd.to_datetime(panel["ts"], utc=True) == as_of_ts)
+                    ]
+                    snap_cols = list(FEATURE_COLUMNS)
+                else:
+                    candles = store.load_candles(symbol, args.timeframe)
+                    feat = build_feature_frame(candles)
+                    snap = feat.loc[pd.to_datetime(feat["ts"], utc=True) == as_of_ts].dropna(
+                        subset=list(pred["model_feature_columns"])
+                    )
+                    snap_cols = list(pred["model_feature_columns"])
                 if not snap.empty:
                     store.upsert_market_features(
                         snap, symbol=symbol, timeframe=args.timeframe,
-                        feature_version=FEATURE_VERSION, columns=FEATURE_COLUMNS,
+                        feature_version=FEATURE_VERSION, columns=snap_cols,
                     )
                 db_pred["drivers"]["policy"] = pred["policy"]
                 db_pred["drivers"]["p_up_calibrated"] = pred["p_up_calibrated"]

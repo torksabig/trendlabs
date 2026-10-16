@@ -41,12 +41,16 @@ def _synth(symbol: str = "QQQ", n: int = 400, seed: int = 11) -> pd.DataFrame:
 
 class FeatureTests(unittest.TestCase):
     def test_dataset_shapes_and_no_future_leak_in_features(self) -> None:
+        import trendlabs.features as F
+
         df = _synth(n=250)
         X, y, meta = dataset_from_candles(df, horizon=1, band=0.002, min_history=60)
         self.assertEqual(list(X.columns), FEATURE_COLUMNS)
         self.assertEqual(len(X), len(y))
         self.assertEqual(len(X), len(meta))
-        self.assertFalse(X.isna().any().any())
+        # Core features complete; context columns may be NaN (no SPY attached)
+        core = [c for c in FEATURE_COLUMNS if c not in F._CONTEXT_COLUMNS]
+        self.assertFalse(X[core].isna().any().any())
         self.assertTrue(set(y.unique()).issubset({"up", "down", "sideways"}))
         labels = make_labels(build_feature_frame(df), horizon=1, band=0.002)
         self.assertTrue(pd.isna(labels.iloc[-1]))
@@ -58,6 +62,7 @@ class TrainTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.store = Store(Path(self.tmp.name) / "ml.db")
         self.store.upsert_candles(_synth("QQQ", n=420, seed=3))
+        self.store.upsert_candles(_synth("SPY", n=420, seed=3))  # fv2 context panel
 
     def test_train_symbol_writes_model(self) -> None:
         import trendlabs.ml_train as mt
@@ -81,7 +86,7 @@ class PhaseBTests(unittest.TestCase):
         df = _synth(n=400, seed=5)
         base = build_feature_frame(df)
         self.assertIsInstance(FEATURE_VERSION, str)
-        self.assertTrue(FEATURE_VERSION.startswith("fv1-"))
+        self.assertTrue(FEATURE_VERSION.startswith("fv"))  # exact version pinned in ModelQualityTests
 
         pert = df.copy()
         last = pert.index[-1]
@@ -127,7 +132,10 @@ class PhaseBTests(unittest.TestCase):
         store.init_schema()
 
         df = _synth("AAPL", n=300, seed=9)
-        feat = build_feature_frame(df).dropna(subset=FEATURE_COLUMNS).iloc[60:]
+        import trendlabs.features as F
+
+        core = [c for c in FEATURE_COLUMNS if c not in F._CONTEXT_COLUMNS]
+        feat = build_feature_frame(df).dropna(subset=core).iloc[60:]
         n = store.upsert_market_features(
             feat, symbol="AAPL", timeframe="1d",
             feature_version=FEATURE_VERSION, columns=FEATURE_COLUMNS,
@@ -138,7 +146,6 @@ class PhaseBTests(unittest.TestCase):
         self.assertEqual(len(got), len(feat))
         self.assertTrue((got["feature_version"] == FEATURE_VERSION).all())
         # spot-check a few values survived the JSON roundtrip
-        self.assertEqual(len(got), len(feat))
         for col in ("ret_1", "rsi_norm", "close_location"):
             np.testing.assert_allclose(
                 got[col].to_numpy(dtype=float),
@@ -290,6 +297,65 @@ class PhaseDTests(unittest.TestCase):
         loaded = json.loads((d / "approved_models.json").read_text())
         approved = {k.split("_")[0] for k, v in loaded.items() if v.get("approved")}
         self.assertEqual(approved, {"UNH"})
+
+
+class ModelQualityTests(unittest.TestCase):
+    """fv2 candidates: market-context features + vol-scaled labels."""
+
+    def _spy(self) -> pd.DataFrame:
+        return _synth("SPY", n=400, seed=31)
+
+    def test_attach_market_context_shapes_and_pit(self) -> None:
+        from trendlabs.features import attach_market_context
+
+        df = build_feature_frame(_synth("AAPL", n=400, seed=5))
+        out = attach_market_context(df, spy_candles=self._spy())
+        for col in ("SPY_RET1", "SPY_RET5", "SPY_RET20", "SPY_VOL20", "RS_SPY_5", "RS_SPY_20"):
+            self.assertIn(col, out.columns)
+            self.assertFalse(out[col].isna().all(), col)
+        # context must not shift the panel
+        self.assertEqual(len(out), len(df))
+        # SPY panel itself: context = own features
+        spy_df = build_feature_frame(self._spy())
+        spy_out = attach_market_context(spy_df, spy_candles=None)
+        self.assertFalse(spy_out["SPY_RET1"].isna().all())
+
+    def test_vol_scaled_labels_balance(self) -> None:
+        from trendlabs.features import make_labels, make_labels_vol_scaled
+
+        df = build_feature_frame(_synth("MSFT", n=600, seed=13))
+        fixed = make_labels(df, horizon=1, band=0.002).dropna()
+        vol = make_labels_vol_scaled(df, horizon=1).dropna()
+
+        def _majority_share(s: pd.Series) -> float:
+            return float(s.value_counts(normalize=True).iloc[0])
+
+        def _min_share(s: pd.Series) -> float:
+            return float(s.value_counts(normalize=True).iloc[-1])
+
+        # Motivation: with band = 0.5×trailing σ, all three classes stay populated
+        # and the majority-class ceiling DROPS vs a fixed tiny band (where labels
+        # ≈ raw sign, majority ≈ up share, 'sideways' nearly empty).
+        self.assertLess(_majority_share(vol), _majority_share(fixed) - 0.02)
+        self.assertGreater(_min_share(vol), _min_share(fixed))
+        self.assertTrue(set(vol.unique()).issubset({"up", "down", "sideways"}))
+
+    def test_fv2_dataset_with_context(self) -> None:
+        from trendlabs.features import FEATURE_VERSION, dataset_from_candles
+
+        self.assertTrue(FEATURE_VERSION.startswith("fv2-"))
+        X, y, meta = dataset_from_candles(
+            _synth("AAPL", n=420, seed=7),
+            horizon=1,
+            spy_candles=self._spy(),
+            label_scheme="vol_scaled",
+        )
+        self.assertEqual(len(X), len(y))
+        self.assertFalse(X[["ret_1", "rsi_norm", "close_location"]].isna().any().any())
+        # context columns present and not all-NaN
+        for col in ("SPY_RET1", "RS_SPY_5", "SPY_VOL20"):
+            self.assertIn(col, X.columns)
+            self.assertFalse(X[col].isna().all(), col)
 
 
 if __name__ == "__main__":

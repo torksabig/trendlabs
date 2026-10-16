@@ -11,7 +11,7 @@ import argparse
 
 from trendlabs.config import SYMBOLS
 from trendlabs.db import Store
-from trendlabs.features import FEATURE_COLUMNS, FEATURE_VERSION, build_feature_frame
+from trendlabs.features import _CONTEXT_COLUMNS, FEATURE_COLUMNS, FEATURE_VERSION
 
 
 def main() -> int:
@@ -29,13 +29,19 @@ def main() -> int:
     store = Store()
     symbols = args.symbols or SYMBOLS
     total = 0
+    from trendlabs.features import build_panel_features
+
+    panel = build_panel_features(store, args.timeframe)
+    if panel.empty:
+        print(f"no candles for {args.timeframe}; collect first")
+        return 1
     for symbol in symbols:
-        candles = store.load_candles(symbol, args.timeframe)
-        if candles.empty:
+        feat = panel.loc[panel["symbol"].astype(str) == symbol.upper()].copy()
+        if feat.empty:
             print(f"{symbol} {args.timeframe}: no candles, skipped")
             continue
-        feat = build_feature_frame(candles)
-        feat = feat.iloc[args.min_history :].dropna(subset=FEATURE_COLUMNS)
+        core = [c for c in FEATURE_COLUMNS if c not in _CONTEXT_COLUMNS]
+        feat = feat.iloc[args.min_history :].dropna(subset=core)
         n = store.upsert_market_features(
             feat,
             symbol=symbol,
