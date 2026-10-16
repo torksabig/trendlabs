@@ -57,6 +57,18 @@ every model on directional accuracy. Full table: `data/ml/scorecard_1d.md`, raw:
 Gate rule: model stays "watch" unless held-out accuracy > majority baseline accuracy.
 Approved models are the only ones allowed to serve predictions downstream.
 
+### Rule-forecast backfill eval (separate from ML, method benchmark)
+
+`npm run predict-eval -- --timeframe 1d --backfill --backfill-bars 120`
+(new `--backfill-bars` caps the scan to recent completed horizons; legacy
+`--backfill` walks full history and takes >10 min locally):
+
+- 240 rule-based forecasts inserted, 500 predictions scored, 0 skipped.
+- Rule agents realized accuracy **0.402** with mean confidence **0.902** —
+  badly overconfident at every bucket (acc 0.00–0.45 vs claimed 0.64–0.92).
+- Implication for Phase D: thresholds must come from calibrated ML probabilities,
+  not raw rule-agent confidence; rule agents stay method benchmarks only.
+
 ## Phase B — features & leakage hardening (next)
 
 1. Freeze a `feature_version` string; store feature snapshots with each prediction.

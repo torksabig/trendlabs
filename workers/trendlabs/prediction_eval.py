@@ -234,15 +234,21 @@ def backfill_historical_predictions(
     step: int = 6,
     min_history: int = 80,
     leave_forward: int = 25,
+    backfill_bars: int | None = None,
 ) -> int:
-    """Insert historical rule-based forecasts so outcomes can be scored offline."""
+    """Insert historical rule-based forecasts so outcomes can be scored offline.
+
+    backfill_bars caps the scan to the most recent N candles (completed horizons
+    only, practical locally); None keeps the legacy full-history behavior.
+    """
     inserted = 0
     for symbol in symbols or SYMBOLS:
         candles = store.load_candles(symbol, timeframe)
         if len(candles) < min_history + leave_forward:
             continue
         end = len(candles) - leave_forward
-        for i in range(min_history, end, max(1, step)):
+        start = min_history if backfill_bars is None else max(min_history, end - int(backfill_bars))
+        for i in range(start, end, max(1, step)):
             as_of = str(pd.Timestamp(candles.iloc[i]["ts"]).isoformat())
             pred = predict_symbol(
                 store,
@@ -265,10 +271,11 @@ def run_eval(
     rescore_all: bool = False,
     backfill: bool = False,
     timeframe: str = "1h",
+    backfill_bars: int | None = None,
 ) -> dict[str, Any]:
     backfilled = 0
     if backfill:
-        backfilled = backfill_historical_predictions(store, timeframe=timeframe)
+        backfilled = backfill_historical_predictions(store, timeframe=timeframe, backfill_bars=backfill_bars)
 
     if rescore_all:
         preds = store.get_predictions(limit=limit)
@@ -322,6 +329,12 @@ def main() -> int:
         action="store_true",
         help="Generate historical rule-based forecasts from candle history, then score",
     )
+    parser.add_argument(
+        "--backfill-bars",
+        type=int,
+        default=None,
+        help="Cap rule-forecast backfill to the most recent N candles (default: full history)",
+    )
     parser.add_argument("--timeframe", default=DEFAULT_TIMEFRAME)
     args = parser.parse_args()
 
@@ -332,6 +345,7 @@ def main() -> int:
         rescore_all=args.rescore_all,
         backfill=args.backfill,
         timeframe=args.timeframe,
+        backfill_bars=args.backfill_bars,
     )
     path = write_eval_result(payload)
     print(
