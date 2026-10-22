@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-22T01:34:30.308850+00:00",
+  "generated_at": "2026-10-22T07:39:14.564563+00:00",
   "timeframe": "1h",
   "data_source": "yfinance",
-  "last_collection": "2026-10-22T01:34:19.861582+00:00",
-  "last_simulation": "2026-10-22T01:34:26.290664+00:00",
+  "last_collection": "2026-10-22T07:39:03.395477+00:00",
+  "last_simulation": "2026-10-22T07:39:10.240865+00:00",
   "last_research": null,
-  "last_prediction": "2026-10-22T01:34:29.134078+00:00",
-  "next_prediction_at": "2026-10-22T02:15:00+00:00",
+  "last_prediction": "2026-10-22T07:39:13.282277+00:00",
+  "next_prediction_at": "2026-10-22T08:15:00+00:00",
   "updates": {
-    "snapshot": "2026-10-22T01:34:30.309789+00:00",
-    "collection": "2026-10-22T01:34:19.861582+00:00",
-    "simulation": "2026-10-22T01:34:26.290664+00:00",
+    "snapshot": "2026-10-22T07:39:14.565558+00:00",
+    "collection": "2026-10-22T07:39:03.395477+00:00",
+    "simulation": "2026-10-22T07:39:10.240865+00:00",
     "research": null,
-    "prediction": "2026-10-22T01:34:29.134078+00:00",
-    "next_prediction": "2026-10-22T02:15:00+00:00",
+    "prediction": "2026-10-22T07:39:13.282277+00:00",
+    "next_prediction": "2026-10-22T08:15:00+00:00",
     "schedule": "Hourly GitHub Actions at :15 UTC \u2014 collect \u2192 simulate \u2192 predict"
   },
   "predictions": {
@@ -29,8 +29,8 @@
         "summary": "AAPL 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.29%). Trend=sideways, RSI=55.2, ADX=17.6, ATR\u22480.59%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.010847+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.113090+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 342.81372912205677,
@@ -55,8 +55,8 @@
         "summary": "AMD 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.70%). Trend=trending_bearish, RSI=53.0, ADX=26.5, ATR\u22481.40%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.343035+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.426682+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 548.0300090046474,
@@ -81,8 +81,8 @@
         "summary": "CVX 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.30%). Trend=trending_bullish, RSI=65.7, ADX=49.8, ATR\u22480.60%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.736112+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.854099+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 225.1333019261953,
@@ -107,8 +107,8 @@
         "summary": "GS 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.39%). Trend=trending_bullish, RSI=65.1, ADX=25.9, ATR\u22480.79%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.546403+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.636366+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 892.8256068726927,
@@ -133,8 +133,8 @@
         "summary": "JNJ 1h: rule-based outlook is sideways over the next ~1h (confidence 67%, expected move +0.00%). Trend=sideways, RSI=54.8, ADX=12.9, ATR\u22480.65%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.831740+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.958224+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 256.62820359661714,
@@ -159,8 +159,8 @@
         "summary": "JPM 1h: rule-based outlook is sideways over the next ~1h (confidence 66%, expected move +0.00%). Trend=sideways, RSI=48.8, ADX=12.6, ATR\u22480.56%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.439879+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.530972+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 335.278640744239,
@@ -185,8 +185,8 @@
         "summary": "MSFT 1h: rule-based outlook is sideways over the next ~1h (confidence 92%, expected move +0.00%). Trend=trending_bearish, RSI=50.4, ADX=25.7, ATR\u22480.54%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.137963+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.217826+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 532.3803953401242,
@@ -211,8 +211,8 @@
         "summary": "NVDA 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.40%). Trend=sideways, RSI=62.3, ADX=27.8, ATR\u22480.81%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.248445+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.323034+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 219.19788021705497,
@@ -237,8 +237,8 @@
         "summary": "QQQ 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.24%). Trend=trending_bearish, RSI=54.3, ADX=24.1, ATR\u22480.49%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:29.132386+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.280685+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 722.8037988677803,
@@ -263,8 +263,8 @@
         "summary": "SPY 1h: rule-based outlook is sideways over the next ~1h (confidence 76%, expected move +0.00%). Trend=sideways, RSI=58.4, ADX=18.3, ATR\u22480.31%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:29.026370+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.175325+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 770.7908938130251,
@@ -289,8 +289,8 @@
         "summary": "UNH 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.41%). Trend=trending_bullish, RSI=63.6, ADX=39.9, ATR\u22480.81%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.932271+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.061538+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 413.98537878111233,
@@ -315,8 +315,8 @@
         "summary": "XOM 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.31%). Trend=sideways, RSI=58.7, ADX=19.7, ATR\u22480.61%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.640650+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.748885+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 177.4153531985628,
@@ -343,8 +343,8 @@
         "summary": "QQQ 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.24%). Trend=trending_bearish, RSI=54.3, ADX=24.1, ATR\u22480.49%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:29.132386+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.280685+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 722.8037988677803,
@@ -369,8 +369,8 @@
         "summary": "SPY 1h: rule-based outlook is sideways over the next ~1h (confidence 76%, expected move +0.00%). Trend=sideways, RSI=58.4, ADX=18.3, ATR\u22480.31%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:29.026370+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.175325+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 770.7908938130251,
@@ -395,8 +395,8 @@
         "summary": "UNH 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.41%). Trend=trending_bullish, RSI=63.6, ADX=39.9, ATR\u22480.81%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.932271+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:13.061538+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 413.98537878111233,
@@ -421,8 +421,8 @@
         "summary": "JNJ 1h: rule-based outlook is sideways over the next ~1h (confidence 67%, expected move +0.00%). Trend=sideways, RSI=54.8, ADX=12.9, ATR\u22480.65%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.831740+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.958224+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 256.62820359661714,
@@ -447,8 +447,8 @@
         "summary": "CVX 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.30%). Trend=trending_bullish, RSI=65.7, ADX=49.8, ATR\u22480.60%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.736112+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.854099+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 225.1333019261953,
@@ -473,8 +473,8 @@
         "summary": "XOM 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.31%). Trend=sideways, RSI=58.7, ADX=19.7, ATR\u22480.61%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.640650+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.748885+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 177.4153531985628,
@@ -499,8 +499,8 @@
         "summary": "GS 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.39%). Trend=trending_bullish, RSI=65.1, ADX=25.9, ATR\u22480.79%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.546403+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.636366+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 892.8256068726927,
@@ -525,8 +525,8 @@
         "summary": "JPM 1h: rule-based outlook is sideways over the next ~1h (confidence 66%, expected move +0.00%). Trend=sideways, RSI=48.8, ADX=12.6, ATR\u22480.56%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.439879+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.530972+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 335.278640744239,
@@ -551,8 +551,8 @@
         "summary": "AMD 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.70%). Trend=trending_bearish, RSI=53.0, ADX=26.5, ATR\u22481.40%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.343035+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.426682+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 548.0300090046474,
@@ -577,8 +577,8 @@
         "summary": "NVDA 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.40%). Trend=sideways, RSI=62.3, ADX=27.8, ATR\u22480.81%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.248445+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.323034+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 219.19788021705497,
@@ -603,8 +603,8 @@
         "summary": "MSFT 1h: rule-based outlook is sideways over the next ~1h (confidence 92%, expected move +0.00%). Trend=trending_bearish, RSI=50.4, ADX=25.7, ATR\u22480.54%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.137963+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.217826+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bearish",
           "ema_20": 532.3803953401242,
@@ -629,8 +629,8 @@
         "summary": "AAPL 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.29%). Trend=sideways, RSI=55.2, ADX=17.6, ATR\u22480.59%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-22T01:34:28.010847+00:00",
-        "next_update_at": "2026-10-22T02:15:00+00:00",
+        "created_at": "2026-10-22T07:39:12.113090+00:00",
+        "next_update_at": "2026-10-22T08:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 342.81372912205677,
@@ -2126,7 +2126,7 @@
           "high": 341.3699951171875,
           "low": 338.8299865722656,
           "close": 340.3999938964844,
-          "volume": 6506600.0
+          "volume": 6506468.0
         },
         {
           "time": 1792593000,
@@ -2134,7 +2134,7 @@
           "high": 344.8194885253906,
           "low": 339.7099914550781,
           "close": 344.6650085449219,
-          "volume": 12285016.0
+          "volume": 4760812.0
         },
         {
           "time": 1792596600,
@@ -2142,7 +2142,7 @@
           "high": 345.25,
           "low": 343.3800048828125,
           "close": 343.44000244140625,
-          "volume": 3500801.0
+          "volume": 3500791.0
         },
         {
           "time": 1792600200,
@@ -2150,7 +2150,7 @@
           "high": 344.760009765625,
           "low": 343.3699951171875,
           "close": 344.4200134277344,
-          "volume": 1912695.0
+          "volume": 1912690.0
         },
         {
           "time": 1792603800,
@@ -2158,7 +2158,7 @@
           "high": 345.05999755859375,
           "low": 344.1000061035156,
           "close": 344.8800048828125,
-          "volume": 2093929.0
+          "volume": 2093890.0
         },
         {
           "time": 1792607400,
@@ -2166,7 +2166,7 @@
           "high": 345.0299987792969,
           "low": 343.42999267578125,
           "close": 344.1600036621094,
-          "volume": 2665750.0
+          "volume": 2665710.0
         },
         {
           "time": 1792611000,
@@ -2174,7 +2174,7 @@
           "high": 344.5799865722656,
           "low": 343.82000732421875,
           "close": 344.05499267578125,
-          "volume": 2660620.0
+          "volume": 2660610.0
         }
       ]
     },
@@ -5044,7 +5044,7 @@
           "high": 222.16000366210938,
           "low": 217.66000366210938,
           "close": 218.7322998046875,
-          "volume": 48298083.0
+          "volume": 25286085.0
         },
         {
           "time": 1792593000,
@@ -5052,7 +5052,7 @@
           "high": 220.47000122070312,
           "low": 218.55999755859375,
           "close": 220.1649932861328,
-          "volume": 191777996.0
+          "volume": 10051928.0
         },
         {
           "time": 1792596600,
@@ -5060,7 +5060,7 @@
           "high": 220.7698974609375,
           "low": 219.8000030517578,
           "close": 220.00999450683594,
-          "volume": 82730333.0
+          "volume": 6404693.0
         },
         {
           "time": 1792600200,
@@ -5068,7 +5068,7 @@
           "high": 222.00999450683594,
           "low": 219.86000061035156,
           "close": 221.4561004638672,
-          "volume": 7789396.0
+          "volume": 7789331.0
         },
         {
           "time": 1792603800,
@@ -5076,7 +5076,7 @@
           "high": 221.8699951171875,
           "low": 221.32000732421875,
           "close": 221.7050018310547,
-          "volume": 4164810.0
+          "volume": 4164798.0
         },
         {
           "time": 1792607400,
@@ -5084,7 +5084,7 @@
           "high": 221.82000732421875,
           "low": 220.25999450683594,
           "close": 221.27000427246094,
-          "volume": 7146450.0
+          "volume": 7146140.0
         },
         {
           "time": 1792611000,
@@ -5092,7 +5092,7 @@
           "high": 222.19000244140625,
           "low": 220.97000122070312,
           "close": 221.8699951171875,
-          "volume": 8129941.0
+          "volume": 8128923.0
         }
       ]
     },
@@ -18175,7 +18175,7 @@
           "high": 723.5700073242188,
           "low": 719.719970703125,
           "close": 721.8099975585938,
-          "volume": 23451593.0
+          "volume": 8105879.0
         },
         {
           "time": 1792593000,
@@ -18183,7 +18183,7 @@
           "high": 724.9099731445312,
           "low": 721.1300048828125,
           "close": 724.739990234375,
-          "volume": 103449118.0
+          "volume": 3744730.0
         },
         {
           "time": 1792596600,
@@ -18191,7 +18191,7 @@
           "high": 726.5999755859375,
           "low": 724.72998046875,
           "close": 725.2210083007812,
-          "volume": 103789994.0
+          "volume": 3653441.0
         },
         {
           "time": 1792600200,
@@ -18199,7 +18199,7 @@
           "high": 727.9500122070312,
           "low": 725.0,
           "close": 727.3150024414062,
-          "volume": 56058629.0
+          "volume": 3704980.0
         },
         {
           "time": 1792603800,
@@ -18207,7 +18207,7 @@
           "high": 727.3200073242188,
           "low": 726.219970703125,
           "close": 727.1904907226562,
-          "volume": 23353305.0
+          "volume": 2302613.0
         },
         {
           "time": 1792607400,
@@ -18215,7 +18215,7 @@
           "high": 727.3499145507812,
           "low": 722.530029296875,
           "close": 726.0349731445312,
-          "volume": 5022373.0
+          "volume": 5022303.0
         },
         {
           "time": 1792611000,
@@ -18223,7 +18223,7 @@
           "high": 726.6400146484375,
           "low": 725.1400146484375,
           "close": 725.2100219726562,
-          "volume": 30248125.0
+          "volume": 3001475.0
         }
       ]
     }
