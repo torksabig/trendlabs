@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-27T23:48:22.291754+00:00",
+  "generated_at": "2026-10-28T05:47:56.929886+00:00",
   "timeframe": "1h",
   "data_source": "yfinance",
-  "last_collection": "2026-10-27T23:48:07.421680+00:00",
-  "last_simulation": "2026-10-27T23:48:15.905292+00:00",
+  "last_collection": "2026-10-28T05:47:50.075250+00:00",
+  "last_simulation": "2026-10-28T05:47:54.044334+00:00",
   "last_research": null,
-  "last_prediction": "2026-10-27T23:48:20.330160+00:00",
-  "next_prediction_at": "2026-10-28T00:15:00+00:00",
+  "last_prediction": "2026-10-28T05:47:56.090002+00:00",
+  "next_prediction_at": "2026-10-28T06:15:00+00:00",
   "updates": {
-    "snapshot": "2026-10-27T23:48:22.293008+00:00",
-    "collection": "2026-10-27T23:48:07.421680+00:00",
-    "simulation": "2026-10-27T23:48:15.905292+00:00",
+    "snapshot": "2026-10-28T05:47:56.930517+00:00",
+    "collection": "2026-10-28T05:47:50.075250+00:00",
+    "simulation": "2026-10-28T05:47:54.044334+00:00",
     "research": null,
-    "prediction": "2026-10-27T23:48:20.330160+00:00",
-    "next_prediction": "2026-10-28T00:15:00+00:00",
+    "prediction": "2026-10-28T05:47:56.090002+00:00",
+    "next_prediction": "2026-10-28T06:15:00+00:00",
     "schedule": "Hourly GitHub Actions at :15 UTC \u2014 collect \u2192 simulate \u2192 predict"
   },
   "predictions": {
@@ -29,8 +29,8 @@
         "summary": "AAPL 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.29%). Trend=sideways, RSI=57.2, ADX=15.8, ATR\u22480.57%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.568764+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.327286+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 345.6630970994349,
@@ -55,8 +55,8 @@
         "summary": "AMD 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.60%). Trend=sideways, RSI=72.6, ADX=29.4, ATR\u22481.19%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.044880+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.535383+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 542.554158078837,
@@ -81,8 +81,8 @@
         "summary": "CVX 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.30%). Trend=trending_bullish, RSI=44.6, ADX=30.9, ATR\u22480.60%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.686550+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.814921+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 229.60709335493056,
@@ -107,8 +107,8 @@
         "summary": "GS 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.36%). Trend=trending_bullish, RSI=65.1, ADX=22.6, ATR\u22480.71%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.366225+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.680269+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 901.3859807964087,
@@ -133,8 +133,8 @@
         "summary": "JNJ 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.31%). Trend=trending_bullish, RSI=62.8, ADX=40.3, ATR\u22480.63%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.848409+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.883387+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 266.3519086819272,
@@ -159,8 +159,8 @@
         "summary": "JPM 1h: rule-based outlook is sideways over the next ~1h (confidence 76%, expected move +0.00%). Trend=sideways, RSI=53.5, ADX=20.1, ATR\u22480.47%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.205990+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.605117+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 335.1780582478307,
@@ -185,8 +185,8 @@
         "summary": "MSFT 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.27%). Trend=trending_bullish, RSI=54.7, ADX=25.0, ATR\u22480.53%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.729082+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.396309+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 530.167289729883,
@@ -211,8 +211,8 @@
         "summary": "NVDA 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.36%). Trend=sideways, RSI=57.9, ADX=26.5, ATR\u22480.71%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.886154+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.465237+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 216.3763542715457,
@@ -237,8 +237,8 @@
         "summary": "QQQ 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.22%). Trend=sideways, RSI=62.4, ADX=24.9, ATR\u22480.44%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.328912+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:56.088450+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 716.0128421992654,
@@ -263,8 +263,8 @@
         "summary": "SPY 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.15%). Trend=sideways, RSI=59.1, ADX=23.5, ATR\u22480.29%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.170647+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:56.019643+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 767.0954064901789,
@@ -289,8 +289,8 @@
         "summary": "UNH 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.36%). Trend=sideways, RSI=42.7, ADX=22.2, ATR\u22480.72%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.008428+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.950162+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 413.0942604218691,
@@ -315,8 +315,8 @@
         "summary": "XOM 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.32%). Trend=trending_bullish, RSI=41.8, ADX=25.8, ATR\u22480.64%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.526413+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.746944+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 181.4236239839002,
@@ -343,8 +343,8 @@
         "summary": "QQQ 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.22%). Trend=sideways, RSI=62.4, ADX=24.9, ATR\u22480.44%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.328912+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:56.088450+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 716.0128421992654,
@@ -369,8 +369,8 @@
         "summary": "SPY 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.15%). Trend=sideways, RSI=59.1, ADX=23.5, ATR\u22480.29%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.170647+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:56.019643+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 767.0954064901789,
@@ -395,8 +395,8 @@
         "summary": "UNH 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.36%). Trend=sideways, RSI=42.7, ADX=22.2, ATR\u22480.72%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:20.008428+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.950162+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 413.0942604218691,
@@ -421,8 +421,8 @@
         "summary": "JNJ 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.31%). Trend=trending_bullish, RSI=62.8, ADX=40.3, ATR\u22480.63%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.848409+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.883387+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 266.3519086819272,
@@ -447,8 +447,8 @@
         "summary": "CVX 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.30%). Trend=trending_bullish, RSI=44.6, ADX=30.9, ATR\u22480.60%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.686550+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.814921+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 229.60709335493056,
@@ -473,8 +473,8 @@
         "summary": "XOM 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.32%). Trend=trending_bullish, RSI=41.8, ADX=25.8, ATR\u22480.64%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.526413+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.746944+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 181.4236239839002,
@@ -499,8 +499,8 @@
         "summary": "GS 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.36%). Trend=trending_bullish, RSI=65.1, ADX=22.6, ATR\u22480.71%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.366225+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.680269+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 901.3859807964087,
@@ -525,8 +525,8 @@
         "summary": "JPM 1h: rule-based outlook is sideways over the next ~1h (confidence 76%, expected move +0.00%). Trend=sideways, RSI=53.5, ADX=20.1, ATR\u22480.47%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.205990+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.605117+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 335.1780582478307,
@@ -551,8 +551,8 @@
         "summary": "AMD 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.60%). Trend=sideways, RSI=72.6, ADX=29.4, ATR\u22481.19%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:19.044880+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.535383+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 542.554158078837,
@@ -577,8 +577,8 @@
         "summary": "NVDA 1h: rule-based outlook is down over the next ~1h (confidence 92%, expected move -0.36%). Trend=sideways, RSI=57.9, ADX=26.5, ATR\u22480.71%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.886154+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.465237+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 216.3763542715457,
@@ -603,8 +603,8 @@
         "summary": "MSFT 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.27%). Trend=trending_bullish, RSI=54.7, ADX=25.0, ATR\u22480.53%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.729082+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.396309+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "trending_bullish",
           "ema_20": 530.167289729883,
@@ -629,8 +629,8 @@
         "summary": "AAPL 1h: rule-based outlook is up over the next ~1h (confidence 92%, expected move +0.29%). Trend=sideways, RSI=57.2, ADX=15.8, ATR\u22480.57%. Paper research only \u2014 does not execute trades.",
         "model": "indicator_score_v1",
         "source": "hourly_predict",
-        "created_at": "2026-10-27T23:48:18.568764+00:00",
-        "next_update_at": "2026-10-28T00:15:00+00:00",
+        "created_at": "2026-10-28T05:47:55.327286+00:00",
+        "next_update_at": "2026-10-28T06:15:00+00:00",
         "drivers": {
           "trend_label": "sideways",
           "ema_20": 345.6630970994349,
@@ -2134,7 +2134,7 @@
           "high": 347.7799987792969,
           "low": 344.75,
           "close": 347.3500061035156,
-          "volume": 11853182.0
+          "volume": 5006297.0
         },
         {
           "time": 1793115000,
@@ -2142,7 +2142,7 @@
           "high": 347.6050109863281,
           "low": 345.8299865722656,
           "close": 346.25201416015625,
-          "volume": 2618281.0
+          "volume": 2617824.0
         },
         {
           "time": 1793118600,
@@ -2150,7 +2150,7 @@
           "high": 346.8699951171875,
           "low": 345.2124938964844,
           "close": 345.489990234375,
-          "volume": 2129835.0
+          "volume": 2129795.0
         },
         {
           "time": 1793122200,
@@ -2158,7 +2158,7 @@
           "high": 346.2200012207031,
           "low": 345.3800048828125,
           "close": 345.56500244140625,
-          "volume": 2095449.0
+          "volume": 2094812.0
         },
         {
           "time": 1793125800,
@@ -2166,7 +2166,7 @@
           "high": 347.44000244140625,
           "low": 345.4599914550781,
           "close": 347.1700134277344,
-          "volume": 4006548.0
+          "volume": 4006326.0
         },
         {
           "time": 1793129400,
@@ -2174,7 +2174,7 @@
           "high": 347.55999755859375,
           "low": 346.29998779296875,
           "close": 347.0799865722656,
-          "volume": 3996733.0
+          "volume": 3996685.0
         }
       ]
     },
@@ -3585,7 +3585,7 @@
           "high": 533.8599853515625,
           "low": 528.3309936523438,
           "close": 530.6199951171875,
-          "volume": 8660742.0
+          "volume": 3016838.0
         },
         {
           "time": 1793111400,
@@ -3593,7 +3593,7 @@
           "high": 533.97998046875,
           "low": 530.635009765625,
           "close": 532.760009765625,
-          "volume": 1631277.0
+          "volume": 1631150.0
         },
         {
           "time": 1793115000,
@@ -3601,7 +3601,7 @@
           "high": 534.7000122070312,
           "low": 532.5599975585938,
           "close": 533.3800048828125,
-          "volume": 6929220.0
+          "volume": 1355496.0
         },
         {
           "time": 1793118600,
@@ -3625,7 +3625,7 @@
           "high": 532.6400146484375,
           "low": 530.4199829101562,
           "close": 532.3200073242188,
-          "volume": 1379812.0
+          "volume": 1379773.0
         },
         {
           "time": 1793129400,
@@ -3633,7 +3633,7 @@
           "high": 532.8099975585938,
           "low": 531.010009765625,
           "close": 531.5999755859375,
-          "volume": 1598842.0
+          "volume": 1598692.0
         }
       ]
     },
@@ -5044,7 +5044,7 @@
           "high": 218.49000549316406,
           "low": 215.52999877929688,
           "close": 217.1199951171875,
-          "volume": 22252255.0
+          "volume": 22250869.0
         },
         {
           "time": 1793111400,
@@ -5052,7 +5052,7 @@
           "high": 217.97999572753906,
           "low": 216.75,
           "close": 217.7935028076172,
-          "volume": 122883771.0
+          "volume": 10202068.0
         },
         {
           "time": 1793115000,
@@ -5060,7 +5060,7 @@
           "high": 219.19000244140625,
           "low": 217.33999633789062,
           "close": 218.65499877929688,
-          "volume": 75941740.0
+          "volume": 9335722.0
         },
         {
           "time": 1793118600,
@@ -5068,7 +5068,7 @@
           "high": 218.72000122070312,
           "low": 217.53720092773438,
           "close": 217.55499267578125,
-          "volume": 140115545.0
+          "volume": 6218138.0
         },
         {
           "time": 1793122200,
@@ -5076,7 +5076,7 @@
           "high": 218.13870239257812,
           "low": 217.5,
           "close": 217.52499389648438,
-          "volume": 4867049.0
+          "volume": 4866915.0
         },
         {
           "time": 1793125800,
@@ -5084,7 +5084,7 @@
           "high": 217.91000366210938,
           "low": 217.36000061035156,
           "close": 217.3699951171875,
-          "volume": 6123341.0
+          "volume": 6123195.0
         },
         {
           "time": 1793129400,
@@ -5092,7 +5092,7 @@
           "high": 218.4600067138672,
           "low": 217.33999633789062,
           "close": 217.88499450683594,
-          "volume": 7556675.0
+          "volume": 7555876.0
         }
       ]
     },
@@ -6503,7 +6503,7 @@
           "high": 555.0,
           "low": 538.5,
           "close": 551.7000122070312,
-          "volume": 12917548.0
+          "volume": 5706915.0
         },
         {
           "time": 1793111400,
@@ -6511,7 +6511,7 @@
           "high": 556.8400268554688,
           "low": 549.1099853515625,
           "close": 556.1799926757812,
-          "volume": 2566083.0
+          "volume": 2565969.0
         },
         {
           "time": 1793115000,
@@ -6519,7 +6519,7 @@
           "high": 561.3090209960938,
           "low": 555.1900024414062,
           "close": 558.780029296875,
-          "volume": 2646406.0
+          "volume": 2645803.0
         },
         {
           "time": 1793118600,
@@ -6551,7 +6551,7 @@
           "high": 563.9149780273438,
           "low": 558.5700073242188,
           "close": 560.4500122070312,
-          "volume": 2347223.0
+          "volume": 2346541.0
         }
       ]
     },
@@ -7962,7 +7962,7 @@
           "high": 337.510009765625,
           "low": 334.5,
           "close": 335.5299987792969,
-          "volume": 1034128.0
+          "volume": 1034098.0
         },
         {
           "time": 1793111400,
@@ -7978,7 +7978,7 @@
           "high": 336.42999267578125,
           "low": 335.44000244140625,
           "close": 336.1199951171875,
-          "volume": 300136.0
+          "volume": 300062.0
         },
         {
           "time": 1793118600,
@@ -7986,7 +7986,7 @@
           "high": 336.8999938964844,
           "low": 335.7950134277344,
           "close": 336.7650146484375,
-          "volume": 255787.0
+          "volume": 255722.0
         },
         {
           "time": 1793122200,
@@ -9421,7 +9421,7 @@
           "high": 915.4249877929688,
           "low": 906.5900268554688,
           "close": 909.5900268554688,
-          "volume": 371646.0
+          "volume": 371564.0
         },
         {
           "time": 1793111400,
@@ -9429,7 +9429,7 @@
           "high": 912.4940185546875,
           "low": 906.7188110351562,
           "close": 910.1799926757812,
-          "volume": 175261.0
+          "volume": 175234.0
         },
         {
           "time": 1793115000,
@@ -9453,7 +9453,7 @@
           "high": 913.2979736328125,
           "low": 909.7750244140625,
           "close": 913.1500244140625,
-          "volume": 108389.0
+          "volume": 108359.0
         },
         {
           "time": 1793125800,
@@ -9461,7 +9461,7 @@
           "high": 913.6649780273438,
           "low": 911.3800048828125,
           "close": 912.1699829101562,
-          "volume": 1061812.0
+          "volume": 117342.0
         },
         {
           "time": 1793129400,
@@ -10880,7 +10880,7 @@
           "high": 184.8800048828125,
           "low": 181.82510375976562,
           "close": 182.2550048828125,
-          "volume": 2723686.0
+          "volume": 2723055.0
         },
         {
           "time": 1793111400,
@@ -10888,7 +10888,7 @@
           "high": 182.66000366210938,
           "low": 180.9600067138672,
           "close": 181.1750030517578,
-          "volume": 1351160.0
+          "volume": 1351018.0
         },
         {
           "time": 1793115000,
@@ -10896,7 +10896,7 @@
           "high": 181.72999572753906,
           "low": 180.8000030517578,
           "close": 180.92999267578125,
-          "volume": 1170080.0
+          "volume": 1169917.0
         },
         {
           "time": 1793118600,
@@ -10904,7 +10904,7 @@
           "high": 181.0800018310547,
           "low": 180.42999267578125,
           "close": 180.99000549316406,
-          "volume": 1353923.0
+          "volume": 1353660.0
         },
         {
           "time": 1793122200,
@@ -10912,7 +10912,7 @@
           "high": 181.27000427246094,
           "low": 180.5,
           "close": 180.77499389648438,
-          "volume": 1051187.0
+          "volume": 1051053.0
         },
         {
           "time": 1793125800,
@@ -10920,7 +10920,7 @@
           "high": 180.85000610351562,
           "low": 179.77000427246094,
           "close": 180.30999755859375,
-          "volume": 1293122.0
+          "volume": 1292444.0
         },
         {
           "time": 1793129400,
@@ -10928,7 +10928,7 @@
           "high": 180.50999450683594,
           "low": 179.8300018310547,
           "close": 179.88999938964844,
-          "volume": 2290002.0
+          "volume": 2289797.0
         }
       ]
     },
@@ -12339,7 +12339,7 @@
           "high": 232.2664031982422,
           "low": 229.25,
           "close": 229.42999267578125,
-          "volume": 1058227.0
+          "volume": 1057758.0
         },
         {
           "time": 1793111400,
@@ -12347,7 +12347,7 @@
           "high": 230.07000732421875,
           "low": 228.33999633789062,
           "close": 228.4949951171875,
-          "volume": 838406.0
+          "volume": 838303.0
         },
         {
           "time": 1793115000,
@@ -12355,7 +12355,7 @@
           "high": 229.0500030517578,
           "low": 227.6300048828125,
           "close": 227.8000030517578,
-          "volume": 591855.0
+          "volume": 591836.0
         },
         {
           "time": 1793118600,
@@ -12363,7 +12363,7 @@
           "high": 228.57000732421875,
           "low": 227.68499755859375,
           "close": 228.4199981689453,
-          "volume": 535337.0
+          "volume": 535150.0
         },
         {
           "time": 1793122200,
@@ -12371,7 +12371,7 @@
           "high": 229.25,
           "low": 228.11000061035156,
           "close": 228.77000427246094,
-          "volume": 478654.0
+          "volume": 477891.0
         },
         {
           "time": 1793125800,
@@ -12387,7 +12387,7 @@
           "high": 229.0850067138672,
           "low": 228.11000061035156,
           "close": 228.30999755859375,
-          "volume": 997102.0
+          "volume": 997080.0
         }
       ]
     },
@@ -13798,7 +13798,7 @@
           "high": 267.8500061035156,
           "low": 264.8299865722656,
           "close": 267.20001220703125,
-          "volume": 838656.0
+          "volume": 838414.0
         },
         {
           "time": 1793111400,
@@ -13814,7 +13814,7 @@
           "high": 268.6499938964844,
           "low": 267.1231994628906,
           "close": 267.1231994628906,
-          "volume": 445883.0
+          "volume": 445718.0
         },
         {
           "time": 1793118600,
@@ -13822,7 +13822,7 @@
           "high": 268.1700134277344,
           "low": 266.8299865722656,
           "close": 268.07000732421875,
-          "volume": 328437.0
+          "volume": 327718.0
         },
         {
           "time": 1793122200,
@@ -13830,7 +13830,7 @@
           "high": 268.6499938964844,
           "low": 267.92999267578125,
           "close": 268.57000732421875,
-          "volume": 355703.0
+          "volume": 355635.0
         },
         {
           "time": 1793125800,
@@ -13838,7 +13838,7 @@
           "high": 268.8999938964844,
           "low": 267.9100036621094,
           "close": 268.5400085449219,
-          "volume": 586451.0
+          "volume": 586397.0
         },
         {
           "time": 1793129400,
@@ -13846,7 +13846,7 @@
           "high": 268.92999267578125,
           "low": 268.2200012207031,
           "close": 268.7799987792969,
-          "volume": 845710.0
+          "volume": 845610.0
         }
       ]
     },
@@ -15257,7 +15257,7 @@
           "high": 412.9800109863281,
           "low": 408.7149963378906,
           "close": 411.67999267578125,
-          "volume": 616708.0
+          "volume": 616668.0
         },
         {
           "time": 1793111400,
@@ -15265,7 +15265,7 @@
           "high": 413.5975036621094,
           "low": 411.44000244140625,
           "close": 412.9549865722656,
-          "volume": 457041.0
+          "volume": 456848.0
         },
         {
           "time": 1793115000,
@@ -15273,7 +15273,7 @@
           "high": 412.9649963378906,
           "low": 408.9700012207031,
           "close": 409.2539367675781,
-          "volume": 339559.0
+          "volume": 339394.0
         },
         {
           "time": 1793118600,
@@ -15281,7 +15281,7 @@
           "high": 410.739990234375,
           "low": 408.2200012207031,
           "close": 410.7049865722656,
-          "volume": 381426.0
+          "volume": 381381.0
         },
         {
           "time": 1793122200,
@@ -15297,7 +15297,7 @@
           "high": 411.5,
           "low": 409.50250244140625,
           "close": 411.0,
-          "volume": 384511.0
+          "volume": 384469.0
         },
         {
           "time": 1793129400,
@@ -16716,7 +16716,7 @@
           "high": 768.3599853515625,
           "low": 765.2100219726562,
           "close": 766.6300048828125,
-          "volume": 9572194.0
+          "volume": 5792258.0
         },
         {
           "time": 1793111400,
@@ -16724,7 +16724,7 @@
           "high": 769.7999877929688,
           "low": 766.6099853515625,
           "close": 769.5900268554688,
-          "volume": 11651111.0
+          "volume": 3618138.0
         },
         {
           "time": 1793115000,
@@ -16732,7 +16732,7 @@
           "high": 771.0700073242188,
           "low": 769.22998046875,
           "close": 770.1500244140625,
-          "volume": 31892483.0
+          "volume": 2440204.0
         },
         {
           "time": 1793118600,
@@ -16740,7 +16740,7 @@
           "high": 770.239990234375,
           "low": 768.9500122070312,
           "close": 769.4749755859375,
-          "volume": 14693244.0
+          "volume": 1818120.0
         },
         {
           "time": 1793122200,
@@ -16748,7 +16748,7 @@
           "high": 769.969970703125,
           "low": 769.1199951171875,
           "close": 769.1699829101562,
-          "volume": 1607077.0
+          "volume": 1607076.0
         },
         {
           "time": 1793125800,
@@ -16756,7 +16756,7 @@
           "high": 770.3699951171875,
           "low": 769.0,
           "close": 770.1510009765625,
-          "volume": 2606210.0
+          "volume": 2606112.0
         },
         {
           "time": 1793129400,
@@ -18175,7 +18175,7 @@
           "high": 718.1900024414062,
           "low": 713.5900268554688,
           "close": 716.2999877929688,
-          "volume": 44559414.0
+          "volume": 7884417.0
         },
         {
           "time": 1793111400,
@@ -18183,7 +18183,7 @@
           "high": 720.3099975585938,
           "low": 716.269775390625,
           "close": 720.110107421875,
-          "volume": 149077809.0
+          "volume": 3440521.0
         },
         {
           "time": 1793115000,
@@ -18191,7 +18191,7 @@
           "high": 722.719970703125,
           "low": 719.47998046875,
           "close": 722.030029296875,
-          "volume": 77543081.0
+          "volume": 3798896.0
         },
         {
           "time": 1793118600,
@@ -18199,7 +18199,7 @@
           "high": 722.1500244140625,
           "low": 720.3400268554688,
           "close": 720.6599731445312,
-          "volume": 3085915.0
+          "volume": 3085210.0
         },
         {
           "time": 1793122200,
@@ -18207,7 +18207,7 @@
           "high": 721.3099975585938,
           "low": 720.0,
           "close": 720.3400268554688,
-          "volume": 21629471.0
+          "volume": 2699989.0
         },
         {
           "time": 1793125800,
@@ -18215,7 +18215,7 @@
           "high": 721.9295043945312,
           "low": 720.3049926757812,
           "close": 721.4949951171875,
-          "volume": 2896105.0
+          "volume": 2895859.0
         },
         {
           "time": 1793129400,
@@ -18223,7 +18223,7 @@
           "high": 722.8599853515625,
           "low": 720.9500122070312,
           "close": 721.239990234375,
-          "volume": 79289703.0
+          "volume": 4363880.0
         }
       ]
     }
